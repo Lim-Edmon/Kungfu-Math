@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <radialGradient id="bg6" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#ff8a50"/><stop offset="100%" stop-color="#e65100"/></radialGradient>
+  </defs>
+  <circle cx="64" cy="64" r="62" fill="url(#bg6)"/>
+  <ellipse cx="64" cy="108" rx="28" ry="16" fill="#fff3e0"/>
+  <circle cx="64" cy="58" r="38" fill="#ffcba4"/>
+  <!-- ponytail hair -->
+  <path d="M28 52 Q32 16 64 14 Q96 16 100 52 Q90 36 64 34 Q38 36 28 52Z" fill="#bf360c"/>
+  <path d="M96 40 Q120 50 110 78 Q100 60 92 48Z" fill="#bf360c"/>
+  <ellipse cx="50" cy="58" rx="5" ry="6.5" fill="#1a1a1a"/>
+  <ellipse cx="78" cy="58" rx="5" ry="6.5" fill="#1a1a1a"/>
+  <circle cx="51.5" cy="56" r="1.8" fill="#fff"/>
+  <circle cx="79.5" cy="56" r="1.8" fill="#fff"/>
+  <ellipse cx="42" cy="68" rx="6" ry="3.5" fill="#ffab91" opacity="0.65"/>
+  <ellipse cx="86" cy="68" rx="6" ry="3.5" fill="#ffab91" opacity="0.65"/>
+  <path d="M54 72 Q64 84 74 72" stroke="#e65100" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+  <!-- kick foot -->
+  <ellipse cx="102" cy="100" rx="16" ry="9" fill="#ffcc80" transform="rotate(-25 102 100)"/>
+  <ellipse cx="108" cy="98" rx="5" ry="3" fill="#ffe0b2" transform="rotate(-25 108 98)"/>
+</svg>

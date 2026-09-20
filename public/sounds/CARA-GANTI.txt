@@ -1,0 +1,24 @@
+CARA GANTI SUARA (SFX & BGM) — Kungfu Math MVP
+================================================
+
+Taruh file audio di folder ini dengan nama PERSIS di bawah.
+Format: .mp3 (disarankan) atau ganti ekstensi di src/lib/sound.ts jika pakai .ogg/.wav
+
+WAJIB NAMA FILE:
+  bgm.mp3       → musik latar (loop)
+  tap.mp3       → ketuk angka
+  correct.mp3   → jawaban benar
+  wrong.mp3     → jawaban salah
+  combo.mp3     → combo
+  finish.mp3    → akhir game
+  select.mp3    → pilih karakter
+  slash.mp3     → tebas (mode Slice)
+  boom.mp3      → bom / ledakan
+
+Tidak perlu ubah kode. Refresh browser saja.
+Kalau file belum ada, game pakai suara buatan otomatis (fallback).
+
+Tips:
+- BGM: volume sedang, bisa di-loop, ~60–90 detik
+- SFX: pendek (0.1–0.5 detik), tidak terlalu keras
+- Gratis tools: Pixabay, Freesound, Suno (musik), dll.

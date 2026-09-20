@@ -1,0 +1,25 @@
+CARA GANTI GAMBAR KARAKTER (CHIBI) — Kungfu Math MVP
+=====================================================
+
+Sekarang yang dipakai: file .svg di folder ini
+  hong-yi.svg, ming-zhe.svg, ling-yun.svg
+  an-ning.svg, zhi-xing.svg, qing-lan.svg
+
+GANTI DENGAN PNG/WEBP LEBIH BAGUS:
+1. Siapkan gambar kotak (disarankan 256x256 atau 512x512), wajah jelas.
+2. Simpan dengan NAMA SAMA, contoh:
+     hong-yi.png
+3. Buka file: src/lib/characters.ts
+4. Ubah baris imageSrc, contoh:
+     imageSrc: '/characters/hong-yi.png',
+5. Simpan → refresh browser.
+
+Daftar id karakter (jangan diubah id-nya):
+  hong-yi   → Tongkat Teguh (slice)
+  ming-zhe  → Pedang Bijak (slice)
+  ling-yun  → Tombak Awan (slice, cewek)
+  an-ning   → Tinju Damai (tap)
+  zhi-xing  → Telapak Sakti (tap)
+  qing-lan  → Tendangan Angin (tap, cewek)
+
+Boleh hapus .svg lama setelah PNG jalan.
