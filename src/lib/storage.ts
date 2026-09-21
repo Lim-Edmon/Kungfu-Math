@@ -42,33 +42,42 @@ export function updateProgress(
   return next;
 }
 
+const CODE_PREFIX = 'KM1.';
+
 /**
- * Export progress jadi string (untuk disalin / dikirim ke HP lain).
- * Nanti bisa diubah jadi kode pendek atau QR.
+ * Export progress jadi kode pindah HP (tanpa login).
+ * Format: KM1.<base64> — bisa dikirim via WhatsApp.
  */
 export function exportProgress(): string {
   const progress = loadProgress();
-  // Versi sederhana: base64 dari JSON
   const json = JSON.stringify(progress);
-  return btoa(unescape(encodeURIComponent(json)));
+  const body = btoa(unescape(encodeURIComponent(json)));
+  return CODE_PREFIX + body;
 }
 
 /**
- * Import progress dari string hasil export.
- * Mengembalikan true jika berhasil.
+ * Import progress dari kode hasil export.
+ * Menerima dengan atau tanpa prefix KM1.
  */
 export function importProgress(encoded: string): boolean {
   try {
-    const json = decodeURIComponent(escape(atob(encoded.trim())));
+    let raw = encoded.trim().replace(/\s+/g, '');
+    if (raw.startsWith(CODE_PREFIX)) {
+      raw = raw.slice(CODE_PREFIX.length);
+    }
+    // Kompatibel dengan kode lama (tanpa prefix)
+    const json = decodeURIComponent(escape(atob(raw)));
     const parsed = JSON.parse(json) as Partial<PlayerProgress>;
 
-    // Validasi minimal
     if (typeof parsed !== 'object' || parsed === null) return false;
 
     const merged: PlayerProgress = {
       ...DEFAULT_PROGRESS,
       ...parsed,
-      highScores: { ...DEFAULT_PROGRESS.highScores, ...(parsed.highScores || {}) },
+      highScores: {
+        ...DEFAULT_PROGRESS.highScores,
+        ...(parsed.highScores || {}),
+      },
       unlockedStages: parsed.unlockedStages ?? DEFAULT_PROGRESS.unlockedStages,
     };
 
