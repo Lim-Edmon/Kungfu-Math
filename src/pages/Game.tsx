@@ -197,30 +197,65 @@ export default function Game({
     }
   }, []);
 
-  const [state, setState] = useState<GameState>(() => {
-    const q = generateQuestion(level);
-    return {
-      status: 'playing',
-      mode,
-      characterId,
-      lives: INITIAL_LIVES,
-      score: 0,
-      combo: 0,
-      maxCombo: 0,
-      timeLeft: ROUND_SECONDS,
-      question: q,
-      numbers: createNumbersFromQuestion(q, agility, mode === 'tap' && agility ? 0.7 : 1),
-      selectedIds: [],
-      questionsSolved: 0,
-      stage: 1,
-    };
-  });
+  const [countdownLabel, setCountdownLabel] = useState('READY');
+  const [state, setState] = useState<GameState>(() => ({
+    status: 'countdown',
+    mode,
+    characterId,
+    lives: INITIAL_LIVES,
+    score: 0,
+    combo: 0,
+    maxCombo: 0,
+    timeLeft: ROUND_SECONDS,
+    question: null,
+    numbers: [],
+    selectedIds: [],
+    questionsSolved: 0,
+    stage: 1,
+  }));
 
   // BGM selama bermain
   useEffect(() => {
     sfx.startBgm();
     return () => sfx.stopBgm();
   }, []);
+
+  // READY → 3 → 2 → 1 → GO → main
+  useEffect(() => {
+    if (state.status !== 'countdown') return;
+    const steps: { label: string; ms: number }[] = [
+      { label: 'READY', ms: 700 },
+      { label: '3', ms: 700 },
+      { label: '2', ms: 700 },
+      { label: '1', ms: 700 },
+      { label: 'GO!', ms: 500 },
+    ];
+    let i = 0;
+    setCountdownLabel(steps[0].label);
+    let timer: ReturnType<typeof setTimeout>;
+    const next = () => {
+      i += 1;
+      if (i >= steps.length) {
+        const q = generateQuestion(levelRef.current);
+        setState((prev) => ({
+          ...prev,
+          status: 'playing',
+          question: q,
+          numbers: createNumbersFromQuestion(
+            q,
+            agility,
+            mode === 'tap' && agility ? 0.7 : 1
+          ),
+          selectedIds: [],
+        }));
+        return;
+      }
+      setCountdownLabel(steps[i].label);
+      timer = setTimeout(next, steps[i].ms);
+    };
+    timer = setTimeout(next, steps[0].ms);
+    return () => clearTimeout(timer);
+  }, [state.status, agility, mode]);
 
   // Timer hitung mundur
   useEffect(() => {
@@ -339,6 +374,7 @@ export default function Game({
     (num: FloatingNumber) => {
       if (state.status !== 'playing' || num.sliced) return;
       if (!state.question) return;
+      // countdown selesai dulu baru boleh aksi
 
       setState((prev) => {
         if (!prev.question) return prev;
@@ -603,7 +639,7 @@ export default function Game({
   );
 
   const onArenaPointerDown = (e: React.PointerEvent) => {
-    if (mode !== 'slice') return;
+    if (mode !== 'slice' || state.status !== 'playing') return;
     // Jangan mulai drag dari tombol keluar dll.
     e.preventDefault();
     isSlicingRef.current = true;
@@ -660,6 +696,30 @@ export default function Game({
           </p>
         </div>
 
+        <div className="game-char-banner">
+          {character?.imageSrc ? (
+            <img
+              src={character.imageSrc}
+              alt={character.name}
+              className="game-char-img"
+              width={48}
+              height={48}
+            />
+          ) : (
+            <span className="game-char-emoji" aria-hidden>
+              {character?.emoji ?? '🥋'}
+            </span>
+          )}
+          <div className="game-char-text">
+            <strong>{displayName}</strong>
+            <span>
+              {character?.nicknameId ?? ''}
+              {mode === 'slice' ? ' · Slice' : ' · Tap'}
+              {agility ? ' · Bergerak' : ''}
+            </span>
+          </div>
+        </div>
+
         <div
           className={`game-arena ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
           ref={arenaRef}
@@ -668,6 +728,18 @@ export default function Game({
           onPointerUp={onArenaPointerUp}
           onPointerCancel={onArenaPointerUp}
         >
+          {state.status === 'countdown' && (
+            <div className="countdown-overlay" aria-live="polite">
+              <span
+                key={countdownLabel}
+                className={`countdown-text ${
+                  countdownLabel === 'GO!' ? 'is-go' : ''
+                } ${countdownLabel === 'READY' ? 'is-ready' : ''}`}
+              >
+                {countdownLabel}
+              </span>
+            </div>
+          )}
           {state.numbers.map((num, index) => {
             const hitClass = num.sliced
               ? mode === 'slice'

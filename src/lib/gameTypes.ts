@@ -3,7 +3,7 @@
 import type { CharacterId, InputMode } from './types';
 import type { MathQuestion } from './mathGenerator';
 
-export type GameStatus = 'playing' | 'paused' | 'won' | 'lost';
+export type GameStatus = 'countdown' | 'playing' | 'paused' | 'won' | 'lost';
 
 export interface FloatingNumber {
   id: string;

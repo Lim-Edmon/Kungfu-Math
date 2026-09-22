@@ -97,7 +97,16 @@ export default function Home({ onStartGame }: HomeProps) {
   return (
     <div className="home-page">
       <header className="home-header">
-        <h1 className="logo">Kungfu Math</h1>
+        <div className="logo-row">
+          <img
+            src="/logo.svg"
+            alt=""
+            className="app-logo"
+            width={48}
+            height={48}
+          />
+          <h1 className="logo">Kungfu Math</h1>
+        </div>
         <p className="tagline">Latih hitung cepat ala pendekar!</p>
       </header>
 

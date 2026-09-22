@@ -33,6 +33,53 @@ import './App.css';
 
 type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
 
+function resultHeadline(
+  grade: string,
+  isNewRecord: boolean,
+  score: number
+): { title: string; sub: string; tone: string } {
+  if (isNewRecord) {
+    return {
+      title: 'NEW RECORD!',
+      sub: 'Rekor baru — hebat sekali!',
+      tone: 'record',
+    };
+  }
+  if (grade === 'S') {
+    return {
+      title: 'CONGRATULATIONS!',
+      sub: 'Master hitung! Kamu luar biasa!',
+      tone: 'great',
+    };
+  }
+  if (grade === 'A') {
+    return {
+      title: 'WELL DONE!',
+      sub: 'Kerja bagus, pendekar!',
+      tone: 'great',
+    };
+  }
+  if (grade === 'B') {
+    return {
+      title: 'DOING WELL!',
+      sub: 'Bagus belajar, terus latihan!',
+      tone: 'good',
+    };
+  }
+  if (score <= 0) {
+    return {
+      title: 'TIME UP!',
+      sub: 'Coba lagi — kamu pasti bisa!',
+      tone: 'try',
+    };
+  }
+  return {
+    title: 'NICE TRY!',
+    sub: 'Latihan lagi biar makin jago!',
+    tone: 'try',
+  };
+}
+
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
@@ -135,41 +182,56 @@ function App() {
           />
         )}
 
-        {screen === 'result' && (
-          <div className="result-screen">
-            <h2>Selesai!</h2>
-            <p className="result-level">Level: {levelLabel}</p>
-            <p className="result-grade">Grade: {lastGrade}</p>
-            <p className="result-score">Skor: {lastScore}</p>
-            <p className="result-high">
-              Rekor level ini: {lastHighScore}
-              {isNewRecord ? ' 🎉 Rekor baru!' : ''}
-            </p>
-            <div className="result-actions">
-              <button
-                type="button"
-                className="btn-primary"
-                onClick={handlePlayAgain}
-              >
-                Main Lagi
-              </button>
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={handleExitGame}
-              >
-                Kembali ke Latihan
-              </button>
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={() => setScreen('dojo')}
-              >
-                Lihat Dojo
-              </button>
+        {screen === 'result' && (() => {
+          const headline = resultHeadline(
+            lastGrade,
+            isNewRecord,
+            lastScore
+          );
+          return (
+            <div className={`result-screen tone-${headline.tone}`}>
+              <div className="result-burst" aria-hidden>
+                {isNewRecord || lastGrade === 'S' || lastGrade === 'A'
+                  ? '🎉✨🏆'
+                  : lastGrade === 'B'
+                    ? '⭐👏'
+                    : '💪🌟'}
+              </div>
+              <p className="result-float-title">{headline.title}</p>
+              <p className="result-float-sub">{headline.sub}</p>
+              <p className="result-level">Level: {levelLabel}</p>
+              <p className="result-grade">Grade: {lastGrade}</p>
+              <p className="result-score">Skor: {lastScore}</p>
+              <p className="result-high">
+                Rekor level ini: {lastHighScore}
+                {isNewRecord ? ' 🎉' : ''}
+              </p>
+              <div className="result-actions">
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={handlePlayAgain}
+                >
+                  Main Lagi
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={handleExitGame}
+                >
+                  Kembali ke Latihan
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setScreen('dojo')}
+                >
+                  Lihat Dojo
+                </button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </main>
 
       {showChrome && (
