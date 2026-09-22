@@ -254,8 +254,8 @@ export default function Home({ onStartGame }: HomeProps) {
                     src={char.imageSrc}
                     alt={char.name}
                     className="avatar-img"
-                    width={56}
-                    height={56}
+                    width={96}
+                    height={96}
                     onError={(e) => {
                       const t = e.currentTarget;
                       t.style.display = 'none';

@@ -1,27 +1,30 @@
-# Kungfu Math — daftar gabungan (belum dicoba / belum dibangun)
+# Kungfu Math — daftar gabungan
 
 Update: 2026-09-22
 
-## A. Sudah di kode / zip — belum sempat kamu test
+## A. Sudah di kode — test saat sempat
 
-1. Layout laptop + Keluar di atas
-2. Bom → angka terpilih kembali
-3. − dan ÷ urutan klik
-4. Efek Tap + Slice
-5. BGM `public/sounds/bgm.mp3`
-6. Kode progress `KM1.…`
-7. Fix build Vercel (tsconfig)
-8. README MVP + author disclaimer
-9. Bottom nav Latihan · Dojo · Atur
-10. Halaman Dojo (rekor + tips)
-11. Tema saat app start
-12. **Mode Ketangkasan** (Arena: Diam / Bergerak — bola mantul)
+1. Layout laptop + Keluar atas
+2. Bom restore + hit 1 bola saja (anti double-hit)
+3. − ÷ urutan klik
+4. Efek Tap (ripple lebih jelas) + Slice
+5. Tap ketangkasan: pointerdown + area lebih besar + bola sedikit lebih pelan
+6. BGM, KM1 progress, Vercel tsconfig, README, disclaimer
+7. Bottom nav + Dojo
+8. Arena Diam / Ketangkasan
 
-## B. Belum dibangun
+## B. Belum dibangun (ide / fase berikut)
 
-1. UI monetisasi (`isSubscribed`)
-2. Bahasa EN
-3. Dojo lebih kaya (riwayat/target harian)
-4. Asset final PNG/MP3
-5. Ketangkasan lanjutan (jatuh dari atas, kecepatan per level, dll.)
-6. Deploy Vercel + tes HP/browser asli
+### Mode Petualangan (prioritas berikutnya kalau dilanjut)
+- Jelajah kota dunia (background + musik beda per kota, nuansa Street Fighter)
+- Target poin per kota → unlock kota berikutnya
+- Jawaban benar: bonus waktu (+1 / +2 / +3 detik), tidak hanya batas 60 detik ketat
+- Gambar halus / soft
+- Nama mode ramah anak (bukan "sudden death"): mis. **Mode Tantangan** — salah klik: nyawa −1 **dan** waktu berkurang
+
+### Lainnya
+- UI monetisasi (`isSubscribed`)
+- Bahasa EN
+- Dojo lebih kaya
+- Asset final PNG / MP3
+- Bola lebih 3D + efek slice/tap lebih kaya

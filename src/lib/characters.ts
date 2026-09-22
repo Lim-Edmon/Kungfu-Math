@@ -15,7 +15,8 @@ export const CHARACTERS: Character[] = [
     emoji: '🥋',
     color: '#c41e3a',
     blurbId: 'Pendekar tongkat yang tenang dan kokoh',
-    imageSrc: '/characters/hong-yi.svg',
+    imageSrc: '/characters/hong-yi-full.png',
+    imageCloseSrc: '/characters/hong-yi-close.png',
   },
   {
     id: 'ming-zhe',
@@ -28,7 +29,8 @@ export const CHARACTERS: Character[] = [
     emoji: '⚔️',
     color: '#d4a017',
     blurbId: 'Pedang tajam, hati bijak',
-    imageSrc: '/characters/ming-zhe.svg',
+    imageSrc: '/characters/ming-zhe-full.png',
+    imageCloseSrc: '/characters/ming-zhe-close.png',
   },
   {
     id: 'ling-yun',
@@ -41,7 +43,8 @@ export const CHARACTERS: Character[] = [
     emoji: '🌟',
     color: '#7b2d8e',
     blurbId: 'Tombak ringan bagai awan',
-    imageSrc: '/characters/ling-yun.svg',
+    imageSrc: '/characters/ling-yun-full.png',
+    imageCloseSrc: '/characters/ling-yun-close.png',
   },
   {
     id: 'an-ning',
@@ -54,7 +57,8 @@ export const CHARACTERS: Character[] = [
     emoji: '👊',
     color: '#2e7d32',
     blurbId: 'Tinju damai ala Shaolin',
-    imageSrc: '/characters/an-ning.svg',
+    imageSrc: '/characters/an-ning-full.png',
+    imageCloseSrc: '/characters/an-ning-close.png',
   },
   {
     id: 'zhi-xing',
@@ -67,7 +71,8 @@ export const CHARACTERS: Character[] = [
     emoji: '✋',
     color: '#1565c0',
     blurbId: 'Telapak yang tahu jalan benar',
-    imageSrc: '/characters/zhi-xing.svg',
+    imageSrc: '/characters/zhi-xing-full.png',
+    imageCloseSrc: '/characters/zhi-xing-close.png',
   },
   {
     id: 'qing-lan',
@@ -80,7 +85,8 @@ export const CHARACTERS: Character[] = [
     emoji: '🦵',
     color: '#e65100',
     blurbId: 'Tendangan cepat seperti angin',
-    imageSrc: '/characters/qing-lan.svg',
+    imageSrc: '/characters/qing-lan-full.png',
+    imageCloseSrc: '/characters/qing-lan-close.png',
   },
 ];
 

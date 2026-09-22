@@ -1324,12 +1324,13 @@
 }
 
 .game-char-img {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   border: 2px solid var(--color-primary);
   background: var(--color-card);
   object-fit: cover;
+  object-position: center top;
 }
 
 .game-char-emoji {
@@ -1455,4 +1456,20 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+
+/* Full-body character select */
+.character-avatar {
+  width: 88px !important;
+  height: 88px !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center bottom;
 }

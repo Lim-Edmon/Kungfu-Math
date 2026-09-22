@@ -32,8 +32,10 @@ export interface Character {
   color: string;
   /** Deskripsi singkat imut */
   blurbId: string;
-  /** Path gambar chibi di public/ (svg/png) */
+  /** Full body — pemilihan di Home */
   imageSrc: string;
+  /** Close-up — banner saat main */
+  imageCloseSrc: string;
 }
 
 export interface PlayerProgress {

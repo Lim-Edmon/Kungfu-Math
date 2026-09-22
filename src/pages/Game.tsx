@@ -697,13 +697,13 @@ export default function Game({
         </div>
 
         <div className="game-char-banner">
-          {character?.imageSrc ? (
+          {character?.imageCloseSrc || character?.imageSrc ? (
             <img
-              src={character.imageSrc}
+              src={character.imageCloseSrc || character.imageSrc}
               alt={character.name}
               className="game-char-img"
-              width={48}
-              height={48}
+              width={56}
+              height={56}
             />
           ) : (
             <span className="game-char-emoji" aria-hidden>
