@@ -263,7 +263,7 @@ export default function Game({
       numbers: createNumbersFromQuestion(q, agility, mode === 'tap' && agility ? 0.7 : 1),
       selectedIds: [],
     };
-  }, [agility, mode];
+  }, [agility, mode]);
 
   /**
    * Kehilangan nyawa.
@@ -568,31 +568,35 @@ export default function Game({
       const hitR = 9;
       const hitR2 = hitR * hitR;
 
-      let best: FloatingNumber | null = null;
+      let bestId: string | null = null;
       let bestDist = Infinity;
       let bestIndex = -1;
 
-      state.numbers.forEach((num, index) => {
-        if (num.sliced) return;
-        if (slicedThisGestureRef.current.has(num.id)) return;
+      for (let index = 0; index < state.numbers.length; index++) {
+        const num = state.numbers[index];
+        if (num.sliced) continue;
+        if (slicedThisGestureRef.current.has(num.id)) continue;
         const dx = num.x - px;
         const dy = num.y - py;
         const d2 = dx * dx + dy * dy;
-        if (d2 > hitR2) return;
+        if (d2 > hitR2) continue;
         // Lebih dekat menang; jarak hampir sama → index lebih besar = "di depan"
         if (
           d2 < bestDist - 0.0001 ||
           (Math.abs(d2 - bestDist) <= 0.0001 && index > bestIndex)
         ) {
-          best = num;
+          bestId = num.id;
           bestDist = d2;
           bestIndex = index;
         }
-      });
+      }
 
-      if (best) {
-        slicedThisGestureRef.current.add(best.id);
-        handleNumberTap(best);
+      if (bestId) {
+        const hit = state.numbers.find((n) => n.id === bestId);
+        if (hit && !hit.sliced) {
+          slicedThisGestureRef.current.add(hit.id);
+          handleNumberTap(hit);
+        }
       }
     },
     [mode, state.numbers, handleNumberTap]
