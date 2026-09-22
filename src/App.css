@@ -1,3 +1,5 @@
+/* Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 /* ===== Kungfu Math – Layout & Komponen (Mobile-first) ===== */
 
 .app {
@@ -1089,4 +1091,193 @@
   .mode-btn:hover {
     filter: brightness(1.03);
   }
+}
+
+/* ===== Bottom navigation (ribbon) ===== */
+.app.has-bottom-nav .app-main {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+.app.has-bottom-nav .app-footer {
+  margin-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-card);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.bottom-nav-item.active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.bottom-nav-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.bottom-nav-label {
+  letter-spacing: 0.02em;
+}
+
+/* ===== Dojo ===== */
+.dojo-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 24px;
+  box-sizing: border-box;
+}
+
+.dojo-header h1 {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.dojo-sub {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 4px 0 16px;
+}
+
+.dojo-card {
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.dojo-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dojo-hero-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.dojo-hero-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.dojo-hero-meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.dojo-section h2 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+}
+
+.dojo-score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dojo-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.dojo-score-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.dojo-score-desc {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.dojo-score-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.dojo-note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 16px;
+  line-height: 1.4;
+}
+
+.dojo-tips {
+  margin: 0;
+  padding: 12px 14px 12px 28px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+.dojo-tips li {
+  margin-bottom: 6px;
+}
+
+.dojo-tips li:last-child {
+  margin-bottom: 0;
+}
+
+
+.game-arena.agility-mode .floating-number {
+  transition: none;
+}
+
+.arena-section {
+  margin-top: 4px;
 }

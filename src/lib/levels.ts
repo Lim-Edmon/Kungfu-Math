@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 /**
  * Level kesulitan Kungfu Math
  * Label UI: umum & aman (Pemula → Master)

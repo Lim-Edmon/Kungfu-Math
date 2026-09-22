@@ -1,3 +1,8 @@
+/**
+ * Kungfu Math — App entry point.
+ * Author: Lim Edmon · See src/App.tsx for full disclaimer.
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';

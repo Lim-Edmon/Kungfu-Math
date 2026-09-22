@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 /** Footer yang selalu muncul di setiap halaman */
 export default function Footer() {
   return (

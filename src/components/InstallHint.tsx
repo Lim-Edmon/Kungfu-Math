@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 import { useEffect, useState } from 'react';
 
 /**

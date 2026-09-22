@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { CharacterId, InputMode } from '../lib/types';
 import type { DifficultyLevel } from '../lib/levels';
@@ -19,6 +21,8 @@ interface GameProps {
   mode: InputMode;
   characterId: CharacterId;
   level: DifficultyLevel;
+  /** true = bola bergerak (mode ketangkasan) */
+  agility?: boolean;
   onExit: () => void;
   onFinish: (score: number, grade: string) => void;
 }
@@ -28,7 +32,8 @@ interface GameProps {
  * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol Keluar.
  */
 function createNumbersFromQuestion(
-  question: MathQuestion
+  question: MathQuestion,
+  agility = false
 ): FloatingNumber[] {
   const count = question.candidates.length;
   const cols = count <= 4 ? 2 : count <= 6 ? 3 : 4;
@@ -62,6 +67,9 @@ function createNumbersFromQuestion(
 
   return question.candidates.map((value, index) => {
     const isBomb = question.bombIndexes.includes(index);
+    // Kecepatan acak untuk mode ketangkasan (% per detik)
+    const speed = 12 + Math.random() * 22;
+    const angle = Math.random() * Math.PI * 2;
     return {
       id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
       value,
@@ -69,6 +77,8 @@ function createNumbersFromQuestion(
       y: positions[index].y,
       isBomb,
       sliced: false,
+      vx: agility ? Math.cos(angle) * speed : 0,
+      vy: agility ? Math.sin(angle) * speed : 0,
     };
   });
 }
@@ -163,6 +173,7 @@ export default function Game({
   mode,
   characterId,
   level,
+  agility = false,
   onExit,
   onFinish,
 }: GameProps) {
@@ -196,7 +207,7 @@ export default function Game({
       maxCombo: 0,
       timeLeft: ROUND_SECONDS,
       question: q,
-      numbers: createNumbersFromQuestion(q),
+      numbers: createNumbersFromQuestion(q, agility),
       selectedIds: [],
       questionsSolved: 0,
       stage: 1,
@@ -247,10 +258,10 @@ export default function Game({
     return {
       ...prev,
       question: q,
-      numbers: createNumbersFromQuestion(q),
+      numbers: createNumbersFromQuestion(q, agility),
       selectedIds: [],
     };
-  }, []);
+  }, [agility]);
 
   /**
    * Kehilangan nyawa.
@@ -272,11 +283,18 @@ export default function Game({
         const restoreSet = new Set(restoreIds);
         // Kembalikan bola + token baru agar animasi "hilang" tidak nempel (opacity 0)
         const token = Date.now();
-        numbers = updatedNumbers.map((n) =>
-          restoreSet.has(n.id) && !n.isBomb
-            ? { ...n, sliced: false, id: `${n.id}-r${token}` }
-            : n
-        );
+        numbers = updatedNumbers.map((n) => {
+          if (!(restoreSet.has(n.id) && !n.isBomb)) return n;
+          const speed = 12 + Math.random() * 22;
+          const angle = Math.random() * Math.PI * 2;
+          return {
+            ...n,
+            sliced: false,
+            id: `${n.id}-r${token}`,
+            vx: agility ? Math.cos(angle) * speed : n.vx,
+            vy: agility ? Math.sin(angle) * speed : n.vy,
+          };
+        });
       }
 
       const newLives = prev.lives - 1;
@@ -310,7 +328,7 @@ export default function Game({
         selectedIds: [],
       };
     },
-    [onFinish, clearNextQuestionTimeout]
+    [onFinish, clearNextQuestionTimeout, agility]
   );
 
   const handleNumberTap = useCallback(
@@ -427,6 +445,88 @@ export default function Game({
     [state.status, loseLife, spawnNextQuestion, clearNextQuestionTimeout, onFinish]
   );
 
+
+  // Mode ketangkasan: bola mantul di arena
+  useEffect(() => {
+    if (!agility || state.status !== 'playing') return;
+
+    let raf = 0;
+    let last = performance.now();
+    const xMin = 12;
+    const xMax = 88;
+    const yMin = 18;
+    const yMax = 72;
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      setState((prev) => {
+        if (prev.status !== 'playing') return prev;
+        let changed = false;
+        let numbers = prev.numbers.map((n) => {
+          if (n.sliced) return n;
+          const vx = n.vx ?? 0;
+          const vy = n.vy ?? 0;
+          if (vx === 0 && vy === 0) return n;
+          changed = true;
+          let x = n.x + vx * dt;
+          let y = n.y + vy * dt;
+          let nvx = vx;
+          let nvy = vy;
+          if (x < xMin) {
+            x = xMin;
+            nvx = Math.abs(vx);
+          } else if (x > xMax) {
+            x = xMax;
+            nvx = -Math.abs(vx);
+          }
+          if (y < yMin) {
+            y = yMin;
+            nvy = Math.abs(vy);
+          } else if (y > yMax) {
+            y = yMax;
+            nvy = -Math.abs(vy);
+          }
+          return { ...n, x, y, vx: nvx, vy: nvy };
+        });
+
+        // Tolak pelan antar bola supaya jarang numpuk exact (kurangi double-hit)
+        const minDist = 11;
+        for (let i = 0; i < numbers.length; i++) {
+          if (numbers[i].sliced) continue;
+          for (let j = i + 1; j < numbers.length; j++) {
+            if (numbers[j].sliced) continue;
+            const dx = numbers[j].x - numbers[i].x;
+            const dy = numbers[j].y - numbers[i].y;
+            const d = Math.hypot(dx, dy) || 0.01;
+            if (d >= minDist) continue;
+            changed = true;
+            const push = ((minDist - d) / 2) * 0.35;
+            const nx = dx / d;
+            const ny = dy / d;
+            const a = { ...numbers[i] };
+            const b = { ...numbers[j] };
+            a.x = Math.max(xMin, Math.min(xMax, a.x - nx * push));
+            a.y = Math.max(yMin, Math.min(yMax, a.y - ny * push));
+            b.x = Math.max(xMin, Math.min(xMax, b.x + nx * push));
+            b.y = Math.max(yMin, Math.min(yMax, b.y + ny * push));
+            numbers[i] = a;
+            numbers[j] = b;
+          }
+        }
+
+        if (!changed) return prev;
+        return { ...prev, numbers };
+      });
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [agility, state.status]);
+
   const hearts = Array.from({ length: INITIAL_LIVES }, (_, i) =>
     i < state.lives ? '❤️' : '🖤'
   );
@@ -444,8 +544,10 @@ export default function Game({
   const slicedThisGestureRef = useRef<Set<string>>(new Set());
 
   /**
-   * Mode Slice: hit-test geometri (bukan elementFromPoint).
-   * Jadi tetap jalan di laptop (drag mouse) & HP (geser jari).
+   * Mode Slice: hit-test geometri.
+   * Jika beberapa bola tumpuk di titik yang sama → hanya 1 bola
+   * (terdekat ke pointer; kalau sama, yang digambar paling atas).
+   * Satu frame = maksimal satu hit, supaya nyawa tidak −2 sekaligus.
    */
   const handleSliceMove = useCallback(
     (clientX: number, clientY: number) => {
@@ -459,18 +561,34 @@ export default function Game({
       const px = ((clientX - rect.left) / rect.width) * 100;
       const py = ((clientY - rect.top) / rect.height) * 100;
 
-      // Radius hit kira-kira ukuran bola (persen terhadap arena)
       const hitR = 9;
+      const hitR2 = hitR * hitR;
 
-      for (const num of state.numbers) {
-        if (num.sliced) continue;
-        if (slicedThisGestureRef.current.has(num.id)) continue;
+      let best: FloatingNumber | null = null;
+      let bestDist = Infinity;
+      let bestIndex = -1;
+
+      state.numbers.forEach((num, index) => {
+        if (num.sliced) return;
+        if (slicedThisGestureRef.current.has(num.id)) return;
         const dx = num.x - px;
         const dy = num.y - py;
-        if (dx * dx + dy * dy <= hitR * hitR) {
-          slicedThisGestureRef.current.add(num.id);
-          handleNumberTap(num);
+        const d2 = dx * dx + dy * dy;
+        if (d2 > hitR2) return;
+        // Lebih dekat menang; jarak hampir sama → index lebih besar = "di depan"
+        if (
+          d2 < bestDist - 0.0001 ||
+          (Math.abs(d2 - bestDist) <= 0.0001 && index > bestIndex)
+        ) {
+          best = num;
+          bestDist = d2;
+          bestIndex = index;
         }
+      });
+
+      if (best) {
+        slicedThisGestureRef.current.add(best.id);
+        handleNumberTap(best);
       }
     },
     [mode, state.numbers, handleNumberTap]
@@ -535,14 +653,14 @@ export default function Game({
         </div>
 
         <div
-          className={`game-arena ${mode === 'slice' ? 'slice-mode' : ''}`}
+          className={`game-arena ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
           ref={arenaRef}
           onPointerDown={onArenaPointerDown}
           onPointerMove={onArenaPointerMove}
           onPointerUp={onArenaPointerUp}
           onPointerCancel={onArenaPointerUp}
         >
-          {state.numbers.map((num) => {
+          {state.numbers.map((num, index) => {
             const hitClass = num.sliced
               ? mode === 'slice'
                 ? 'hit-slice'
@@ -558,6 +676,7 @@ export default function Game({
                   left: `${num.x}%`,
                   top: `${num.y}%`,
                   opacity: num.sliced ? undefined : 1,
+                  zIndex: num.sliced ? 0 : index + 1,
                 }}
                 disabled={num.sliced}
                 onClick={() => {

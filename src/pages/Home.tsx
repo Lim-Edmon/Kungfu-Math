@@ -1,5 +1,7 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 import { useState, useEffect } from 'react';
-import type { CharacterId, DisplayMode, InputMode } from '../lib/types';
+import type { ArenaStyle, CharacterId, DisplayMode, InputMode } from '../lib/types';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
@@ -11,13 +13,14 @@ interface HomeProps {
   onStartGame: (
     mode: InputMode,
     characterId: CharacterId,
-    level: DifficultyLevel
+    level: DifficultyLevel,
+    arena: ArenaStyle
   ) => void;
-  onOpenSettings: () => void;
 }
 
-export default function Home({ onStartGame, onOpenSettings }: HomeProps) {
+export default function Home({ onStartGame }: HomeProps) {
   const [mode, setMode] = useState<InputMode>('slice');
+  const [arena, setArena] = useState<ArenaStyle>('static');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [level, setLevel] = useState<DifficultyLevel>('pemula');
@@ -29,6 +32,7 @@ export default function Home({ onStartGame, onOpenSettings }: HomeProps) {
   useEffect(() => {
     const progress = loadProgress();
     setMode(progress.preferredMode);
+    setArena(progress.preferredArena ?? 'static');
     setDisplayMode(progress.displayMode);
     setLevel(progress.preferredLevel ?? 'pemula');
     setHighScores(progress.highScores ?? {});
@@ -63,6 +67,11 @@ export default function Home({ onStartGame, onOpenSettings }: HomeProps) {
     updateProgress({ preferredMode: newMode });
   };
 
+  const handleArenaChange = (next: ArenaStyle) => {
+    setArena(next);
+    updateProgress({ preferredArena: next });
+  };
+
   const handleSelectCharacter = (id: CharacterId) => {
     setSelectedCharacterId(id);
     updateProgress({ preferredCharacter: id });
@@ -88,20 +97,8 @@ export default function Home({ onStartGame, onOpenSettings }: HomeProps) {
   return (
     <div className="home-page">
       <header className="home-header">
-        <div className="home-header-row">
-          <div>
-            <h1 className="logo">Kungfu Math</h1>
-            <p className="tagline">Latih hitung cepat ala pendekar!</p>
-          </div>
-          <button
-            type="button"
-            className="btn-settings"
-            onClick={onOpenSettings}
-            aria-label="Pengaturan"
-          >
-            ⚙️
-          </button>
-        </div>
+        <h1 className="logo">Kungfu Math</h1>
+        <p className="tagline">Latih hitung cepat ala pendekar!</p>
       </header>
 
       {/* Mode Tampilan */}
@@ -197,6 +194,31 @@ export default function Home({ onStartGame, onOpenSettings }: HomeProps) {
         </div>
       </section>
 
+      {/* 2b. Arena */}
+      <section className="mode-section arena-section">
+        <h2>2b. Arena</h2>
+        <div className="mode-buttons">
+          <button
+            type="button"
+            className={`mode-btn ${arena === 'static' ? 'active' : ''}`}
+            onClick={() => handleArenaChange('static')}
+          >
+            <span className="mode-icon">🎯</span>
+            <span className="mode-name">Diam</span>
+            <span className="mode-desc">Angka diam di tempat</span>
+          </button>
+          <button
+            type="button"
+            className={`mode-btn ${arena === 'agility' ? 'active' : ''}`}
+            onClick={() => handleArenaChange('agility')}
+          >
+            <span className="mode-icon">💨</span>
+            <span className="mode-name">Ketangkasan</span>
+            <span className="mode-desc">Angka bergerak & mantul</span>
+          </button>
+        </div>
+      </section>
+
       {/* 3. Pendekar */}
       <section className="character-section">
         <h2>3. Pilih Pendekar</h2>
@@ -255,7 +277,7 @@ export default function Home({ onStartGame, onOpenSettings }: HomeProps) {
           disabled={!canStart}
           onClick={() => {
             if (selectedCharacterId) {
-              onStartGame(mode, selectedCharacterId, level);
+              onStartGame(mode, selectedCharacterId, level, arena);
             }
           }}
         >

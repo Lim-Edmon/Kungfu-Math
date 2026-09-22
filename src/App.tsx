@@ -1,20 +1,42 @@
-import { useState } from 'react';
+/**
+ * Kungfu Math — Root component (Home / Game / Settings / Result / Dojo).
+ * ---------------------------------------------------------------------
+ * Author       : Lim Edmon
+ * Built with   : AI coding partners (including Grok / xAI and others),
+ *                as development assistants — final product owned by author
+ * Created      : September 2026
+ * Project type : Personal educational game (consumer / community)
+ *
+ * Disclaimer:
+ * This code is provided as-is for the Kungfu Math learning game. It has
+ * not been audited for production-grade security or reliability, and it
+ * is NOT intended for handling payments, sensitive personal data, or any
+ * safety-critical use. Feel free to use, modify, and learn from it for
+ * this project — please keep this author credit if you copy or
+ * redistribute any part of it elsewhere.
+ * ---------------------------------------------------------------------
+ */
+
+import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import Game from './pages/Game';
 import Settings from './pages/Settings';
+import Dojo from './pages/Dojo';
 import Footer from './components/Footer';
-import type { CharacterId, InputMode } from './lib/types';
+import BottomNav, { type NavTab } from './components/BottomNav';
+import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
-import { recordGameResult } from './lib/storage';
+import { loadProgress, recordGameResult } from './lib/storage';
 import './styles/theme.css';
 import './App.css';
 
-type Screen = 'home' | 'game' | 'result' | 'settings';
+type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
+  const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [selectedLevel, setSelectedLevel] =
@@ -24,12 +46,28 @@ function App() {
   const [lastHighScore, setLastHighScore] = useState(0);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
+  // Tema & preferensi dari localStorage saat app dibuka (bukan hanya di Home)
+  useEffect(() => {
+    const p = loadProgress();
+    document.documentElement.setAttribute(
+      'data-theme',
+      p.displayMode || 'siang'
+    );
+    setSelectedMode(p.preferredMode || 'slice');
+    setSelectedLevel(p.preferredLevel || 'pemula');
+    if (p.preferredCharacter) {
+      setSelectedCharacterId(p.preferredCharacter);
+    }
+  }, []);
+
   const handleStartGame = (
     mode: InputMode,
     characterId: CharacterId,
-    level: DifficultyLevel
+    level: DifficultyLevel,
+    arena: ArenaStyle = 'static'
   ) => {
     setSelectedMode(mode);
+    setSelectedArena(arena);
     setSelectedCharacterId(characterId);
     setSelectedLevel(level);
     setScreen('game');
@@ -59,17 +97,28 @@ function App() {
     }
   };
 
+  const handleNav = (tab: NavTab) => {
+    if (tab === 'home') setScreen('home');
+    else if (tab === 'dojo') setScreen('dojo');
+    else setScreen('settings');
+  };
+
+  const navActive: NavTab =
+    screen === 'settings' ? 'settings' : screen === 'dojo' ? 'dojo' : 'home';
+
+  const showChrome = screen !== 'game';
   const levelLabel = getLevelById(selectedLevel).labelId;
 
   return (
-    <div className={`app ${screen === 'game' ? 'is-game' : ''}`}>
+    <div
+      className={`app ${screen === 'game' ? 'is-game' : ''} ${
+        showChrome ? 'has-bottom-nav' : ''
+      }`}
+    >
       <main className="app-main">
-        {screen === 'home' && (
-          <Home
-            onStartGame={handleStartGame}
-            onOpenSettings={() => setScreen('settings')}
-          />
-        )}
+        {screen === 'home' && <Home onStartGame={handleStartGame} />}
+
+        {screen === 'dojo' && <Dojo />}
 
         {screen === 'settings' && (
           <Settings onBack={() => setScreen('home')} />
@@ -80,6 +129,7 @@ function App() {
             mode={selectedMode}
             characterId={selectedCharacterId}
             level={selectedLevel}
+            agility={selectedArena === 'agility'}
             onExit={handleExitGame}
             onFinish={handleFinishGame}
           />
@@ -108,14 +158,26 @@ function App() {
                 className="btn-ghost"
                 onClick={handleExitGame}
               >
-                Kembali ke Home
+                Kembali ke Latihan
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => setScreen('dojo')}
+              >
+                Lihat Dojo
               </button>
             </div>
           </div>
         )}
       </main>
 
-      {screen !== 'game' && <Footer />}
+      {showChrome && (
+        <>
+          <Footer />
+          <BottomNav active={navActive} onChange={handleNav} />
+        </>
+      )}
     </div>
   );
 }

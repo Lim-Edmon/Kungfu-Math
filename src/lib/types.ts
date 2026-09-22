@@ -1,6 +1,11 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 /** Tipe data utama untuk Kungfu Math */
 
 export type InputMode = 'slice' | 'tap';
+
+/** Diam = bola statis; agility = bola bergerak (mantul) */
+export type ArenaStyle = 'static' | 'agility';
 
 export type DisplayMode = 'siang' | 'malam' | 'nyaman';
 
@@ -35,6 +40,7 @@ export interface PlayerProgress {
   highScores: Record<string, number>;
   unlockedStages: number[];
   preferredMode: InputMode;
+  preferredArena: ArenaStyle;
   preferredCharacter: CharacterId;
   preferredLevel: import('./levels').DifficultyLevel;
   displayMode: DisplayMode;
@@ -50,6 +56,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   highScores: {},
   unlockedStages: [1, 2, 3, 4, 5],
   preferredMode: 'slice',
+  preferredArena: 'static',
   preferredCharacter: 'hong-yi',
   preferredLevel: 'pemula',
   displayMode: 'siang',

@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 import type { Character } from './types';
 
 /** Daftar karakter Kungfu Math (versi imut/chibi) */

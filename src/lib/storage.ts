@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 import type { PlayerProgress } from './types';
 import { DEFAULT_PROGRESS } from './types';
 

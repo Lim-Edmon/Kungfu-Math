@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 import type { CharacterId, InputMode } from './types';
 import type { MathQuestion } from './mathGenerator';
 
@@ -10,6 +12,9 @@ export interface FloatingNumber {
   y: number; // 0–100 (%)
   isBomb: boolean;
   sliced: boolean;
+  /** Kecepatan mode ketangkasan (% arena per detik) */
+  vx?: number;
+  vy?: number;
 }
 
 export interface GameState {

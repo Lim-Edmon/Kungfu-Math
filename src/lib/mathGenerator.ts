@@ -1,3 +1,5 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
 /**
  * Generator soal matematika untuk Kungfu Math
  * Selalu ada minimal 1 pasangan valid di antara kandidat.
