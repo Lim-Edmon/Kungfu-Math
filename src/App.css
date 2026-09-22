@@ -511,34 +511,37 @@
 
 /* Animasi hit Tap vs Slice */
 .floating-number.hit-tap {
-  animation: hitTap 0.3s ease-out forwards;
+  animation: hitTap 0.45s ease-out forwards;
   pointer-events: none;
-  z-index: 5;
+  z-index: 20;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 
-/* Efek Tap: lingkaran ripple */
+/* Efek Tap: ripple besar + flash */
 .floating-number.hit-tap::after {
   content: '';
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
   border-radius: 50%;
-  border: 3px solid var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
-  animation: tapRipple 0.3s ease-out forwards;
+  border: 4px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  animation: tapRipple 0.45s ease-out forwards;
   pointer-events: none;
+  z-index: 21;
 }
 
 @keyframes tapRipple {
   0% {
-    transform: scale(0.4);
+    transform: scale(0.5);
     opacity: 1;
   }
   100% {
-    transform: scale(2.8);
+    transform: scale(4);
     opacity: 0;
   }
 }
@@ -1276,6 +1279,18 @@
 
 .game-arena.agility-mode .floating-number {
   transition: none;
+  /* Area sentuh lebih besar (Tap + bola bergerak) */
+  width: 64px;
+  height: 64px;
+  font-size: 1.3rem;
+}
+
+/* Zona klik ekstra di sekitar bola (tak terlihat) */
+.game-arena.agility-mode .floating-number::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
 }
 
 .arena-section {

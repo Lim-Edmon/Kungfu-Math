@@ -33,7 +33,9 @@ interface GameProps {
  */
 function createNumbersFromQuestion(
   question: MathQuestion,
-  agility = false
+  agility = false,
+  /** 1 = normal; <1 lebih pelan (Tap + ketangkasan lebih mudah) */
+  speedScale = 1
 ): FloatingNumber[] {
   const count = question.candidates.length;
   const cols = count <= 4 ? 2 : count <= 6 ? 3 : 4;
@@ -68,7 +70,7 @@ function createNumbersFromQuestion(
   return question.candidates.map((value, index) => {
     const isBomb = question.bombIndexes.includes(index);
     // Kecepatan acak untuk mode ketangkasan (% per detik)
-    const speed = 12 + Math.random() * 22;
+    const speed = (12 + Math.random() * 22) * speedScale;
     const angle = Math.random() * Math.PI * 2;
     return {
       id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
@@ -207,7 +209,7 @@ export default function Game({
       maxCombo: 0,
       timeLeft: ROUND_SECONDS,
       question: q,
-      numbers: createNumbersFromQuestion(q, agility),
+      numbers: createNumbersFromQuestion(q, agility, mode === 'tap' && agility ? 0.7 : 1),
       selectedIds: [],
       questionsSolved: 0,
       stage: 1,
@@ -258,10 +260,10 @@ export default function Game({
     return {
       ...prev,
       question: q,
-      numbers: createNumbersFromQuestion(q, agility),
+      numbers: createNumbersFromQuestion(q, agility, mode === 'tap' && agility ? 0.7 : 1),
       selectedIds: [],
     };
-  }, [agility]);
+  }, [agility, mode];
 
   /**
    * Kehilangan nyawa.
@@ -285,7 +287,9 @@ export default function Game({
         const token = Date.now();
         numbers = updatedNumbers.map((n) => {
           if (!(restoreSet.has(n.id) && !n.isBomb)) return n;
-          const speed = 12 + Math.random() * 22;
+          const speed =
+            (12 + Math.random() * 22) *
+            (mode === 'tap' && agility ? 0.7 : 1);
           const angle = Math.random() * Math.PI * 2;
           return {
             ...n,
@@ -328,7 +332,7 @@ export default function Game({
         selectedIds: [],
       };
     },
-    [onFinish, clearNextQuestionTimeout, agility]
+    [onFinish, clearNextQuestionTimeout, agility, mode]
   );
 
   const handleNumberTap = useCallback(
@@ -679,8 +683,11 @@ export default function Game({
                   zIndex: num.sliced ? 0 : index + 1,
                 }}
                 disabled={num.sliced}
-                onClick={() => {
-                  if (mode === 'tap' && !num.sliced) handleNumberTap(num);
+                onPointerDown={(e) => {
+                  if (mode !== 'tap' || num.sliced) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleNumberTap(num);
                 }}
               >
                 {num.isBomb ? '💣' : num.value}
