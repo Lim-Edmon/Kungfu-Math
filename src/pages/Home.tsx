@@ -99,7 +99,7 @@ export default function Home({ onStartGame }: HomeProps) {
       <header className="home-header">
         <div className="logo-row">
           <img
-            src="/logo.svg"
+            src="/logo.png"
             alt=""
             className="app-logo"
             width={48}
