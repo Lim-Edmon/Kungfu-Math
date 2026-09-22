@@ -1041,9 +1041,7 @@
 
 /* Landscape HP: arena tetap usable */
 @media (max-height: 500px) and (orientation: landscape) {
-  .game-screen {
-    /* landscape: tetap full fixed */
-  }
+  /* landscape: game-screen sudah position fixed full */
 
   .game-question {
     padding: 6px 10px;
@@ -1472,4 +1470,27 @@
   height: 100% !important;
   object-fit: contain !important;
   object-position: center bottom;
+}
+
+
+/* Cara main + pendekar satu blok alur */
+.play-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  margin: 4px 0 8px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.play-setup .mode-section,
+.play-setup .character-section {
+  margin: 0;
+}
+
+.play-setup .character-section {
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-border);
 }

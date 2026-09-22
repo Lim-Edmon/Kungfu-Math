@@ -178,34 +178,9 @@ export default function Home({ onStartGame }: HomeProps) {
         </div>
       </section>
 
-      {/* 2. Cara Main */}
-      <section className="mode-section">
-        <h2>2. Pilih Cara Main</h2>
-        <div className="mode-buttons">
-          <button
-            type="button"
-            className={`mode-btn ${mode === 'slice' ? 'active' : ''}`}
-            onClick={() => handleModeChange('slice')}
-          >
-            <span className="mode-icon">⚔️</span>
-            <span className="mode-name">Slice</span>
-            <span className="mode-desc">Geser untuk tebas</span>
-          </button>
-          <button
-            type="button"
-            className={`mode-btn ${mode === 'tap' ? 'active' : ''}`}
-            onClick={() => handleModeChange('tap')}
-          >
-            <span className="mode-icon">👊</span>
-            <span className="mode-name">Tap</span>
-            <span className="mode-desc">Tekan angka yang benar</span>
-          </button>
-        </div>
-      </section>
-
-      {/* 2b. Arena */}
+      {/* 2. Arena */}
       <section className="mode-section arena-section">
-        <h2>2b. Arena</h2>
+        <h2>2. Arena</h2>
         <div className="mode-buttons">
           <button
             type="button"
@@ -228,12 +203,39 @@ export default function Home({ onStartGame }: HomeProps) {
         </div>
       </section>
 
-      {/* 3. Pendekar */}
+      {/* 3–4. Cara main + pendekar (satu alur) */}
+      <div className="play-setup">
+      <section className="mode-section">
+        <h2>3. Pilih Cara Main</h2>
+        <div className="mode-buttons">
+          <button
+            type="button"
+            className={`mode-btn ${mode === 'slice' ? 'active' : ''}`}
+            onClick={() => handleModeChange('slice')}
+          >
+            <span className="mode-icon">⚔️</span>
+            <span className="mode-name">Slice</span>
+            <span className="mode-desc">Geser untuk tebas</span>
+          </button>
+          <button
+            type="button"
+            className={`mode-btn ${mode === 'tap' ? 'active' : ''}`}
+            onClick={() => handleModeChange('tap')}
+          >
+            <span className="mode-icon">👊</span>
+            <span className="mode-name">Tap</span>
+            <span className="mode-desc">Tekan angka yang benar</span>
+          </button>
+        </div>
+      </section>
+
       <section className="character-section">
-        <h2>3. Pilih Pendekar</h2>
+        <h2>4. Pilih Pendekar</h2>
         <p className="character-hint">
-          {mode === 'slice' ? 'Bersenjata' : 'Tangan kosong'} — wajib dipilih
-          sebelum mulai
+          {mode === 'slice'
+            ? 'Slice → pendekar bersenjata'
+            : 'Tap → pendekar tangan kosong'}{' '}
+          — wajib dipilih sebelum mulai
         </p>
         <div className="character-list">
           {characters.map((char) => {
@@ -278,6 +280,7 @@ export default function Home({ onStartGame }: HomeProps) {
           })}
         </div>
       </section>
+      </div>
 
       <div className="start-section">
         <button
