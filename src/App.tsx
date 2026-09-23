@@ -151,6 +151,7 @@ function App() {
       const best = Math.max(prevHs, score);
       const ahs = { ...(prog.adventureHighScores || {}), [cityId]: best };
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
+      if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
       let msg = '';
       if (score >= city.targetScore) {
         const nextId = getNextCityId(cityId);

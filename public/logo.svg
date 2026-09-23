@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFB74D"/>
+      <stop offset="55%" stop-color="#FF7043"/>
+      <stop offset="100%" stop-color="#D84315"/>
+    </linearGradient>
+    <linearGradient id="b" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#FFE0B2"/>
+      <stop offset="100%" stop-color="#FFCC80"/>
+    </linearGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EF5350"/>
+      <stop offset="100%" stop-color="#B71C1C"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="64" fill="url(#a)"/>
+  <circle cx="64" cy="64" r="54" fill="#FFF8E1"/>
+  <!-- staff -->
+  <rect x="22" y="48" width="9" height="52" rx="4" fill="#6D4C41" transform="rotate(-32 26 74)"/>
+  <!-- body -->
+  <ellipse cx="64" cy="102" rx="26" ry="14" fill="url(#c)"/>
+  <path d="M42 76c2 16 10 24 22 26 12-2 20-10 22-26z" fill="url(#c)"/>
+  <!-- head -->
+  <circle cx="64" cy="54" r="26" fill="url(#b)"/>
+  <circle cx="64" cy="28" r="11" fill="#3E2723"/>
+  <path d="M40 50c2-20 14-26 24-28 10 2 22 8 24 28-8-10-16-14-24-14s-16 4-24 14z" fill="#3E2723"/>
+  <path d="M42 48c14-6 30-6 44 0" stroke="#E53935" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="54" cy="54" rx="3.5" ry="4.5" fill="#212121"/>
+  <ellipse cx="74" cy="54" rx="3.5" ry="4.5" fill="#212121"/>
+  <circle cx="55.5" cy="52.5" r="1.2" fill="#fff"/>
+  <circle cx="75.5" cy="52.5" r="1.2" fill="#fff"/>
+  <path d="M55 65c5 6 13 6 18 0" stroke="#E53935" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="46" cy="61" rx="4.5" ry="2.5" fill="#FF8A80" opacity=".5"/>
+  <ellipse cx="82" cy="61" rx="4.5" ry="2.5" fill="#FF8A80" opacity=".5"/>
+  <!-- math badge -->
+  <circle cx="98" cy="98" r="22" fill="#FFF8E1" stroke="#FF8F00" stroke-width="4"/>
+  <text x="98" y="106" text-anchor="middle" font-family="Segoe UI,system-ui,sans-serif" font-size="22" font-weight="800" fill="#E65100">×+</text>
+</svg>

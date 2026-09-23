@@ -65,16 +65,38 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
 
-  if (typeof p.adventureCityId === 'string' && p.adventureCityId.length < 40) {
+  // Kota yang valid di jalur MVP (hindari id lama seperti shanghai)
+  const VALID_CITIES = new Set([
+    'jakarta',
+    'bandung',
+    'yogyakarta',
+    'surabaya',
+    'medan',
+    'makassar',
+    'bali',
+    'malacca',
+    'penang',
+    'kuala-lumpur',
+    'singapore',
+  ]);
+
+  if (typeof p.adventureCityId === 'string' && VALID_CITIES.has(p.adventureCityId)) {
     next.adventureCityId = p.adventureCityId;
+  } else {
+    next.adventureCityId = 'jakarta';
   }
+
   if (Array.isArray(p.adventureUnlocked)) {
     next.adventureUnlocked = p.adventureUnlocked
-      .filter((x): x is string => typeof x === 'string')
+      .filter((x): x is string => typeof x === 'string' && VALID_CITIES.has(x))
       .slice(0, 20);
-    if (next.adventureUnlocked.length === 0) {
-      next.adventureUnlocked = [...DEFAULT_PROGRESS.adventureUnlocked];
-    }
+  }
+  // Jakarta SELALU terbuka dari awal (progress lama / import tanpa jakarta)
+  if (!next.adventureUnlocked.includes('jakarta')) {
+    next.adventureUnlocked = ['jakarta', ...next.adventureUnlocked];
+  }
+  if (next.adventureUnlocked.length === 0) {
+    next.adventureUnlocked = ['jakarta'];
   }
   if (p.adventureHighScores && typeof p.adventureHighScores === 'object') {
     const ahs: Record<string, number> = {};

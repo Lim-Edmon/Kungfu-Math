@@ -218,7 +218,12 @@ export default function Home({ onStartGame }: HomeProps) {
             <div className="level-list">
               {ADVENTURE_CITIES.map((c) => {
                 const prog = loadProgress();
-                const unlocked = (prog.adventureUnlocked || ['jakarta']).includes(c.id);
+                const unlockedList = prog.adventureUnlocked?.length
+                  ? prog.adventureUnlocked
+                  : ['jakarta'];
+                // Jakarta selalu bisa dipilih
+                const unlocked =
+                  c.id === 'jakarta' || unlockedList.includes(c.id);
                 const hs = prog.adventureHighScores?.[c.id] ?? 0;
                 return (
                   <button
