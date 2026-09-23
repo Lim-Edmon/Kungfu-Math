@@ -52,6 +52,12 @@ export interface PlayerProgress {
   language: 'id' | 'en';
   /** Nama panggilan pemain (muncul di game) */
   playerName: string;
+  /** Mode petualangan: kota aktif */
+  adventureCityId: string;
+  /** Kota yang sudah terbuka */
+  adventureUnlocked: string[];
+  /** Skor terbaik per kota */
+  adventureHighScores: Record<string, number>;
 }
 
 export const DEFAULT_PROGRESS: PlayerProgress = {
@@ -67,4 +73,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   totalGamesPlayed: 0,
   language: 'id',
   playerName: '',
+  adventureCityId: 'shanghai',
+  adventureUnlocked: ['shanghai'],
+  adventureHighScores: {},
 };

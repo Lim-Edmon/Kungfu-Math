@@ -32,8 +32,18 @@ export default function Dojo() {
       </header>
 
       <section className="dojo-card dojo-hero">
-        <div className="dojo-hero-emoji" aria-hidden>
-          {character?.emoji ?? '🥋'}
+        <div className="dojo-hero-avatar" aria-hidden>
+          {character?.imageCloseSrc || character?.imageSrc ? (
+            <img
+              src={character.imageCloseSrc || character.imageSrc}
+              alt=""
+              className="dojo-hero-img"
+              width={56}
+              height={56}
+            />
+          ) : (
+            <span className="dojo-hero-emoji">{character?.emoji ?? '🥋'}</span>
+          )}
         </div>
         <div>
           <p className="dojo-hero-name">{displayName}</p>

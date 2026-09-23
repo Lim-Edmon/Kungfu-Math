@@ -64,6 +64,27 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     next.language = p.language as 'id' | 'en';
   }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
+
+  if (typeof p.adventureCityId === 'string' && p.adventureCityId.length < 40) {
+    next.adventureCityId = p.adventureCityId;
+  }
+  if (Array.isArray(p.adventureUnlocked)) {
+    next.adventureUnlocked = p.adventureUnlocked
+      .filter((x): x is string => typeof x === 'string')
+      .slice(0, 20);
+    if (next.adventureUnlocked.length === 0) {
+      next.adventureUnlocked = [...DEFAULT_PROGRESS.adventureUnlocked];
+    }
+  }
+  if (p.adventureHighScores && typeof p.adventureHighScores === 'object') {
+    const ahs: Record<string, number> = {};
+    for (const [k, v] of Object.entries(p.adventureHighScores as Record<string, unknown>)) {
+      const n = finiteNonNeg(v, MAX_SCORE);
+      if (n !== null) ahs[k] = n;
+    }
+    next.adventureHighScores = ahs;
+  }
+
   // isSubscribed: fase test — terima boolean, JANGAN dipakai sebagai kontrol bayar
   if (typeof p.isSubscribed === 'boolean') next.isSubscribed = p.isSubscribed;
 

@@ -1,5 +1,5 @@
 /* Service Worker Kungfu Math — cache shell agar bisa offline dasar */
-const CACHE = 'kungfu-math-v2';
+const CACHE = 'kungfu-math-v3';
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/favicon.png', '/icon-192.png', '/logo.png'];
 
 self.addEventListener('install', (event) => {

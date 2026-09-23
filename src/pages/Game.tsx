@@ -23,6 +23,8 @@ interface GameProps {
   level: DifficultyLevel;
   /** true = bola bergerak (mode ketangkasan) */
   agility?: boolean;
+  /** Petualangan: detik ditambah tiap jawaban benar */
+  timeBonusSec?: number;
   onExit: () => void;
   onFinish: (score: number, grade: string) => void;
 }
@@ -176,6 +178,7 @@ export default function Game({
   characterId,
   level,
   agility = false,
+  timeBonusSec = 0,
   onExit,
   onFinish,
 }: GameProps) {
@@ -459,12 +462,14 @@ export default function Game({
           if (mode === 'slice') sfx.slash();
           if (newCombo > 1) sfx.combo();
           else sfx.correct();
+          const bonus = timeBonusSec > 0 ? timeBonusSec : 0;
           const next: GameState = {
             ...prev,
             score: prev.score + points,
             combo: newCombo,
             maxCombo: Math.max(prev.maxCombo, newCombo),
             questionsSolved: prev.questionsSolved + 1,
+            timeLeft: bonus > 0 ? prev.timeLeft + bonus : prev.timeLeft,
             numbers: updatedNumbers,
             selectedIds: newSelectedIds,
           };
@@ -482,7 +487,7 @@ export default function Game({
         return loseLife(prev, updatedNumbers, newSelectedIds);
       });
     },
-    [state.status, loseLife, spawnNextQuestion, clearNextQuestionTimeout, onFinish]
+    [state.status, loseLife, spawnNextQuestion, clearNextQuestionTimeout, onFinish, timeBonusSec, mode]
   );
 
 

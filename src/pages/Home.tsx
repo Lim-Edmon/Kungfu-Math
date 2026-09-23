@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { ArenaStyle, CharacterId, DisplayMode, InputMode } from '../lib/types';
+import { ADVENTURE_CITIES } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
@@ -9,18 +10,23 @@ import { getCharactersByMode, getCharacterById } from '../lib/characters';
 import InstallHint from '../components/InstallHint';
 import { sfx } from '../lib/sound';
 
+export type PlayKind = 'latihan' | 'petualangan';
+
 interface HomeProps {
   onStartGame: (
     mode: InputMode,
     characterId: CharacterId,
     level: DifficultyLevel,
-    arena: ArenaStyle
+    arena: ArenaStyle,
+    playKind: PlayKind
   ) => void;
 }
 
 export default function Home({ onStartGame }: HomeProps) {
   const [mode, setMode] = useState<InputMode>('slice');
   const [arena, setArena] = useState<ArenaStyle>('static');
+  const [playKind, setPlayKind] = useState<PlayKind>('latihan');
+  const [cityId, setCityId] = useState('shanghai');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [level, setLevel] = useState<DifficultyLevel>('pemula');
@@ -33,6 +39,7 @@ export default function Home({ onStartGame }: HomeProps) {
     const progress = loadProgress();
     setMode(progress.preferredMode);
     setArena(progress.preferredArena ?? 'static');
+    setCityId(progress.adventureCityId ?? 'shanghai');
     setDisplayMode(progress.displayMode);
     setLevel(progress.preferredLevel ?? 'pemula');
     setHighScores(progress.highScores ?? {});
@@ -178,9 +185,67 @@ export default function Home({ onStartGame }: HomeProps) {
         </div>
       </section>
 
-      {/* 2. Arena */}
+      {/* 2. Jenis main */}
+      <section className="mode-section">
+        <h2>2. Jenis Main</h2>
+        <div className="mode-buttons">
+          <button
+            type="button"
+            className={`mode-btn ${playKind === 'latihan' ? 'active' : ''}`}
+            onClick={() => setPlayKind('latihan')}
+          >
+            <span className="mode-icon">📚</span>
+            <span className="mode-name">Latihan</span>
+            <span className="mode-desc">Timer 60 detik, level bebas</span>
+          </button>
+          <button
+            type="button"
+            className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''}`}
+            onClick={() => setPlayKind('petualangan')}
+          >
+            <span className="mode-icon">🌏</span>
+            <span className="mode-name">Petualangan</span>
+            <span className="mode-desc">Kota + bonus waktu</span>
+          </button>
+        </div>
+        {playKind === 'petualangan' && (
+          <div className="city-pick">
+            <p className="character-hint">Kota aktif (terbuka saja yang bisa dipilih)</p>
+            <div className="level-list">
+              {ADVENTURE_CITIES.map((c) => {
+                const prog = loadProgress();
+                const unlocked = (prog.adventureUnlocked || ['shanghai']).includes(c.id);
+                const hs = prog.adventureHighScores?.[c.id] ?? 0;
+                return (
+                  <button
+                    type="button"
+                    key={c.id}
+                    className={`level-btn ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
+                    disabled={!unlocked}
+                    onClick={() => {
+                      if (!unlocked) return;
+                      setCityId(c.id);
+                      updateProgress({ adventureCityId: c.id });
+                    }}
+                  >
+                    <strong>{c.nameId}</strong>
+                    <span>{c.blurbId}</span>
+                    <span className="level-highscore">
+                      Target {c.targetScore}
+                      {hs > 0 ? ` · Rekor ${hs}` : ''}
+                      {!unlocked ? ' · Terkunci' : ''}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 3. Arena */}
       <section className="mode-section arena-section">
-        <h2>2. Arena</h2>
+        <h2>3. Arena</h2>
         <div className="mode-buttons">
           <button
             type="button"
@@ -206,7 +271,7 @@ export default function Home({ onStartGame }: HomeProps) {
       {/* 3–4. Cara main + pendekar (satu alur) */}
       <div className="play-setup">
       <section className="mode-section">
-        <h2>3. Pilih Cara Main</h2>
+        <h2>4. Pilih Cara Main</h2>
         <div className="mode-buttons">
           <button
             type="button"
@@ -230,7 +295,7 @@ export default function Home({ onStartGame }: HomeProps) {
       </section>
 
       <section className="character-section">
-        <h2>4. Pilih Pendekar</h2>
+        <h2>5. Pilih Pendekar</h2>
         <p className="character-hint">
           {mode === 'slice'
             ? 'Slice → pendekar bersenjata'
@@ -289,7 +354,7 @@ export default function Home({ onStartGame }: HomeProps) {
           disabled={!canStart}
           onClick={() => {
             if (selectedCharacterId) {
-              onStartGame(mode, selectedCharacterId, level, arena);
+              onStartGame(mode, selectedCharacterId, level, arena, playKind);
             }
           }}
         >

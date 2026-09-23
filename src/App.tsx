@@ -18,7 +18,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import Home from './pages/Home';
+import Home, { type PlayKind } from './pages/Home';
 import Game from './pages/Game';
 import Settings from './pages/Settings';
 import Dojo from './pages/Dojo';
@@ -27,7 +27,8 @@ import BottomNav, { type NavTab } from './components/BottomNav';
 import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
-import { loadProgress, recordGameResult } from './lib/storage';
+import { loadProgress, recordGameResult, updateProgress } from './lib/storage';
+import { getCityById, getNextCityId } from './lib/adventure';
 import './styles/theme.css';
 import './App.css';
 
@@ -84,6 +85,8 @@ function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
   const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
+  const [playKind, setPlayKind] = useState<PlayKind>('latihan');
+  const [adventureUnlockedMsg, setAdventureUnlockedMsg] = useState('');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [selectedLevel, setSelectedLevel] =
@@ -111,12 +114,15 @@ function App() {
     mode: InputMode,
     characterId: CharacterId,
     level: DifficultyLevel,
-    arena: ArenaStyle = 'static'
+    arena: ArenaStyle = 'static',
+    kind: PlayKind = 'latihan'
   ) => {
     setSelectedMode(mode);
     setSelectedArena(arena);
     setSelectedCharacterId(characterId);
     setSelectedLevel(level);
+    setPlayKind(kind);
+    setAdventureUnlockedMsg('');
     setScreen('game');
   };
 
@@ -133,6 +139,34 @@ function App() {
     setLastGrade(grade);
     setLastHighScore(highScore);
     setIsNewRecord(neu);
+
+    if (playKind === 'petualangan') {
+      const prog = loadProgress();
+      const cityId = prog.adventureCityId || 'shanghai';
+      const city = getCityById(cityId);
+      const prevHs = prog.adventureHighScores?.[cityId] ?? 0;
+      const best = Math.max(prevHs, score);
+      const ahs = { ...(prog.adventureHighScores || {}), [cityId]: best };
+      let unlocked = [...(prog.adventureUnlocked || ['shanghai'])];
+      let msg = '';
+      if (score >= city.targetScore) {
+        const nextId = getNextCityId(cityId);
+        if (nextId && !unlocked.includes(nextId)) {
+          unlocked = [...unlocked, nextId];
+          msg = `Kota baru terbuka: ${getCityById(nextId).nameId}!`;
+        } else if (!nextId) {
+          msg = 'Semua kota MVP sudah dijelajahi!';
+        } else {
+          msg = `Target ${city.nameId} tercapai!`;
+        }
+      }
+      updateProgress({
+        adventureHighScores: ahs,
+        adventureUnlocked: unlocked,
+      });
+      setAdventureUnlockedMsg(msg);
+    }
+
     setScreen('result');
   };
 
@@ -177,6 +211,12 @@ function App() {
             characterId={selectedCharacterId}
             level={selectedLevel}
             agility={selectedArena === 'agility'}
+            timeBonusSec={
+              playKind === 'petualangan'
+                ? getCityById(loadProgress().adventureCityId || 'shanghai')
+                    .timeBonus
+                : 0
+            }
             onExit={handleExitGame}
             onFinish={handleFinishGame}
           />
@@ -199,7 +239,12 @@ function App() {
               </div>
               <p className="result-float-title">{headline.title}</p>
               <p className="result-float-sub">{headline.sub}</p>
-              <p className="result-level">Level: {levelLabel}</p>
+              {adventureUnlockedMsg && (
+                <p className="result-adventure">{adventureUnlockedMsg}</p>
+              )}
+              <p className="result-level">
+                {playKind === 'petualangan' ? 'Mode: Petualangan' : `Level: ${levelLabel}`}
+              </p>
               <p className="result-grade">Grade: {lastGrade}</p>
               <p className="result-score">Skor: {lastScore}</p>
               <p className="result-high">

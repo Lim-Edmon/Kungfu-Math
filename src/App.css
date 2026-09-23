@@ -456,29 +456,73 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
+  /* Border tegas + ring luar biar terpisah dari BG kota */
   border: 3px solid var(--color-primary);
-  background: var(--color-card);
+  outline: 2px solid color-mix(in srgb, var(--color-bg) 85%, #fff);
+  outline-offset: 0;
+  /* Sedikit 3D: highlight atas + bayangan bawah */
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      color-mix(in srgb, #fff 55%, var(--color-card)),
+      var(--color-card) 55%,
+      color-mix(in srgb, var(--color-card) 70%, #000) 100%
+    );
   color: var(--color-text);
   font-size: 1.25rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow);
+  box-shadow:
+    0 4px 0 color-mix(in srgb, var(--color-primary) 35%, #000),
+    0 6px 12px rgba(0, 0, 0, 0.28),
+    inset 0 2px 3px rgba(255, 255, 255, 0.45);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.1s ease, opacity 0.2s ease;
+  z-index: 5;
 }
 
 .floating-number:active {
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translate(-50%, -50%) scale(0.92) translateY(2px);
+  box-shadow:
+    0 2px 0 color-mix(in srgb, var(--color-primary) 35%, #000),
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
 }
 
 .floating-number.is-bomb {
   border-color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-card));
+  outline-color: color-mix(in srgb, var(--color-danger) 25%, #fff);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      color-mix(in srgb, #fff 40%, var(--color-danger)),
+      color-mix(in srgb, var(--color-danger) 20%, var(--color-card)) 60%,
+      color-mix(in srgb, var(--color-danger) 40%, #000) 100%
+    );
+  box-shadow:
+    0 4px 0 color-mix(in srgb, var(--color-danger) 50%, #000),
+    0 6px 12px rgba(0, 0, 0, 0.3),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
   font-size: 1.4rem;
+}
+
+/* Guideline BG kota (Petualangan): cukup keliatan, tidak mengalahkan bola */
+.game-arena.city-bg {
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+.game-arena.city-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .game-bottom-bar {
@@ -1493,4 +1537,38 @@
 .play-setup .character-section {
   padding-top: 4px;
   border-top: 1px dashed var(--color-border);
+}
+
+
+.dojo-hero-avatar {
+  flex-shrink: 0;
+}
+
+.dojo-hero-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  border: 2px solid var(--color-primary);
+  background: transparent;
+}
+
+.app-logo {
+  background: transparent;
+}
+
+.result-adventure {
+  font-weight: 800;
+  color: var(--color-accent);
+  animation: resultFloat 0.8s ease-out;
+}
+
+.city-pick {
+  margin-top: 12px;
+}
+
+.level-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
