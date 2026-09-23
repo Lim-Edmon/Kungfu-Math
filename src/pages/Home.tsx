@@ -144,7 +144,7 @@ export default function Home({ onStartGame }: HomeProps) {
             className={`display-btn ${displayMode === 'nyaman' ? 'active' : ''}`}
             onClick={() => handleDisplayChange('nyaman')}
           >
-            👁️ Nyaman Mata
+            👁️ Nyaman
           </button>
         </div>
       </section>

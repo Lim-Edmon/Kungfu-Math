@@ -1600,3 +1600,26 @@
   min-height: auto;
   padding: 0.55rem 0.4rem;
 }
+
+
+.adventure-target {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted, #666);
+  text-align: center;
+}
+
+/* Soft mood per kota (MVP tanpa gambar landmark) */
+.game-arena[data-city="jakarta"] {
+  background: linear-gradient(180deg, #fff3e0 0%, color-mix(in srgb, var(--color-bg) 70%, #ffcc80) 100%);
+}
+.game-arena[data-city="bali"] {
+  background: linear-gradient(180deg, #e0f7fa 0%, color-mix(in srgb, var(--color-bg) 65%, #80deea) 100%);
+}
+.game-arena[data-city="singapore"] {
+  background: linear-gradient(180deg, #e8eaf6 0%, color-mix(in srgb, var(--color-bg) 65%, #9fa8da) 100%);
+}
+.game-arena[data-city="kuala-lumpur"] {
+  background: linear-gradient(180deg, #fce4ec 0%, color-mix(in srgb, var(--color-bg) 65%, #f48fb1) 100%);
+}

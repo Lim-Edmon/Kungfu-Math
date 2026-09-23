@@ -25,6 +25,11 @@ interface GameProps {
   agility?: boolean;
   /** Petualangan: detik ditambah tiap jawaban benar */
   timeBonusSec?: number;
+  /** Petualangan: nama kota di HUD */
+  cityName?: string;
+  cityId?: string;
+  /** Petualangan: skor lolos ke kota berikutnya */
+  targetScore?: number;
   onExit: () => void;
   onFinish: (score: number, grade: string) => void;
 }
@@ -179,6 +184,9 @@ export default function Game({
   level,
   agility = false,
   timeBonusSec = 0,
+  cityName,
+  cityId,
+  targetScore,
   onExit,
   onFinish,
 }: GameProps) {
@@ -675,7 +683,8 @@ export default function Game({
           <div className="hud-left">
             <span className="hud-lives">{hearts.join('')}</span>
             <span className="hud-char">
-              {character?.emoji ?? '🥋'} {displayName} · {levelLabel}
+              {character?.emoji ?? '🥋'} {displayName}
+              {cityName ? ` · ${cityName}` : ` · ${levelLabel}`}
             </span>
           </div>
           <div className="hud-center">
@@ -699,6 +708,12 @@ export default function Game({
               ? 'Ketuk angka yang benar'
               : 'Tahan lalu geser melewati angka (mouse atau jari)'}
           </p>
+          {cityName && typeof targetScore === 'number' && (
+            <p className="adventure-target">
+              {cityName} · lolos ≥ {targetScore}
+              {timeBonusSec > 0 ? ` · benar +${timeBonusSec}s` : ''}
+            </p>
+          )}
         </div>
 
         <div className="game-char-banner">
@@ -727,6 +742,7 @@ export default function Game({
 
         <div
           className={`game-arena ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
+          data-city={cityId || undefined}
           ref={arenaRef}
           onPointerDown={onArenaPointerDown}
           onPointerMove={onArenaPointerMove}

@@ -219,6 +219,22 @@ function App() {
                 ? getAdventureDifficulty(adventureDiffId).timeBonus
                 : 0
             }
+            cityName={
+              playKind === 'petualangan'
+                ? getCityById(loadProgress().adventureCityId || 'jakarta').nameId
+                : undefined
+            }
+            cityId={
+              playKind === 'petualangan'
+                ? loadProgress().adventureCityId || 'jakarta'
+                : undefined
+            }
+            targetScore={
+              playKind === 'petualangan'
+                ? getCityById(loadProgress().adventureCityId || 'jakarta')
+                    .targetScore
+                : undefined
+            }
             onExit={handleExitGame}
             onFinish={handleFinishGame}
           />

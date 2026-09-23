@@ -3,6 +3,7 @@
 import { loadProgress } from '../lib/storage';
 import { LEVELS } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
+import { ADVENTURE_CITIES } from '../lib/adventure';
 
 /**
  * Dojo = ringkasan progress pemain (skor per level, total main).
@@ -68,6 +69,35 @@ export default function Dojo() {
               </span>
             </li>
           ))}
+        </ul>
+      </section>
+
+
+      <section className="dojo-section">
+        <h2>Petualangan</h2>
+        <ul className="dojo-score-list">
+          {ADVENTURE_CITIES.map((c) => {
+            const unlocked = (progress.adventureUnlocked || ['jakarta']).includes(
+              c.id
+            );
+            const hs = progress.adventureHighScores?.[c.id] ?? 0;
+            return (
+              <li key={c.id} className="dojo-score-row">
+                <div>
+                  <span className="dojo-score-label">
+                    {unlocked ? '📌' : '🔒'} {c.nameId}
+                  </span>
+                  <span className="dojo-score-desc">
+                    Lolos ≥ {c.targetScore}
+                    {unlocked ? '' : ' · terkunci'}
+                  </span>
+                </div>
+                <span className="dojo-score-value">
+                  {hs > 0 ? hs : '—'}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </section>
 
