@@ -153,6 +153,45 @@ function startFallbackBgm(): void {
   }, 400);
 }
 
+let cityAudio: HTMLAudioElement | null = null;
+let cityMissing: Record<string, boolean> = {};
+
+/** Musik kota opsional: /cities/music/{id}.mp3 — loop, fallback diam */
+export function playCityMusic(cityId: string | undefined) {
+  stopCityMusic();
+  if (!cityId || isMuted()) return;
+  if (cityMissing[cityId]) return;
+  try {
+    const a = new Audio(`/cities/music/${cityId}.mp3`);
+    a.loop = true;
+    a.volume = 0.35;
+    a.preload = 'auto';
+    a.addEventListener('error', () => {
+      cityMissing[cityId] = true;
+      cityAudio = null;
+    });
+    cityAudio = a;
+    void a.play().catch(() => {
+      cityMissing[cityId] = true;
+      cityAudio = null;
+    });
+  } catch {
+    cityMissing[cityId] = true;
+  }
+}
+
+export function stopCityMusic() {
+  if (cityAudio) {
+    try {
+      cityAudio.pause();
+      cityAudio.src = '';
+    } catch {
+      /* ignore */
+    }
+    cityAudio = null;
+  }
+}
+
 export const sfx = {
   tap(): void {
     playOrFallback('tap', () => {

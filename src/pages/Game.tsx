@@ -14,7 +14,8 @@ import {
   POINTS_PER_SOLVE,
   COMBO_BONUS,
 } from '../lib/gameTypes';
-import { sfx } from '../lib/sound';
+import { cityBgCandidates } from '../lib/adventure';
+import { sfx, playCityMusic, stopCityMusic } from '../lib/sound';
 import { loadProgress } from '../lib/storage';
 
 interface GameProps {
@@ -230,6 +231,11 @@ export default function Game({
     sfx.startBgm();
     return () => sfx.stopBgm();
   }, []);
+
+  useEffect(() => {
+    if (cityId) playCityMusic(cityId);
+    return () => stopCityMusic();
+  }, [cityId]);
 
   // READY → 3 → 2 → 1 → GO → main
   useEffect(() => {
@@ -743,6 +749,15 @@ export default function Game({
         <div
           className={`game-arena ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
           data-city={cityId || undefined}
+          style={
+            cityId
+              ? {
+                  backgroundImage: `linear-gradient(color-mix(in srgb, var(--color-bg) 45%, transparent), color-mix(in srgb, var(--color-bg) 55%, transparent)), url(${cityBgCandidates(cityId)[0]})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center bottom',
+                }
+              : undefined
+          }
           ref={arenaRef}
           onPointerDown={onArenaPointerDown}
           onPointerMove={onArenaPointerMove}

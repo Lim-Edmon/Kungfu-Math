@@ -1140,11 +1140,11 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
@@ -1199,7 +1199,7 @@
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  padding: 16px 16px 24px;
+  padding: 20px 16px 20px;
   box-sizing: border-box;
 }
 
@@ -1212,7 +1212,7 @@
 .dojo-sub {
   color: var(--color-text-muted);
   font-size: 0.9rem;
-  margin: 4px 0 16px;
+  margin: 4px 0 20px;
 }
 
 .dojo-card {
@@ -1246,6 +1246,12 @@
   margin: 0;
 }
 
+.dojo-section {
+  margin-top: 1.35rem;
+}
+.dojo-section:first-of-type {
+  margin-top: 0.5rem;
+}
 .dojo-section h2 {
   font-size: 1rem;
   margin: 0 0 10px;
@@ -1622,4 +1628,27 @@
 }
 .game-arena[data-city="kuala-lumpur"] {
   background: linear-gradient(180deg, #fce4ec 0%, color-mix(in srgb, var(--color-bg) 65%, #f48fb1) 100%);
+}
+
+
+.adventure-map-wrap {
+  margin: 0.75rem 0 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  background: #e0f7fa;
+}
+.adventure-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 160px;
+  max-height: 220px;
+}
+.adventure-map-legend {
+  margin: 0;
+  padding: 6px 10px 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  background: var(--color-card);
 }

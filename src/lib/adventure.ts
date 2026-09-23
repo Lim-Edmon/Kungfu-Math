@@ -3,6 +3,10 @@
 /**
  * Mode Petualangan — jalur MVP:
  * Jakarta → … → Bali → Malaysia → Singapore
+ *
+ * Asset opsional (ganti file saja, nama = id kota):
+ *   public/cities/bg/{id}.webp   (atau .png / .jpg)
+ *   public/cities/music/{id}.mp3
  */
 
 export interface AdventureCity {
@@ -15,9 +19,11 @@ export interface AdventureCity {
   targetScore: number;
   blurbId: string;
   landmarkId: string;
+  /** Posisi pin di peta jalur (0–100 % dari kiri/atas viewBox) */
+  mapX: number;
+  mapY: number;
 }
 
-/** Tingkat sulit Petualangan = beda bonus detik tiap jawaban benar */
 export interface AdventureDifficulty {
   id: string;
   labelId: string;
@@ -39,6 +45,7 @@ export function getAdventureDifficulty(id: string): AdventureDifficulty {
   );
 }
 
+/** Jakarta 500, tiap kota berikutnya +50 */
 export const ADVENTURE_CITIES: AdventureCity[] = [
   {
     id: 'jakarta',
@@ -46,9 +53,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Jakarta',
     countryId: 'id',
     theme: 'jakarta',
-    targetScore: 200,
+    targetScore: 500,
     blurbId: 'Ibukota — mulai petualangan',
     landmarkId: 'Monas',
+    mapX: 12,
+    mapY: 58,
   },
   {
     id: 'bandung',
@@ -56,9 +65,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Bandung',
     countryId: 'id',
     theme: 'bandung',
-    targetScore: 250,
+    targetScore: 550,
     blurbId: 'Kota kembang di pegunungan',
     landmarkId: 'Gedung Sate',
+    mapX: 20,
+    mapY: 62,
   },
   {
     id: 'yogyakarta',
@@ -66,9 +77,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Yogyakarta',
     countryId: 'id',
     theme: 'yogyakarta',
-    targetScore: 300,
+    targetScore: 600,
     blurbId: 'Kota budaya & Malioboro',
     landmarkId: 'Tugu Yogya',
+    mapX: 28,
+    mapY: 68,
   },
   {
     id: 'surabaya',
@@ -76,9 +89,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Surabaya',
     countryId: 'id',
     theme: 'surabaya',
-    targetScore: 350,
+    targetScore: 650,
     blurbId: 'Kota pahlawan & pelabuhan',
     landmarkId: 'Tugu Pahlawan',
+    mapX: 36,
+    mapY: 64,
   },
   {
     id: 'medan',
@@ -86,9 +101,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Medan',
     countryId: 'id',
     theme: 'medan',
-    targetScore: 400,
+    targetScore: 700,
     blurbId: 'Gerbang Sumatera',
     landmarkId: 'Masjid Raya',
+    mapX: 8,
+    mapY: 28,
   },
   {
     id: 'makassar',
@@ -96,9 +113,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Makassar',
     countryId: 'id',
     theme: 'makassar',
-    targetScore: 450,
+    targetScore: 750,
     blurbId: 'Pantai Losari',
     landmarkId: 'Losari',
+    mapX: 48,
+    mapY: 72,
   },
   {
     id: 'bali',
@@ -106,9 +125,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Bali',
     countryId: 'id',
     theme: 'bali',
-    targetScore: 500,
+    targetScore: 800,
     blurbId: 'Pulau yang dikenal dunia',
     landmarkId: 'Pura laut',
+    mapX: 42,
+    mapY: 78,
   },
   {
     id: 'malacca',
@@ -116,9 +137,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Malacca',
     countryId: 'my',
     theme: 'malacca',
-    targetScore: 550,
+    targetScore: 850,
     blurbId: 'Kota tua bersejarah',
     landmarkId: 'Stadthuys',
+    mapX: 58,
+    mapY: 42,
   },
   {
     id: 'penang',
@@ -126,9 +149,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Penang',
     countryId: 'my',
     theme: 'penang',
-    targetScore: 600,
+    targetScore: 900,
     blurbId: 'George Town penuh warna',
     landmarkId: 'Street art',
+    mapX: 62,
+    mapY: 32,
   },
   {
     id: 'kuala-lumpur',
@@ -136,9 +161,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Kuala Lumpur',
     countryId: 'my',
     theme: 'kuala-lumpur',
-    targetScore: 700,
+    targetScore: 950,
     blurbId: 'Ibukota Malaysia',
     landmarkId: 'Petronas',
+    mapX: 68,
+    mapY: 38,
   },
   {
     id: 'singapore',
@@ -146,9 +173,11 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameEn: 'Singapore',
     countryId: 'sg',
     theme: 'singapore',
-    targetScore: 800,
+    targetScore: 1000,
     blurbId: 'Kota modern tetangga',
     landmarkId: 'Marina Bay',
+    mapX: 78,
+    mapY: 55,
   },
 ];
 
@@ -160,4 +189,17 @@ export function getNextCityId(currentId: string): string | null {
   const i = ADVENTURE_CITIES.findIndex((c) => c.id === currentId);
   if (i < 0 || i >= ADVENTURE_CITIES.length - 1) return null;
   return ADVENTURE_CITIES[i + 1].id;
+}
+
+/** Path asset kota — ganti file di folder, nama = id kota */
+export function cityBgCandidates(cityId: string): string[] {
+  return [
+    `/cities/bg/${cityId}.webp`,
+    `/cities/bg/${cityId}.png`,
+    `/cities/bg/${cityId}.jpg`,
+  ];
+}
+
+export function cityMusicSrc(cityId: string): string {
+  return `/cities/music/${cityId}.mp3`;
 }

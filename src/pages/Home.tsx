@@ -8,6 +8,7 @@ import { LEVELS } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
 import { getCharactersByMode, getCharacterById, getDefaultCharacter } from '../lib/characters';
 import InstallHint from '../components/InstallHint';
+import AdventureMap from '../components/AdventureMap';
 import { sfx } from '../lib/sound';
 
 export type PlayKind = 'latihan' | 'petualangan';
@@ -214,6 +215,14 @@ export default function Home({ onStartGame }: HomeProps) {
         </div>
         {playKind === 'petualangan' && (
           <div className="city-pick">
+            <AdventureMap
+              unlockedIds={loadProgress().adventureUnlocked || ['jakarta']}
+              activeId={cityId}
+              onSelect={(id) => {
+                setCityId(id);
+                updateProgress({ adventureCityId: id });
+              }}
+            />
             <p className="character-hint">Pilih kota yang sudah terbuka</p>
             <div className="level-list">
               {ADVENTURE_CITIES.map((c) => {
