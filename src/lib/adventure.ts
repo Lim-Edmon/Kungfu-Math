@@ -192,14 +192,20 @@ export function getNextCityId(currentId: string): string | null {
 }
 
 /** Path asset kota — ganti file di folder, nama = id kota */
+/** Nama file = id kota, huruf kecil. Format BG: webp | png | jpg */
 export function cityBgCandidates(cityId: string): string[] {
+  const id = (cityId || 'default').toLowerCase();
   return [
-    `/cities/bg/${cityId}.webp`,
-    `/cities/bg/${cityId}.png`,
-    `/cities/bg/${cityId}.jpg`,
+    `/cities/bg/${id}.webp`,
+    `/cities/bg/${id}.png`,
+    `/cities/bg/${id}.jpg`,
+    `/cities/bg/default.webp`,
+    `/cities/bg/default.png`,
   ];
 }
 
+/** Musik kota: hanya .mp3, nama huruf kecil. Tidak ada → BGM default */
 export function cityMusicSrc(cityId: string): string {
-  return `/cities/music/${cityId}.mp3`;
+  const id = (cityId || '').toLowerCase();
+  return `/cities/music/${id}.mp3`;
 }

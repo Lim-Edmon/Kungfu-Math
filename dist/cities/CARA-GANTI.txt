@@ -1,31 +1,27 @@
-Kota — ganti BG & musik tanpa ubah kode
-=====================================
+Kota — BG & musik (ganti file saja)
+===================================
 
-Folder:
-  public/cities/bg/{id-kota}.webp   (disarankan)
-  public/cities/bg/{id-kota}.png
-  public/cities/bg/{id-kota}.jpg
-  public/cities/music/{id-kota}.mp3
+NAMA FILE
+- Harus HURUF KECIL = id kota (jakarta, bukan Jakarta)
+- Di server Linux/Vercel: case-sensitive → Jakarta.webp TIDAK kepakai
 
-Contoh Jakarta:
-  public/cities/bg/jakarta.webp
-  public/cities/music/jakarta.mp3
+BG (gambar)
+- Format yang dibaca (urut coba): .webp → .png → .jpg
+- Format lain (gif, avif, bmp) TIDAK otomatis
+- Disarankan: WebP, lebar 720–1080px, < 120KB
+- Contoh: public/cities/bg/jakarta.webp
+- Tidak ada file kota → pakai public/cities/bg/default.webp
 
-Id kota MVP: jakarta, bandung, yogyakarta, surabaya, medan,
-makassar, bali, malacca, penang, kuala-lumpur, singapore
+MUSIK
+- Hanya .mp3: public/cities/music/jakarta.mp3
+- Loop 8–15 detik, < 150KB
+- Tidak ada file → pakai /sounds/bgm.mp3 (default)
+- Belum ada bgm.mp3 juga → diam (tanpa error)
 
-BG (gambar):
-  - Format kecil: WebP (paling hemat) atau JPG
-  - Resolusi: lebar 720–1080 px cukup (HP + tablet)
-  - Ukuran file target: < 120 KB (maks ~200 KB)
-  - Jangan terlalu tajam/rame — opacity di game sudah dikurangi
+Id MVP: jakarta bandung yogyakarta surabaya medan makassar
+         bali malacca penang kuala-lumpur singapore
 
-Musik:
-  - MP3, loop ~8–15 detik
-  - Mono atau stereo, bitrate 64–96 kbps
-  - Target: < 150 KB per file
-  - Kalau file tidak ada → pakai BGM default / diam
-
-Peta:
-  - Pin diatur di src/lib/adventure.ts (mapX, mapY = persen 0–100)
-  - Bukan di file gambar — ganti gambar peta nanti cukup sesuaikan mapX/mapY
+PETA / PIN
+- mapX mapY di src/lib/adventure.ts (persen 0–100 pada peta SVG jalur)
+- Bukan lat-long dunia nyata; posisi relatif jalur MVP
+- Nanti peta dunia: berikan basemap → koordinat bisa dibantu mapping

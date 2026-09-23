@@ -157,26 +157,50 @@ let cityAudio: HTMLAudioElement | null = null;
 let cityMissing: Record<string, boolean> = {};
 
 /** Musik kota opsional: /cities/music/{id}.mp3 — loop, fallback diam */
-export function playCityMusic(cityId: string | undefined) {
-  stopCityMusic();
-  if (!cityId || isMuted()) return;
-  if (cityMissing[cityId]) return;
+function playDefaultBgmLoop() {
+  if (isMuted()) return;
   try {
-    const a = new Audio(`/cities/music/${cityId}.mp3`);
+    stopCityMusic();
+    const a = new Audio('/sounds/bgm.mp3');
     a.loop = true;
-    a.volume = 0.35;
+    a.volume = 0.3;
     a.preload = 'auto';
     a.addEventListener('error', () => {
-      cityMissing[cityId] = true;
       cityAudio = null;
     });
     cityAudio = a;
     void a.play().catch(() => {
-      cityMissing[cityId] = true;
       cityAudio = null;
     });
   } catch {
-    cityMissing[cityId] = true;
+    /* diam */
+  }
+}
+
+/** Musik kota (mp3 huruf kecil). Gagal / tidak ada → /sounds/bgm.mp3 */
+export function playCityMusic(cityId: string | undefined) {
+  stopCityMusic();
+  if (isMuted()) return;
+  const id = (cityId || '').toLowerCase();
+  if (!id || cityMissing[id]) {
+    playDefaultBgmLoop();
+    return;
+  }
+  try {
+    const a = new Audio(`/cities/music/${id}.mp3`);
+    a.loop = true;
+    a.volume = 0.35;
+    a.preload = 'auto';
+    const fail = () => {
+      cityMissing[id] = true;
+      playDefaultBgmLoop();
+    };
+    a.addEventListener('error', fail);
+    cityAudio = a;
+    void a.play().catch(fail);
+  } catch {
+    cityMissing[id] = true;
+    playDefaultBgmLoop();
   }
 }
 
