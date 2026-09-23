@@ -1,9 +1,8 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
 /**
- * Mode Petualangan — MVP 1
+ * Mode Petualangan — jalur MVP:
  * Jakarta → … → Bali → Malaysia → Singapore
- * Urutan negara lain: review nanti.
  */
 
 export interface AdventureCity {
@@ -12,12 +11,32 @@ export interface AdventureCity {
   nameEn: string;
   countryId: string;
   theme: string;
-  /** Threshold skor untuk buka kota berikutnya (run tetap ~60 dtk) */
+  /** Skor minimum agar kota berikutnya terbuka */
   targetScore: number;
-  /** Detik ditambah tiap jawaban benar (default normal; difficulty override di UI nanti) */
-  timeBonus: number;
   blurbId: string;
   landmarkId: string;
+}
+
+/** Tingkat sulit Petualangan = beda bonus detik tiap jawaban benar */
+export interface AdventureDifficulty {
+  id: string;
+  labelId: string;
+  timeBonus: number;
+  descId: string;
+}
+
+export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
+  { id: 'mudah', labelId: 'Mudah', timeBonus: 5, descId: '+5 dtk tiap benar' },
+  { id: 'normal', labelId: 'Normal', timeBonus: 3, descId: '+3 dtk tiap benar' },
+  { id: 'sulit', labelId: 'Sulit', timeBonus: 2, descId: '+2 dtk tiap benar' },
+  { id: 'master', labelId: 'Master', timeBonus: 1, descId: '+1 dtk tiap benar' },
+  { id: 'extreme', labelId: 'Extreme', timeBonus: 0, descId: 'Tanpa bonus waktu' },
+];
+
+export function getAdventureDifficulty(id: string): AdventureDifficulty {
+  return (
+    ADVENTURE_DIFFICULTIES.find((d) => d.id === id) ?? ADVENTURE_DIFFICULTIES[1]
+  );
 }
 
 export const ADVENTURE_CITIES: AdventureCity[] = [
@@ -28,7 +47,6 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'jakarta',
     targetScore: 200,
-    timeBonus: 3,
     blurbId: 'Ibukota — mulai petualangan',
     landmarkId: 'Monas',
   },
@@ -39,7 +57,6 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'bandung',
     targetScore: 250,
-    timeBonus: 3,
     blurbId: 'Kota kembang di pegunungan',
     landmarkId: 'Gedung Sate',
   },
@@ -50,7 +67,6 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'yogyakarta',
     targetScore: 300,
-    timeBonus: 3,
     blurbId: 'Kota budaya & Malioboro',
     landmarkId: 'Tugu Yogya',
   },
@@ -61,7 +77,6 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'surabaya',
     targetScore: 350,
-    timeBonus: 3,
     blurbId: 'Kota pahlawan & pelabuhan',
     landmarkId: 'Tugu Pahlawan',
   },
@@ -72,7 +87,6 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'medan',
     targetScore: 400,
-    timeBonus: 3,
     blurbId: 'Gerbang Sumatera',
     landmarkId: 'Masjid Raya',
   },
@@ -83,8 +97,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'makassar',
     targetScore: 450,
-    timeBonus: 3,
-    blurbId: 'Pantai Losari & timur Indonesia',
+    blurbId: 'Pantai Losari',
     landmarkId: 'Losari',
   },
   {
@@ -94,8 +107,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'id',
     theme: 'bali',
     targetScore: 500,
-    timeBonus: 3,
-    blurbId: 'Pulau yang paling dikenal dunia',
+    blurbId: 'Pulau yang dikenal dunia',
     landmarkId: 'Pura laut',
   },
   {
@@ -105,8 +117,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'my',
     theme: 'malacca',
     targetScore: 550,
-    timeBonus: 3,
-    blurbId: 'Kota tua bersejarah Malaysia',
+    blurbId: 'Kota tua bersejarah',
     landmarkId: 'Stadthuys',
   },
   {
@@ -116,9 +127,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'my',
     theme: 'penang',
     targetScore: 600,
-    timeBonus: 3,
     blurbId: 'George Town penuh warna',
-    landmarkId: 'Street art Penang',
+    landmarkId: 'Street art',
   },
   {
     id: 'kuala-lumpur',
@@ -127,8 +137,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'my',
     theme: 'kuala-lumpur',
     targetScore: 700,
-    timeBonus: 3,
-    blurbId: 'Ibukota Malaysia yang megah',
+    blurbId: 'Ibukota Malaysia',
     landmarkId: 'Petronas',
   },
   {
@@ -138,8 +147,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'sg',
     theme: 'singapore',
     targetScore: 800,
-    timeBonus: 3,
-    blurbId: 'Ujung MVP — kota global tetangga',
+    blurbId: 'Kota modern tetangga',
     landmarkId: 'Marina Bay',
   },
 ];

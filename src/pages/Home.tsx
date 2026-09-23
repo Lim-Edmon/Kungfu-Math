@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { ArenaStyle, CharacterId, DisplayMode, InputMode } from '../lib/types';
-import { ADVENTURE_CITIES } from '../lib/adventure';
+import { ADVENTURE_CITIES, ADVENTURE_DIFFICULTIES } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
@@ -18,7 +18,8 @@ interface HomeProps {
     characterId: CharacterId,
     level: DifficultyLevel,
     arena: ArenaStyle,
-    playKind: PlayKind
+    playKind: PlayKind,
+    adventureDiffId?: string
   ) => void;
 }
 
@@ -27,6 +28,7 @@ export default function Home({ onStartGame }: HomeProps) {
   const [arena, setArena] = useState<ArenaStyle>('static');
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
   const [cityId, setCityId] = useState('jakarta');
+  const [adventureDiffId, setAdventureDiffId] = useState('normal');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [level, setLevel] = useState<DifficultyLevel>('pemula');
@@ -198,7 +200,7 @@ export default function Home({ onStartGame }: HomeProps) {
           >
             <span className="mode-icon">📚</span>
             <span className="mode-name">Latihan</span>
-            <span className="mode-desc">Timer 60 detik, level bebas</span>
+            <span className="mode-desc">Waktu tetap 60 detik</span>
           </button>
           <button
             type="button"
@@ -207,12 +209,12 @@ export default function Home({ onStartGame }: HomeProps) {
           >
             <span className="mode-icon">🌏</span>
             <span className="mode-name">Petualangan</span>
-            <span className="mode-desc">Kota + bonus waktu</span>
+            <span className="mode-desc">Jelajah kota · bonus waktu</span>
           </button>
         </div>
         {playKind === 'petualangan' && (
           <div className="city-pick">
-            <p className="character-hint">Kota aktif (terbuka saja yang bisa dipilih)</p>
+            <p className="character-hint">Pilih kota yang sudah terbuka</p>
             <div className="level-list">
               {ADVENTURE_CITIES.map((c) => {
                 const prog = loadProgress();
@@ -231,15 +233,32 @@ export default function Home({ onStartGame }: HomeProps) {
                     }}
                   >
                     <strong>{c.nameId}</strong>
-                    <span>{c.blurbId}</span>
+                    <span>{c.blurbId} · {c.landmarkId}</span>
                     <span className="level-highscore">
-                      Target {c.targetScore}
+                      Lolos ≥ {c.targetScore}
                       {hs > 0 ? ` · Rekor ${hs}` : ''}
                       {!unlocked ? ' · Terkunci' : ''}
                     </span>
                   </button>
                 );
               })}
+            </div>
+            <h3 className="subsection-title">Tingkat petualangan</h3>
+            <p className="character-hint">
+              Bonus detik ditambah setiap jawaban benar (waktu awal tetap 60 detik)
+            </p>
+            <div className="mode-buttons adventure-diff-buttons">
+              {ADVENTURE_DIFFICULTIES.map((d) => (
+                <button
+                  type="button"
+                  key={d.id}
+                  className={`mode-btn ${adventureDiffId === d.id ? 'active' : ''}`}
+                  onClick={() => setAdventureDiffId(d.id)}
+                >
+                  <span className="mode-name">{d.labelId}</span>
+                  <span className="mode-desc">{d.descId}</span>
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -300,9 +319,8 @@ export default function Home({ onStartGame }: HomeProps) {
         <h2>5. Pilih Pendekar</h2>
         <p className="character-hint">
           {mode === 'slice'
-            ? 'Slice → pendekar bersenjata'
-            : 'Tap → pendekar tangan kosong'}{' '}
-          — wajib dipilih sebelum mulai
+            ? 'Slice — pendekar bersenjata'
+            : 'Tap — pendekar tangan kosong'}
         </p>
         <div className="character-list">
           {characters.map((char) => {
@@ -356,11 +374,22 @@ export default function Home({ onStartGame }: HomeProps) {
           disabled={!canStart}
           onClick={() => {
             if (selectedCharacterId) {
-              onStartGame(mode, selectedCharacterId, level, arena, playKind);
+              onStartGame(
+                mode,
+                selectedCharacterId,
+                level,
+                arena,
+                playKind,
+                playKind === 'petualangan' ? adventureDiffId : undefined
+              );
             }
           }}
         >
-          {canStart ? 'Mulai Latihan' : 'Pilih Pendekar Dulu'}
+          {canStart
+            ? playKind === 'petualangan'
+              ? 'Mulai Petualangan'
+              : 'Mulai Latihan'
+            : 'Pilih Pendekar Dulu'}
         </button>
       </div>
 

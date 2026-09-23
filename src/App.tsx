@@ -28,7 +28,7 @@ import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
 import { loadProgress, recordGameResult, updateProgress } from './lib/storage';
-import { getCityById, getNextCityId } from './lib/adventure';
+import { getCityById, getNextCityId, getAdventureDifficulty } from './lib/adventure';
 import './styles/theme.css';
 import './App.css';
 
@@ -86,6 +86,7 @@ function App() {
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
   const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
+  const [adventureDiffId, setAdventureDiffId] = useState('normal');
   const [adventureUnlockedMsg, setAdventureUnlockedMsg] = useState('');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
@@ -115,13 +116,15 @@ function App() {
     characterId: CharacterId,
     level: DifficultyLevel,
     arena: ArenaStyle = 'static',
-    kind: PlayKind = 'latihan'
+    kind: PlayKind = 'latihan',
+    diffId: string = 'normal'
   ) => {
     setSelectedMode(mode);
     setSelectedArena(arena);
     setSelectedCharacterId(characterId);
     setSelectedLevel(level);
     setPlayKind(kind);
+    setAdventureDiffId(diffId || 'normal');
     setAdventureUnlockedMsg('');
     setScreen('game');
   };
@@ -213,8 +216,7 @@ function App() {
             agility={selectedArena === 'agility'}
             timeBonusSec={
               playKind === 'petualangan'
-                ? getCityById(loadProgress().adventureCityId || 'jakarta')
-                    .timeBonus
+                ? getAdventureDifficulty(adventureDiffId).timeBonus
                 : 0
             }
             onExit={handleExitGame}
@@ -243,7 +245,9 @@ function App() {
                 <p className="result-adventure">{adventureUnlockedMsg}</p>
               )}
               <p className="result-level">
-                {playKind === 'petualangan' ? 'Mode: Petualangan' : `Level: ${levelLabel}`}
+                {playKind === 'petualangan'
+                  ? `Petualangan · ${getCityById(loadProgress().adventureCityId || 'jakarta').nameId}`
+                  : `Level: ${levelLabel}`}
               </p>
               <p className="result-grade">Grade: {lastGrade}</p>
               <p className="result-score">Skor: {lastScore}</p>

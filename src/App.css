@@ -1572,3 +1572,31 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+
+.dojo-tips-section {
+  margin-top: 1.75rem;
+  padding-top: 0.5rem;
+}
+
+.dojo-tips {
+  margin-top: 0.75rem;
+}
+
+.subsection-title {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.adventure-diff-buttons {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.adventure-diff-buttons .mode-btn {
+  min-height: auto;
+  padding: 0.55rem 0.4rem;
+}

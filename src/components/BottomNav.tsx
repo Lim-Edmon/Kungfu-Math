@@ -38,7 +38,7 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
         <span className="bottom-nav-icon" aria-hidden>
           ⚙️
         </span>
-        <span className="bottom-nav-label">Atur</span>
+        <span className="bottom-nav-label">Pengaturan</span>
       </button>
     </nav>
   );

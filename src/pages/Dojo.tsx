@@ -71,7 +71,7 @@ export default function Dojo() {
         </ul>
       </section>
 
-      <section className="dojo-section">
+      <section className="dojo-section dojo-tips-section">
         <h2>Tips singkat</h2>
         <ul className="dojo-tips">
           <li>
@@ -91,7 +91,7 @@ export default function Dojo() {
 
       <p className="dojo-note">
         Main di tab <strong>Latihan</strong> untuk menambah rekor. Progress
-        tersimpan di HP ini — bisa dipindah lewat kode di <strong>Atur</strong>.
+        tersimpan di HP ini — bisa dipindah lewat kode di <strong>Pengaturan</strong>.
       </p>
     </div>
   );
