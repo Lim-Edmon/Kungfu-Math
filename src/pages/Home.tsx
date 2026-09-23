@@ -6,7 +6,7 @@ import { ADVENTURE_CITIES } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
-import { getCharactersByMode, getCharacterById } from '../lib/characters';
+import { getCharactersByMode, getCharacterById, getDefaultCharacter } from '../lib/characters';
 import InstallHint from '../components/InstallHint';
 import { sfx } from '../lib/sound';
 
@@ -26,7 +26,7 @@ export default function Home({ onStartGame }: HomeProps) {
   const [mode, setMode] = useState<InputMode>('slice');
   const [arena, setArena] = useState<ArenaStyle>('static');
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
-  const [cityId, setCityId] = useState('shanghai');
+  const [cityId, setCityId] = useState('jakarta');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [level, setLevel] = useState<DifficultyLevel>('pemula');
@@ -39,7 +39,7 @@ export default function Home({ onStartGame }: HomeProps) {
     const progress = loadProgress();
     setMode(progress.preferredMode);
     setArena(progress.preferredArena ?? 'static');
-    setCityId(progress.adventureCityId ?? 'shanghai');
+    setCityId(progress.adventureCityId ?? 'jakarta');
     setDisplayMode(progress.displayMode);
     setLevel(progress.preferredLevel ?? 'pemula');
     setHighScores(progress.highScores ?? {});
@@ -50,7 +50,8 @@ export default function Home({ onStartGame }: HomeProps) {
     if (savedChar && savedChar.mode === progress.preferredMode) {
       setSelectedCharacterId(progress.preferredCharacter);
     } else {
-      setSelectedCharacterId(null);
+      const def = getDefaultCharacter(progress.preferredMode || 'slice');
+      setSelectedCharacterId(def.id);
     }
 
     setReady(true);
@@ -70,8 +71,9 @@ export default function Home({ onStartGame }: HomeProps) {
 
   const handleModeChange = (newMode: InputMode) => {
     setMode(newMode);
-    setSelectedCharacterId(null);
-    updateProgress({ preferredMode: newMode });
+    const def = getDefaultCharacter(newMode);
+    setSelectedCharacterId(def.id);
+    updateProgress({ preferredMode: newMode, preferredCharacter: def.id });
   };
 
   const handleArenaChange = (next: ArenaStyle) => {
@@ -214,7 +216,7 @@ export default function Home({ onStartGame }: HomeProps) {
             <div className="level-list">
               {ADVENTURE_CITIES.map((c) => {
                 const prog = loadProgress();
-                const unlocked = (prog.adventureUnlocked || ['shanghai']).includes(c.id);
+                const unlocked = (prog.adventureUnlocked || ['jakarta']).includes(c.id);
                 const hs = prog.adventureHighScores?.[c.id] ?? 0;
                 return (
                   <button

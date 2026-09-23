@@ -142,12 +142,12 @@ function App() {
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
-      const cityId = prog.adventureCityId || 'shanghai';
+      const cityId = prog.adventureCityId || 'jakarta';
       const city = getCityById(cityId);
       const prevHs = prog.adventureHighScores?.[cityId] ?? 0;
       const best = Math.max(prevHs, score);
       const ahs = { ...(prog.adventureHighScores || {}), [cityId]: best };
-      let unlocked = [...(prog.adventureUnlocked || ['shanghai'])];
+      let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       let msg = '';
       if (score >= city.targetScore) {
         const nextId = getNextCityId(cityId);
@@ -213,7 +213,7 @@ function App() {
             agility={selectedArena === 'agility'}
             timeBonusSec={
               playKind === 'petualangan'
-                ? getCityById(loadProgress().adventureCityId || 'shanghai')
+                ? getCityById(loadProgress().adventureCityId || 'jakarta')
                     .timeBonus
                 : 0
             }

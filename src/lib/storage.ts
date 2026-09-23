@@ -18,10 +18,10 @@ const LEVEL_IDS = new Set(['pemula', 'dasar', 'menengah', 'mahir', 'master']);
 const CHAR_IDS = new Set([
   'hong-yi',
   'ming-zhe',
-  'ling-yun',
+  'yu-jin',
   'an-ning',
   'zhi-xing',
-  'qing-lan',
+  'yo-rin',
 ]);
 const MODES = new Set<InputMode>(['slice', 'tap']);
 const ARENAS = new Set<ArenaStyle>(['static', 'agility']);

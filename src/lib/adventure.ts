@@ -1,59 +1,146 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
 /**
- * Mode Petualangan — skeleton MVP
- * Kota → target skor → unlock berikutnya. Jawaban benar = bonus waktu.
+ * Mode Petualangan — MVP 1
+ * Jakarta → … → Bali → Malaysia → Singapore
+ * Urutan negara lain: review nanti.
  */
 
 export interface AdventureCity {
   id: string;
   nameId: string;
   nameEn: string;
-  /** Nuansa visual (CSS data-city) */
+  countryId: string;
   theme: string;
-  /** Skor minimum untuk buka kota berikutnya */
+  /** Threshold skor untuk buka kota berikutnya (run tetap ~60 dtk) */
   targetScore: number;
-  /** Detik ditambah tiap jawaban benar */
+  /** Detik ditambah tiap jawaban benar (default normal; difficulty override di UI nanti) */
   timeBonus: number;
   blurbId: string;
+  landmarkId: string;
 }
 
 export const ADVENTURE_CITIES: AdventureCity[] = [
   {
-    id: 'shanghai',
-    nameId: 'Shanghai',
-    nameEn: 'Shanghai',
-    theme: 'shanghai',
+    id: 'jakarta',
+    nameId: 'Jakarta',
+    nameEn: 'Jakarta',
+    countryId: 'id',
+    theme: 'jakarta',
+    targetScore: 200,
+    timeBonus: 3,
+    blurbId: 'Ibukota — mulai petualangan',
+    landmarkId: 'Monas',
+  },
+  {
+    id: 'bandung',
+    nameId: 'Bandung',
+    nameEn: 'Bandung',
+    countryId: 'id',
+    theme: 'bandung',
+    targetScore: 250,
+    timeBonus: 3,
+    blurbId: 'Kota kembang di pegunungan',
+    landmarkId: 'Gedung Sate',
+  },
+  {
+    id: 'yogyakarta',
+    nameId: 'Yogyakarta',
+    nameEn: 'Yogyakarta',
+    countryId: 'id',
+    theme: 'yogyakarta',
     targetScore: 300,
-    timeBonus: 2,
-    blurbId: 'Kota pelabuhan — mulai perjalananmu',
+    timeBonus: 3,
+    blurbId: 'Kota budaya & Malioboro',
+    landmarkId: 'Tugu Yogya',
   },
   {
-    id: 'beijing',
-    nameId: 'Beijing',
-    nameEn: 'Beijing',
-    theme: 'beijing',
+    id: 'surabaya',
+    nameId: 'Surabaya',
+    nameEn: 'Surabaya',
+    countryId: 'id',
+    theme: 'surabaya',
+    targetScore: 350,
+    timeBonus: 3,
+    blurbId: 'Kota pahlawan & pelabuhan',
+    landmarkId: 'Tugu Pahlawan',
+  },
+  {
+    id: 'medan',
+    nameId: 'Medan',
+    nameEn: 'Medan',
+    countryId: 'id',
+    theme: 'medan',
+    targetScore: 400,
+    timeBonus: 3,
+    blurbId: 'Gerbang Sumatera',
+    landmarkId: 'Masjid Raya',
+  },
+  {
+    id: 'makassar',
+    nameId: 'Makassar',
+    nameEn: 'Makassar',
+    countryId: 'id',
+    theme: 'makassar',
+    targetScore: 450,
+    timeBonus: 3,
+    blurbId: 'Pantai Losari & timur Indonesia',
+    landmarkId: 'Losari',
+  },
+  {
+    id: 'bali',
+    nameId: 'Bali',
+    nameEn: 'Bali',
+    countryId: 'id',
+    theme: 'bali',
     targetScore: 500,
-    timeBonus: 2,
-    blurbId: 'Ibukota — target lebih tinggi',
+    timeBonus: 3,
+    blurbId: 'Pulau yang paling dikenal dunia',
+    landmarkId: 'Pura laut',
   },
   {
-    id: 'tokyo',
-    nameId: 'Tokyo',
-    nameEn: 'Tokyo',
-    theme: 'tokyo',
+    id: 'malacca',
+    nameId: 'Malacca',
+    nameEn: 'Malacca',
+    countryId: 'my',
+    theme: 'malacca',
+    targetScore: 550,
+    timeBonus: 3,
+    blurbId: 'Kota tua bersejarah Malaysia',
+    landmarkId: 'Stadthuys',
+  },
+  {
+    id: 'penang',
+    nameId: 'Penang',
+    nameEn: 'Penang',
+    countryId: 'my',
+    theme: 'penang',
+    targetScore: 600,
+    timeBonus: 3,
+    blurbId: 'George Town penuh warna',
+    landmarkId: 'Street art Penang',
+  },
+  {
+    id: 'kuala-lumpur',
+    nameId: 'Kuala Lumpur',
+    nameEn: 'Kuala Lumpur',
+    countryId: 'my',
+    theme: 'kuala-lumpur',
     targetScore: 700,
     timeBonus: 3,
-    blurbId: 'Sakura & ketangkasan',
+    blurbId: 'Ibukota Malaysia yang megah',
+    landmarkId: 'Petronas',
   },
   {
-    id: 'bangkok',
-    nameId: 'Bangkok',
-    nameEn: 'Bangkok',
-    theme: 'bangkok',
-    targetScore: 900,
+    id: 'singapore',
+    nameId: 'Singapore',
+    nameEn: 'Singapore',
+    countryId: 'sg',
+    theme: 'singapore',
+    targetScore: 800,
     timeBonus: 3,
-    blurbId: 'Kuil emas di ujung petualangan MVP',
+    blurbId: 'Ujung MVP — kota global tetangga',
+    landmarkId: 'Marina Bay',
   },
 ];
 

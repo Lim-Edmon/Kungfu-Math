@@ -12,10 +12,10 @@ export type DisplayMode = 'siang' | 'malam' | 'nyaman';
 export type CharacterId =
   | 'hong-yi'
   | 'ming-zhe'
-  | 'ling-yun'
+  | 'yu-jin'
   | 'an-ning'
   | 'zhi-xing'
-  | 'qing-lan';
+  | 'yo-rin';
 
 export interface Character {
   id: CharacterId;
@@ -65,7 +65,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   unlockedStages: [1, 2, 3, 4, 5],
   preferredMode: 'slice',
   preferredArena: 'static',
-  preferredCharacter: 'hong-yi',
+  preferredCharacter: 'yu-jin',
   preferredLevel: 'pemula',
   displayMode: 'siang',
   isSubscribed: false,
@@ -73,7 +73,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   totalGamesPlayed: 0,
   language: 'id',
   playerName: '',
-  adventureCityId: 'shanghai',
-  adventureUnlocked: ['shanghai'],
+  adventureCityId: 'jakarta',
+  adventureUnlocked: ['jakarta'],
   adventureHighScores: {},
 };

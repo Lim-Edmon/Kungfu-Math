@@ -1,0 +1,11 @@
+Ganti gambar karakter
+=====================
+Full body (pemilihan di Home):
+  hong-yi-full.png, ming-zhe-full.png, ling-yun-full.png,
+  an-ning-full.png, zhi-xing-full.png, qing-lan-full.png
+
+Close-up (banner saat main):
+  hong-yi-close.png, ... sama pola nama
+
+Taruh file di folder ini: public/characters/
+Lalu hard refresh browser (Ctrl+Shift+R).
