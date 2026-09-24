@@ -277,6 +277,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                               : c.countryId === 'sg'
                                 ? 'Singapura'
                                 : c.countryId;
+                        const order =
+                          ADVENTURE_CITIES.findIndex((x) => x.id === c.id) + 1;
                         return (
                           <button
                             type="button"
@@ -294,7 +296,9 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                               updateProgress({ adventureCityId: c.id });
                             }}
                           >
-                            <span className="city-chip-name">{c.nameId}</span>
+                            <span className="city-chip-name">
+                              {order}. {c.nameId}
+                            </span>
                             <span className="city-chip-country">{country}</span>
                           </button>
                         );
