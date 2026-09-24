@@ -1142,14 +1142,19 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+  /* Jarak minimal = tinggi bottom-nav (~64px) + safe area — jangan dipangkas di bawah ini */
+  padding-bottom: calc(var(--bottom-nav-clearance, 72px) + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  /* Footer selalu di atas floating menu */
+  margin-bottom: calc(var(--bottom-nav-clearance, 72px) + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  z-index: 1;
 }
 
 .bottom-nav {
+  z-index: 100;
   position: fixed;
   left: 0;
   right: 0;

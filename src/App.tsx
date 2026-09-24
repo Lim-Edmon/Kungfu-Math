@@ -232,15 +232,31 @@ function App() {
     }
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    const main = document.querySelector('.app-main');
+    if (main) main.scrollTop = 0;
+  };
+
   const handleNav = (tab: NavTab) => {
     if (tab === 'home') setScreen('home');
     else if (tab === 'dojo') setScreen('dojo');
     else setScreen('settings');
-    // Selalu mulai dari atas saat pindah tab bawah
-    window.scrollTo(0, 0);
-    const main = document.querySelector('.app-main');
-    if (main) main.scrollTop = 0;
   };
+
+  // Setiap ganti layar (tab bawah / keluar game) → mulai dari atas
+  useEffect(() => {
+    scrollToTop();
+    // Setelah render konten baru, pastikan lagi
+    const t = window.setTimeout(scrollToTop, 0);
+    const t2 = window.setTimeout(scrollToTop, 50);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(t2);
+    };
+  }, [screen]);
 
   const navActive: NavTab =
     screen === 'settings' ? 'settings' : screen === 'dojo' ? 'dojo' : 'home';

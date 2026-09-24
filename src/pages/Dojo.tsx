@@ -33,36 +33,6 @@ export default function Dojo() {
         <p className="dojo-sub">Rekor & progress kamu</p>
       </header>
 
-      <section className="dojo-tips-section">
-        <button
-          type="button"
-          className="dojo-tips-toggle"
-          onClick={() => setTipsOpen((o) => !o)}
-          aria-expanded={tipsOpen}
-        >
-          <span>Tips singkat</span>
-          <span className="dojo-tips-chevron" aria-hidden>
-            {tipsOpen ? '▾' : '▸'}
-          </span>
-        </button>
-        {tipsOpen && (
-          <ul className="dojo-tips">
-            <li>
-              <strong>Tap</strong> — ketuk angka. Cocok karakter tangan kosong.
-            </li>
-            <li>
-              <strong>Slice</strong> — tahan lalu geser melewati angka.
-            </li>
-            <li>
-              <strong>− dan ÷</strong> — urutan klik penting (pertama lalu kedua).
-            </li>
-            <li>
-              Hindari bom 💣 — nyawa berkurang; angka yang dipilih kembali.
-            </li>
-          </ul>
-        )}
-      </section>
-
       <section className="dojo-card dojo-hero">
         <div className="dojo-hero-avatar" aria-hidden>
           {character?.imageCloseSrc || character?.imageSrc ? (
@@ -153,6 +123,36 @@ export default function Dojo() {
           </ul>
         </section>
       )}
+
+      <section className="dojo-tips-section">
+        <button
+          type="button"
+          className="dojo-tips-toggle"
+          onClick={() => setTipsOpen((o) => !o)}
+          aria-expanded={tipsOpen}
+        >
+          <span>Tips singkat</span>
+          <span className="dojo-tips-chevron" aria-hidden>
+            {tipsOpen ? '▾' : '▸'}
+          </span>
+        </button>
+        {tipsOpen && (
+          <ul className="dojo-tips">
+            <li>
+              <strong>Tap</strong> — ketuk angka. Cocok karakter tangan kosong.
+            </li>
+            <li>
+              <strong>Slice</strong> — tahan lalu geser melewati angka.
+            </li>
+            <li>
+              <strong>− dan ÷</strong> — urutan klik penting (pertama lalu kedua).
+            </li>
+            <li>
+              Hindari bom 💣 — nyawa berkurang; angka yang dipilih kembali.
+            </li>
+          </ul>
+        )}
+      </section>
 
       <p className="dojo-note">
         Progress tersimpan di HP ini — bisa dipindah lewat kode di{' '}
