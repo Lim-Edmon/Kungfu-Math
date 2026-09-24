@@ -1,0 +1,19 @@
+/* Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
+/* Reset minimal + responsive base */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 280px;
+  overflow-x: hidden;
+}
+
+/* Hindari scroll horizontal di HP */
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

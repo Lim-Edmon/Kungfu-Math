@@ -1,0 +1,4 @@
+Peta dunia
+===========
+File: world.webp (utama) atau world.png
+Ganti file dengan nama sama. Pin dihitung dari lat/long di adventure.ts

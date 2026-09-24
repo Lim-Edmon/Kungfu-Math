@@ -1,0 +1,1664 @@
+/* Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
+/* ===== Kungfu Math – Layout & Komponen (Mobile-first) ===== */
+
+.app {
+  min-height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+.app.is-game {
+  height: 100dvh;
+  height: 100svh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.app.is-game .app-main {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Loading */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  font-size: 1.1rem;
+  color: var(--color-text-muted);
+  padding: 24px;
+}
+
+/* Home Page */
+.home-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* Bisa scroll di laptop jika konten panjang — tidak kepotong */
+  overflow-y: auto;
+  max-height: none;
+  box-sizing: border-box;
+}
+
+.home-header {
+  text-align: center;
+  padding-top: 8px;
+}
+
+.logo {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.tagline {
+  margin-top: 4px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Section titles */
+.mode-section h2,
+.character-section h2,
+.display-section h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+.character-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+/* Mode buttons */
+.mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 10px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  box-shadow: var(--shadow);
+  min-height: 88px;
+}
+
+.mode-btn.active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-card));
+}
+
+.mode-icon {
+  font-size: 1.6rem;
+}
+
+.mode-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.mode-desc {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* Character cards */
+.character-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.character-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--color-card);
+  border-radius: var(--radius);
+  border: 2px solid var(--color-border);
+  box-shadow: var(--shadow);
+  color: var(--color-text);
+  text-align: left;
+  width: 100%;
+  position: relative;
+  transition: border-color 0.15s ease;
+  min-height: 64px;
+}
+
+.character-card:hover {
+  border-color: var(--color-accent);
+}
+
+.character-card.selected {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-card));
+}
+
+.character-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.avatar-initial {
+  color: white;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.character-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.character-info strong {
+  font-size: 0.95rem;
+}
+
+.character-info span {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.char-badge {
+  font-size: 0.75rem !important;
+  color: var(--color-primary) !important;
+}
+
+.check-mark {
+  font-size: 1.2rem;
+  color: var(--color-primary);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Start button */
+.start-section {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+}
+
+.btn-start {
+  width: 100%;
+  max-width: 320px;
+  padding: 14px 20px;
+  font-size: 1.05rem;
+  border-radius: 999px;
+  min-height: 48px;
+}
+
+.btn-start.disabled,
+.btn-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Display mode */
+.display-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.display-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 6px;
+  font-size: 0.8rem;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: 12px;
+  min-height: 42px;
+}
+
+.display-btn.active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-weight: 700;
+}
+
+/* ===== Footer (selalu di bawah) ===== */
+.app-footer {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 16px 12px 20px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+.footer-support {
+  display: inline-block;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.footer-support:hover {
+  text-decoration: underline;
+}
+
+.footer-copy {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Placeholder Game Screen */
+.placeholder-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 14px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.placeholder-screen h2 {
+  font-size: 1.4rem;
+  color: var(--color-primary);
+}
+
+.placeholder-screen p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.selected-char {
+  font-size: 1rem;
+  color: var(--color-text) !important;
+}
+
+/* ===== Game Screen ===== */
+.game-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--color-bg);
+  z-index: 100;
+  padding: 0;
+}
+
+/* Kolom game di TENGAH layar (laptop/PC) */
+.game-inner {
+  width: min(100%, 480px);
+  margin-left: auto;
+  margin-right: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Sembunyikan bar bawah lama (pakai Keluar di atas saja) */
+.game-bottom-bar {
+  display: none !important;
+}
+
+.game-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.hud-left,
+.hud-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 70px;
+}
+
+.hud-right {
+  align-items: flex-end;
+}
+
+.hud-lives {
+  font-size: 1rem;
+  letter-spacing: 1px;
+}
+
+.hud-char {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.hud-timer {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.hud-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.hud-combo {
+  font-size: 0.85rem;
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
+.btn-exit-top {
+  margin-top: 4px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  min-height: 28px;
+  border-radius: 999px;
+  border: 2px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.game-question {
+  text-align: center;
+  padding: 10px 14px;
+  margin: 4px 4px 6px;
+  flex-shrink: 0;
+  background: var(--color-card);
+  border: 3px solid var(--color-primary);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.question-text {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: 1.5px;
+  line-height: 1.25;
+}
+
+.question-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.game-arena {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0; /* penting: flex child bisa mengecil tanpa overflow aneh */
+  width: 100%;
+  overflow: hidden;
+  /* inset visual: bola tidak nempel tepi */
+  margin: 0;
+}
+
+.floating-number {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  /* Border tegas + ring luar biar terpisah dari BG kota */
+  border: 3px solid var(--color-primary);
+  outline: 2px solid color-mix(in srgb, var(--color-bg) 85%, #fff);
+  outline-offset: 0;
+  /* Sedikit 3D: highlight atas + bayangan bawah */
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      color-mix(in srgb, #fff 55%, var(--color-card)),
+      var(--color-card) 55%,
+      color-mix(in srgb, var(--color-card) 70%, #000) 100%
+    );
+  color: var(--color-text);
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 0 color-mix(in srgb, var(--color-primary) 35%, #000),
+    0 6px 12px rgba(0, 0, 0, 0.28),
+    inset 0 2px 3px rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+  z-index: 5;
+}
+
+.floating-number:active {
+  transform: translate(-50%, -50%) scale(0.92) translateY(2px);
+  box-shadow:
+    0 2px 0 color-mix(in srgb, var(--color-primary) 35%, #000),
+    0 3px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.35);
+}
+
+.floating-number.is-bomb {
+  border-color: var(--color-danger);
+  outline-color: color-mix(in srgb, var(--color-danger) 25%, #fff);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      color-mix(in srgb, #fff 40%, var(--color-danger)),
+      color-mix(in srgb, var(--color-danger) 20%, var(--color-card)) 60%,
+      color-mix(in srgb, var(--color-danger) 40%, #000) 100%
+    );
+  box-shadow:
+    0 4px 0 color-mix(in srgb, var(--color-danger) 50%, #000),
+    0 6px 12px rgba(0, 0, 0, 0.3),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+  font-size: 1.4rem;
+}
+
+/* Guideline BG kota (Petualangan): cukup keliatan, tidak mengalahkan bola */
+.game-arena.city-bg {
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+.game-arena.city-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.game-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 52px;
+  padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  z-index: 300;
+  box-sizing: border-box;
+}
+
+.btn-exit {
+  position: relative;
+  padding: 10px 28px;
+  font-size: 0.95rem;
+  background: var(--color-card);
+  border: 2px solid var(--color-primary);
+  color: var(--color-text);
+  border-radius: 999px;
+  min-height: 44px;
+  font-weight: 700;
+}
+
+/* Animasi hit Tap vs Slice */
+.floating-number.hit-tap {
+  animation: hitTap 0.45s ease-out forwards;
+  pointer-events: none;
+  z-index: 20;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+/* Efek Tap: ripple besar + flash */
+.floating-number.hit-tap::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  border: 4px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  animation: tapRipple 0.45s ease-out forwards;
+  pointer-events: none;
+  z-index: 21;
+}
+
+@keyframes tapRipple {
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.floating-number.hit-slice {
+  animation: hitSlice 0.32s ease-out forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.floating-number.hit-slice::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  top: 45%;
+  width: 120%;
+  height: 3px;
+  background: var(--color-primary);
+  border-radius: 2px;
+  transform: rotate(-28deg);
+  box-shadow: 0 0 6px var(--color-accent);
+}
+
+@keyframes hitTap {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  35% {
+    transform: translate(-50%, -50%) scale(1.28);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes hitSlice {
+  0% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.12) rotate(-12deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.35) translateX(28px) rotate(28deg);
+    opacity: 0;
+  }
+}
+
+/* Result screen */
+.result-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 12px;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+.result-screen h2 {
+  font-size: 1.8rem;
+  color: var(--color-primary);
+}
+
+.result-grade {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--color-accent);
+}
+
+.result-score {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  width: 100%;
+  max-width: 240px;
+}
+
+.result-actions .btn-ghost {
+  background: transparent;
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+/* ===== Level selection ===== */
+.level-section h2 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+.level-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.level-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  text-align: left;
+  width: 100%;
+  box-shadow: var(--shadow);
+}
+
+.level-btn strong {
+  font-size: 0.95rem;
+}
+
+.level-btn span {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.level-btn.active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-card));
+}
+
+.level-highscore {
+  font-size: 0.75rem !important;
+  color: var(--color-accent) !important;
+  font-weight: 600;
+}
+
+.result-level {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+}
+
+.result-high {
+  font-size: 0.95rem;
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* Header + settings button */
+.home-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-settings {
+  font-size: 1.4rem;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Slice mode arena — drag mouse/jari */
+.game-arena.slice-mode {
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.game-arena.slice-mode .floating-number {
+  pointer-events: none;
+  cursor: inherit;
+}
+
+/* Settings page */
+.settings-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-header h1 {
+  font-size: 1.3rem;
+  color: var(--color-primary);
+}
+
+.btn-back {
+  background: transparent;
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.settings-section h2 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.settings-note {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 8px 0;
+}
+
+.settings-toggle {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.settings-toggle.active {
+  border-color: var(--color-success);
+}
+
+.code-area {
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-family: monospace;
+  resize: vertical;
+}
+
+.export-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.export-actions .btn-primary,
+.export-actions .btn-secondary {
+  flex: 1;
+  min-width: 120px;
+}
+
+.settings-message {
+  padding: 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-accent) 20%, var(--color-card));
+  color: var(--color-text);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.btn-secondary {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  border: 2px solid var(--color-accent);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+/* PWA install hint */
+.install-hint {
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card));
+  text-align: center;
+}
+
+.install-hint p {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: var(--color-text);
+}
+
+.install-hint-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.install-hint-actions .btn-ghost {
+  background: transparent;
+  border: 2px solid var(--color-border);
+  color: var(--color-text);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.avatar-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.char-blurb {
+  font-size: 0.72rem !important;
+  color: var(--color-text-muted) !important;
+  display: block;
+  margin-top: 2px;
+}
+
+.character-avatar {
+  width: 56px !important;
+  height: 56px !important;
+}
+
+.player-name-section h2 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.player-name-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 2px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.player-name-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* ===== Responsive MVP: HP kecil → tablet → PC ===== */
+
+/* HP sangat kecil */
+@media (max-width: 359px) {
+  .home-page {
+    padding: 12px 10px 20px;
+    gap: 14px;
+  }
+
+  .logo {
+    font-size: 1.55rem;
+  }
+
+  .floating-number {
+    width: 48px;
+    height: 48px;
+    font-size: 1.05rem;
+  }
+
+  .question-text {
+    font-size: 1.4rem;
+  }
+
+  .hud-timer {
+    font-size: 1.3rem;
+  }
+
+  .mode-btn {
+    min-height: 72px;
+    padding: 10px 6px;
+  }
+}
+
+/* HP besar / phablet */
+@media (min-width: 400px) {
+  .floating-number {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+  }
+
+  .game-arena {
+    min-height: 300px;
+  }
+}
+
+/* Tablet portrait & landscape kecil */
+@media (min-width: 600px) {
+  .home-page,
+  .settings-page,
+  .game-screen {
+    max-width: 560px;
+  }
+
+  .home-page {
+    padding: 28px 24px 40px;
+    gap: 24px;
+  }
+
+  .logo {
+    font-size: 2.2rem;
+  }
+
+  .character-avatar {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .floating-number {
+    width: 68px;
+    height: 68px;
+    font-size: 1.4rem;
+  }
+
+  .game-arena {
+    min-height: 360px;
+  }
+
+  .question-text {
+    font-size: 2rem;
+  }
+
+  .hud-timer {
+    font-size: 1.8rem;
+  }
+
+  .btn-start {
+    max-width: 360px;
+    font-size: 1.15rem;
+    min-height: 52px;
+  }
+}
+
+/* Tablet besar / laptop kecil — jangan batasi .game-screen (fixed full screen) */
+@media (min-width: 900px) {
+  .home-page,
+  .settings-page,
+  .result-screen {
+    max-width: 640px;
+  }
+
+  .floating-number {
+    width: 60px;
+    height: 60px;
+    font-size: 1.35rem;
+  }
+
+  .level-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .home-page,
+  .settings-page {
+    max-width: 720px;
+  }
+
+  .floating-number {
+    width: 64px;
+    height: 64px;
+    font-size: 1.4rem;
+  }
+}
+
+/* Landscape HP: arena tetap usable */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* landscape: game-screen sudah position fixed full */
+
+  .game-question {
+    padding: 6px 10px;
+    margin: 2px 4px;
+  }
+
+  .question-text {
+    font-size: 1.2rem;
+  }
+
+  .question-hint {
+    display: none;
+  }
+
+  .game-arena {
+    min-height: 0;
+  }
+
+  .floating-number {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  .game-bottom-bar {
+    padding: 4px 8px 6px;
+  }
+
+  .btn-exit {
+    padding: 4px 14px;
+    min-height: 32px;
+  }
+
+  .home-page {
+    gap: 12px;
+    padding: 8px 16px 16px;
+  }
+}
+
+/* Pointer halus (mouse) vs sentuh */
+@media (hover: hover) and (pointer: fine) {
+  .floating-number:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  .character-card:hover,
+  .level-btn:hover,
+  .mode-btn:hover {
+    filter: brightness(1.03);
+  }
+}
+
+/* ===== Bottom navigation (ribbon) ===== */
+.app.has-bottom-nav .app-main {
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+}
+
+.app.has-bottom-nav .app-footer {
+  margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--color-card);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.bottom-nav-item.active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.bottom-nav-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.bottom-nav-label {
+  letter-spacing: 0.02em;
+}
+
+/* ===== Dojo ===== */
+.dojo-page {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 20px;
+  box-sizing: border-box;
+}
+
+.dojo-header h1 {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.dojo-sub {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 4px 0 20px;
+}
+
+.dojo-card {
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.dojo-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dojo-hero-emoji {
+  font-size: 2.4rem;
+  line-height: 1;
+}
+
+.dojo-hero-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.dojo-hero-meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.dojo-section {
+  margin-top: 1.35rem;
+}
+.dojo-section:first-of-type {
+  margin-top: 0.5rem;
+}
+.dojo-section h2 {
+  font-size: 1rem;
+  margin: 0 0 10px;
+}
+
+.dojo-score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dojo-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.dojo-score-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.dojo-score-desc {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.dojo-score-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.dojo-note {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 16px;
+  line-height: 1.4;
+}
+
+.dojo-tips {
+  margin: 0;
+  padding: 12px 14px 12px 28px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+
+.dojo-tips li {
+  margin-bottom: 6px;
+}
+
+.dojo-tips li:last-child {
+  margin-bottom: 0;
+}
+
+
+.game-arena.agility-mode .floating-number {
+  transition: none;
+  /* Area sentuh lebih besar (Tap + bola bergerak) */
+  width: 64px;
+  height: 64px;
+  font-size: 1.3rem;
+}
+
+/* Zona klik ekstra di sekitar bola (tak terlihat) */
+.game-arena.agility-mode .floating-number::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+}
+
+.arena-section {
+  margin-top: 4px;
+}
+
+
+/* Logo di header Home */
+.logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.app-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: var(--shadow);
+}
+
+/* Karakter saat main */
+.game-char-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 4px 6px 8px;
+}
+
+.game-char-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  background: var(--color-card);
+  object-fit: cover;
+  object-position: center top;
+}
+
+.game-char-emoji {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.game-char-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.game-char-text strong {
+  font-size: 0.95rem;
+}
+
+.game-char-text span {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Countdown READY 3 2 1 GO */
+.countdown-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+  pointer-events: all;
+}
+
+.countdown-text {
+  font-size: clamp(2.8rem, 14vw, 4.5rem);
+  font-weight: 900;
+  color: var(--color-primary);
+  text-shadow: 0 4px 0 color-mix(in srgb, var(--color-primary) 25%, transparent);
+  animation: countdownPop 0.55s ease-out;
+}
+
+.countdown-text.is-ready {
+  font-size: clamp(2rem, 10vw, 3.2rem);
+  letter-spacing: 0.08em;
+}
+
+.countdown-text.is-go {
+  color: var(--color-accent);
+  font-size: clamp(3.2rem, 16vw, 5rem);
+}
+
+@keyframes countdownPop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Result celebration */
+.result-float-title {
+  font-size: clamp(1.6rem, 7vw, 2.2rem);
+  font-weight: 900;
+  color: var(--color-primary);
+  margin: 0;
+  animation: resultFloat 0.8s ease-out;
+  letter-spacing: 0.02em;
+}
+
+.result-float-sub {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin: 0 0 8px;
+  animation: resultFloat 0.9s ease-out 0.05s both;
+}
+
+.result-burst {
+  font-size: 2rem;
+  animation: burstPop 0.7s ease-out;
+  margin-bottom: 4px;
+}
+
+.result-screen.tone-record .result-float-title {
+  color: #f9a825;
+}
+
+.result-screen.tone-great .result-float-title {
+  color: var(--color-accent);
+}
+
+@keyframes resultFloat {
+  0% {
+    transform: translateY(18px) scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes burstPop {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+/* Full-body character select */
+.character-avatar {
+  width: 88px !important;
+  height: 88px !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center bottom;
+}
+
+
+/* Cara main + pendekar satu blok alur */
+.play-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 12px;
+  margin: 4px 0 8px;
+  background: var(--color-card);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.play-setup .mode-section,
+.play-setup .character-section {
+  margin: 0;
+}
+
+.play-setup .character-section {
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-border);
+}
+
+
+.dojo-hero-avatar {
+  flex-shrink: 0;
+}
+
+.dojo-hero-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  border: 2px solid var(--color-primary);
+  background: transparent;
+}
+
+.app-logo {
+  background: transparent;
+}
+
+.result-adventure {
+  font-weight: 800;
+  color: var(--color-accent);
+  animation: resultFloat 0.8s ease-out;
+}
+
+.city-pick {
+  margin-top: 12px;
+}
+
+.level-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+
+.dojo-tips-section {
+  margin-top: 1.75rem;
+  padding-top: 0.5rem;
+}
+
+.dojo-tips {
+  margin-top: 0.75rem;
+}
+
+.subsection-title {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.adventure-diff-buttons {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.adventure-diff-buttons .mode-btn {
+  min-height: auto;
+  padding: 0.55rem 0.4rem;
+}
+
+
+.adventure-target {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-muted, #666);
+  text-align: center;
+}
+
+/* Soft mood per kota (MVP tanpa gambar landmark) */
+.game-arena[data-city="jakarta"] {
+  background: linear-gradient(180deg, #fff3e0 0%, color-mix(in srgb, var(--color-bg) 70%, #ffcc80) 100%);
+}
+.game-arena[data-city="bali"] {
+  background: linear-gradient(180deg, #e0f7fa 0%, color-mix(in srgb, var(--color-bg) 65%, #80deea) 100%);
+}
+.game-arena[data-city="singapore"] {
+  background: linear-gradient(180deg, #e8eaf6 0%, color-mix(in srgb, var(--color-bg) 65%, #9fa8da) 100%);
+}
+.game-arena[data-city="kuala-lumpur"] {
+  background: linear-gradient(180deg, #fce4ec 0%, color-mix(in srgb, var(--color-bg) 65%, #f48fb1) 100%);
+}
+
+
+.adventure-map-wrap {
+  margin: 0.75rem 0 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  background: #e0f7fa;
+}
+.adventure-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 220px;
+  max-height: 320px;
+  background: #81d4fa;
+}
+.adventure-map-legend {
+  margin: 0;
+  padding: 6px 10px 8px;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  background: var(--color-card);
+}
+
+
+a.btn-link-trakteer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}

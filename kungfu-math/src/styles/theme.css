@@ -1,0 +1,125 @@
+/* Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
+/* ===== Kungfu Math – Theme & Mode Tampilan ===== */
+
+:root {
+  /* Warna dasar (Siang) – merah, emas, hitam + cerah */
+  --color-bg: #fdf6e3;
+  --color-bg-secondary: #fff8e7;
+  --color-text: #1a1a1a;
+  --color-text-muted: #5c5c5c;
+  --color-primary: #c41e3a; /* merah China */
+  --color-primary-hover: #a01830;
+  --color-accent: #d4a017; /* emas */
+  --color-accent-soft: #f0d78c;
+  --color-success: #2e7d32;
+  --color-danger: #c62828;
+  --color-card: #ffffff;
+  --color-border: #e0d5c0;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radius: 16px;
+  --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Mode Malam – lebih gelap, biru dikurangi */
+[data-theme='malam'] {
+  --color-bg: #1a1520;
+  --color-bg-secondary: #2a2230;
+  --color-text: #f5f0e6;
+  --color-text-muted: #b0a890;
+  --color-primary: #e05a6a;
+  --color-primary-hover: #c44a58;
+  --color-accent: #e8c547;
+  --color-accent-soft: #5a4a20;
+  --color-success: #66bb6a;
+  --color-danger: #ef5350;
+  --color-card: #2a2230;
+  --color-border: #3d3545;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Mode Nyaman Mata – hangat, blue light rendah */
+[data-theme='nyaman'] {
+  --color-bg: #2a2118;
+  --color-bg-secondary: #3a2e22;
+  --color-text: #f0e6d0;
+  --color-text-muted: #c0b090;
+  --color-primary: #d07050;
+  --color-primary-hover: #b85a40;
+  --color-accent: #e0b060;
+  --color-accent-soft: #5a4020;
+  --color-success: #8bc34a;
+  --color-danger: #e57373;
+  --color-card: #3a2e22;
+  --color-border: #4a3c30;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  /* Filter tambahan untuk kurangi blue light */
+  filter: brightness(0.95) sepia(0.15);
+}
+
+/* Reset & base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  max-width: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* Safe area HP ber-notch */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  /* Target sentuh minimal ~44px */
+  min-height: 44px;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--color-accent-soft);
+  color: var(--color-text);
+  border: 2px solid var(--color-accent);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+}
