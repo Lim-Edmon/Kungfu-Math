@@ -8,41 +8,51 @@ interface AdventureMapProps {
   onSelect?: (cityId: string) => void;
 }
 
+/** Rasio peta dunia (world.webp) — jangan distorsi */
+const MAP_ASPECT = 1600 / 872;
+
 /**
- * Peta dunia (gambar) + pin dari mapX/mapY (persen 0–100, equirectangular).
- * Viewport di-zoom ke kawasan Asia Tenggara agar pin bisa diketuk.
+ * Pin = mapX/mapY persen gambar (0–100).
+ * Zoom ke bounding box kota + padding, viewBox aspek = MAP_ASPECT (tidak gepeng).
  */
 export default function AdventureMap({
   unlockedIds,
   activeId,
   onSelect,
 }: AdventureMapProps) {
-  const active = ADVENTURE_CITIES.find((c) => c.id === activeId) ?? ADVENTURE_CITIES[0];
+  const active =
+    ADVENTURE_CITIES.find((c) => c.id === activeId) ?? ADVENTURE_CITIES[0];
 
-  // Zoom region: long ~90–135E, lat ~20N–15S → persen pada peta 0–100
-  // x: 75–87.5, y: 38.9–58.3 — sedikit longgar
-  const pad = 4;
   const xs = ADVENTURE_CITIES.map((c) => c.mapX);
   const ys = ADVENTURE_CITIES.map((c) => c.mapY);
+  const pad = 3.5;
   let minX = Math.min(...xs) - pad;
   let maxX = Math.max(...xs) + pad;
   let minY = Math.min(...ys) - pad;
   let maxY = Math.max(...ys) + pad;
-  // pastikan aspek tidak terlalu sempit
-  if (maxX - minX < 12) {
-    const m = (minX + maxX) / 2;
-    minX = m - 6;
-    maxX = m + 6;
+
+  let vbW = maxX - minX;
+  let vbH = maxY - minY;
+  // Samakan aspek viewBox dengan gambar (tidak ubah ratio saat zoom)
+  const targetAspect = MAP_ASPECT; // width/height
+  if (vbW / vbH > targetAspect) {
+    // terlalu lebar → tambah tinggi
+    const needH = vbW / targetAspect;
+    const extra = needH - vbH;
+    minY -= extra / 2;
+    maxY += extra / 2;
+    vbH = needH;
+  } else {
+    const needW = vbH * targetAspect;
+    const extra = needW - vbW;
+    minX -= extra / 2;
+    maxX += extra / 2;
+    vbW = needW;
   }
-  if (maxY - minY < 12) {
-    const m = (minY + maxY) / 2;
-    minY = m - 6;
-    maxY = m + 6;
-  }
-  const vbW = maxX - minX;
-  const vbH = maxY - minY;
 
   const route = ADVENTURE_CITIES.map((c) => `${c.mapX},${c.mapY}`).join(' ');
+  const pinR = Math.min(vbW, vbH) * 0.022;
+  const fontSize = Math.min(vbW, vbH) * 0.045;
 
   return (
     <div className="adventure-map-wrap" aria-label="Peta jalur petualangan">
@@ -64,14 +74,13 @@ export default function AdventureMap({
           points={route}
           fill="none"
           stroke="#c41e3a"
-          strokeWidth={vbW * 0.012}
-          strokeDasharray={`${vbW * 0.02} ${vbW * 0.015}`}
-          opacity="0.65"
+          strokeWidth={Math.min(vbW, vbH) * 0.008}
+          strokeDasharray={`${vbW * 0.015} ${vbW * 0.012}`}
+          opacity="0.6"
         />
         {ADVENTURE_CITIES.map((c) => {
           const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
           const isActive = activeId === c.id;
-          const r = isActive ? vbW * 0.035 : vbW * 0.028;
           const short =
             c.id === 'kuala-lumpur'
               ? 'KL'
@@ -89,20 +98,20 @@ export default function AdventureMap({
               <circle
                 cx={c.mapX}
                 cy={c.mapY}
-                r={r}
+                r={isActive ? pinR * 1.25 : pinR}
                 fill={open ? (isActive ? '#c41e3a' : '#2e7d32') : '#9e9e9e'}
                 stroke="#fff"
-                strokeWidth={vbW * 0.008}
+                strokeWidth={pinR * 0.25}
               />
               <text
                 x={c.mapX}
-                y={c.mapY - r * 1.35}
+                y={c.mapY - pinR * 1.5}
                 textAnchor="middle"
-                fontSize={vbW * 0.055}
+                fontSize={fontSize}
                 fill="#1b5e20"
                 fontWeight="700"
                 stroke="#fff"
-                strokeWidth={vbW * 0.008}
+                strokeWidth={fontSize * 0.12}
                 paintOrder="stroke"
               >
                 {short}
@@ -112,8 +121,8 @@ export default function AdventureMap({
         })}
       </svg>
       <p className="adventure-map-legend">
-        Zoom kawasan aktif · hijau terbuka · merah dipilih · abu terkunci
-        {active ? ` · fokus: ${active.nameId}` : ''}
+        Hijau = terbuka · Merah = dipilih · Abu = terkunci
+        {active ? ` · ${active.nameId}` : ''}
       </p>
     </div>
   );

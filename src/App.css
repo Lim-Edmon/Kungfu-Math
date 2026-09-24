@@ -1642,8 +1642,8 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 220px;
-  max-height: 320px;
+  aspect-ratio: 1600 / 872;
+  max-height: 340px;
   background: #81d4fa;
 }
 .adventure-map-legend {
