@@ -1813,3 +1813,111 @@ a.btn-link-trakteer {
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
+
+
+/* —— Wizard Home (langkah) —— */
+.home-wizard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 8px;
+}
+.wizard-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--color-bg, #fff8e1);
+  padding-bottom: 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border, #e0d5c0) 70%, transparent);
+}
+.wizard-header-row {
+  margin-bottom: 4px;
+}
+.wizard-sticky-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.player-name-field.compact {
+  flex: 1;
+  min-width: 120px;
+  margin: 0;
+}
+.player-name-field.compact input {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+.display-mode-row.compact {
+  display: flex;
+  gap: 6px;
+}
+.display-chip {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border, #e0d5c0);
+  background: var(--color-card, #fff);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+}
+.display-chip.active {
+  border-color: var(--color-primary, #c41e3a);
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+}
+.wizard-progress {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 6px 0 4px;
+}
+.wizard-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #ccc;
+  padding: 0;
+  cursor: pointer;
+}
+.wizard-dot.active {
+  background: var(--color-primary, #c41e3a);
+  transform: scale(1.25);
+}
+.wizard-dot.done {
+  background: #66bb6a;
+}
+.wizard-step-title {
+  margin: 4px 0 8px;
+  font-size: 1.05rem;
+  text-align: center;
+}
+.wizard-body {
+  flex: 1;
+  min-height: 0;
+}
+.wizard-panel {
+  padding: 4px 0 12px;
+}
+.wizard-nav {
+  display: flex;
+  gap: 10px;
+  justify-content: stretch;
+  padding: 10px 0 4px;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(transparent, var(--color-bg, #fff8e1) 30%);
+  z-index: 15;
+}
+.wizard-nav .btn-primary,
+.wizard-nav .btn-ghost {
+  flex: 1;
+}
+.compact-levels .level-btn {
+  padding: 10px 12px;
+}
+.compact-levels .level-btn span {
+  font-size: 0.8rem;
+}
