@@ -40,27 +40,30 @@ interface HomeProps {
   initialPlayKind?: PlayKind;
 }
 
-const STEP_TITLE: Record<WizardStep, string> = {
-  1: 'Pilih level',
-  2: 'Latihan atau Petualangan',
-  3: 'Jenis permainan',
-  4: 'Cara main & pendekar',
-};
+function lastUnlockedCityId(unlocked: string[]): string {
+  const list = unlocked?.length ? unlocked : ['jakarta'];
+  for (let i = ADVENTURE_CITIES.length - 1; i >= 0; i--) {
+    const id = ADVENTURE_CITIES[i].id;
+    if (id === 'jakarta' || list.includes(id)) return id;
+  }
+  return 'jakarta';
+}
 
 export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [step, setStep] = useState<WizardStep>(1);
-  const [mode, setMode] = useState<InputMode>('slice');
-  const [arena, setArena] = useState<ArenaStyle>('static');
-  const [playKind, setPlayKind] = useState<PlayKind>(
-    initialPlayKind || 'latihan'
+  /** null = belum dipilih (kecuali default yang diizinkan) */
+  const [mode, setMode] = useState<InputMode | null>(null);
+  const [arena, setArena] = useState<ArenaStyle | null>(null);
+  const [playKind, setPlayKind] = useState<PlayKind | null>(
+    initialPlayKind ?? null
   );
   const [cityId, setCityId] = useState('jakarta');
   const [travelFrom, setTravelFrom] = useState<string | null>(null);
   const [travelTo, setTravelTo] = useState<string | null>(null);
-  const [adventureDiffId, setAdventureDiffId] = useState('normal');
+  const [adventureDiffId, setAdventureDiffId] = useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
-  const [level, setLevel] = useState<DifficultyLevel>('pemula');
+  const [level, setLevel] = useState<DifficultyLevel | null>(null);
   const [displayMode, setDisplayMode] = useState<DisplayMode>('siang');
   const [playerName, setPlayerName] = useState('');
   const [ready, setReady] = useState(false);
@@ -74,21 +77,22 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
   useEffect(() => {
     const progress = loadProgress();
-    setMode(progress.preferredMode);
-    setArena(progress.preferredArena ?? 'static');
-    setCityId(progress.adventureCityId ?? 'jakarta');
-    setDisplayMode(progress.displayMode);
-    setLevel(progress.preferredLevel ?? 'pemula');
+    // Hanya default yang diizinkan
+    setDisplayMode(progress.displayMode || 'siang');
+    document.documentElement.setAttribute(
+      'data-theme',
+      progress.displayMode || 'siang'
+    );
+    const unlocked = progress.adventureUnlocked || ['jakarta'];
+    setCityId(
+      progress.adventureCityId &&
+        (progress.adventureCityId === 'jakarta' ||
+          unlocked.includes(progress.adventureCityId))
+        ? progress.adventureCityId
+        : lastUnlockedCityId(unlocked)
+    );
     setPlayerName(progress.playerName ?? '');
-    document.documentElement.setAttribute('data-theme', progress.displayMode);
-
-    const savedChar = getCharacterById(progress.preferredCharacter);
-    if (savedChar && savedChar.mode === progress.preferredMode) {
-      setSelectedCharacterId(progress.preferredCharacter);
-    } else {
-      const def = getDefaultCharacter(progress.preferredMode || 'slice');
-      setSelectedCharacterId(def.id);
-    }
+    // Level / arena / playKind / mode / karakter: tidak diisi default dari storage
     setReady(true);
   }, []);
 
@@ -107,8 +111,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const cycleDisplayMode = () => {
     const order: DisplayMode[] = ['siang', 'malam', 'nyaman'];
     const i = order.indexOf(displayMode);
-    const next = order[(i + 1) % order.length];
-    handleDisplayChange(next);
+    handleDisplayChange(order[(i + 1) % order.length]);
   };
 
   const displayIcon =
@@ -120,6 +123,14 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
         ? 'Nyaman'
         : 'Siang';
 
+  const handleSelectMode = (m: InputMode) => {
+    setMode(m);
+    const def = getDefaultCharacter(m); // yu-jin / yo-rin
+    setSelectedCharacterId(def.id);
+    updateProgress({ preferredMode: m, preferredCharacter: def.id });
+    sfx.select();
+  };
+
   const handleSelectCharacter = (id: CharacterId) => {
     const char = getCharacterById(id);
     if (!char) return;
@@ -129,7 +140,24 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     sfx.select();
   };
 
-  const canStart = !!selectedCharacterId;
+  const canGoNext = (): boolean => {
+    if (step === 1) return level != null;
+    if (step === 2) {
+      if (playKind == null) return false;
+      if (playKind === 'petualangan' && adventureDiffId == null) return false;
+      return true;
+    }
+    if (step === 3) return arena != null;
+    return false;
+  };
+
+  const canStart =
+    mode != null &&
+    selectedCharacterId != null &&
+    level != null &&
+    arena != null &&
+    playKind != null &&
+    (playKind !== 'petualangan' || adventureDiffId != null);
 
   if (!ready) {
     return (
@@ -141,7 +169,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
   return (
     <div className="home-page home-wizard">
-      {/* Sticky: tampilan + nama */}
       <header className="wizard-sticky">
         <div className="home-header wizard-header-row">
           <img
@@ -151,49 +178,23 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             width={40}
             height={40}
           />
-          <div>
+          <div className="wizard-header-text">
             <h1 className="home-title">Kungfu Math</h1>
             <p className="home-tagline">Latih hitung ala pendekar</p>
           </div>
-        </div>
-        <div className="wizard-sticky-controls">
-          <label className="player-name-field compact">
-            <span>Nama (opsional)</span>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => handlePlayerNameChange(e.target.value)}
-              placeholder="Namamu"
-              maxLength={16}
-              autoComplete="nickname"
-            />
-          </label>
           <button
             type="button"
-            className="display-chip cycle active"
+            className="display-chip cycle header-display"
             onClick={cycleDisplayMode}
-            title={`Tampilan: ${displayTitle} (ketuk ganti)`}
-            aria-label={`Tampilan ${displayTitle}, ketuk untuk ganti`}
+            title={`Tampilan: ${displayTitle}`}
+            aria-label={`Tampilan ${displayTitle}`}
           >
             {displayIcon}
           </button>
         </div>
-        <div className="wizard-progress" aria-label="Langkah">
-          {([1, 2, 3, 4] as WizardStep[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              className={`wizard-dot ${step === s ? 'active' : ''} ${step > s ? 'done' : ''}`}
-              onClick={() => setStep(s)}
-              aria-label={`Langkah ${s}`}
-            />
-          ))}
-        </div>
-        <h2 className="wizard-step-title">{STEP_TITLE[step]}</h2>
       </header>
 
       <div className="wizard-body">
-        {/* 1. Level */}
         {step === 1 && (
           <section className="wizard-panel">
             <div className="level-list compact-levels">
@@ -215,7 +216,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
 
-        {/* 2. Latihan / Petualangan */}
         {step === 2 && (
           <section className="wizard-panel">
             <div className="mode-buttons">
@@ -353,7 +353,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
 
-        {/* 3. Diam / Ketangkasan */}
         {step === 3 && (
           <section className="wizard-panel">
             <div className="mode-buttons">
@@ -385,23 +384,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
 
-        {/* 4. Pendekar (Slice & Tap digabung) */}
         {step === 4 && (
-          <section className="wizard-panel">
-            <h3 className="subsection-title">Cara main</h3>
+          <section className="wizard-panel step-character">
             <div className="mode-buttons">
               <button
                 type="button"
                 className={`mode-btn ${mode === 'slice' ? 'active' : ''}`}
-                onClick={() => {
-                  setMode('slice');
-                  const def = getDefaultCharacter('slice');
-                  setSelectedCharacterId(def.id);
-                  updateProgress({
-                    preferredMode: 'slice',
-                    preferredCharacter: def.id,
-                  });
-                }}
+                onClick={() => handleSelectMode('slice')}
               >
                 <span className="mode-icon">⚔️</span>
                 <span className="mode-name">Slice</span>
@@ -410,15 +399,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               <button
                 type="button"
                 className={`mode-btn ${mode === 'tap' ? 'active' : ''}`}
-                onClick={() => {
-                  setMode('tap');
-                  const def = getDefaultCharacter('tap');
-                  setSelectedCharacterId(def.id);
-                  updateProgress({
-                    preferredMode: 'tap',
-                    preferredCharacter: def.id,
-                  });
-                }}
+                onClick={() => handleSelectMode('tap')}
               >
                 <span className="mode-icon">👊</span>
                 <span className="mode-name">Tap</span>
@@ -426,95 +407,135 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               </button>
             </div>
 
-            <h3 className="subsection-title">
-              Pilih pendekar ({mode === 'slice' ? 'bersenjata' : 'tangan kosong'})
-            </h3>
-            <div className="character-list">
-              {getCharactersByMode(mode).map((char) => {
-                const isSelected = selectedCharacterId === char.id;
-                return (
-                  <button
-                    type="button"
-                    key={char.id}
-                    className={`character-card ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handleSelectCharacter(char.id)}
-                  >
-                    <div
-                      className="character-avatar"
-                      style={{ backgroundColor: char.color }}
-                    >
-                      <img
-                        src={char.imageSrc}
-                        alt={char.name}
-                        className="avatar-img"
-                        width={96}
-                        height={96}
-                        onError={(e) => {
-                          const el = e.currentTarget;
-                          el.style.display = 'none';
-                          const fb = el.nextElementSibling as HTMLElement | null;
-                          if (fb) fb.style.display = 'inline';
-                        }}
-                      />
-                      <span
-                        className="avatar-emoji"
-                        style={{ display: 'none' }}
-                        aria-hidden
+            {mode && (
+              <>
+                <div className="character-list character-list-spaced">
+                  {getCharactersByMode(mode).map((char) => {
+                    const isSelected = selectedCharacterId === char.id;
+                    return (
+                      <button
+                        type="button"
+                        key={char.id}
+                        className={`character-card ${isSelected ? 'selected' : ''}`}
+                        onClick={() => handleSelectCharacter(char.id)}
                       >
-                        {char.emoji}
-                      </span>
-                    </div>
-                    <div className="character-info">
-                      <strong>{char.name}</strong>
-                      <span>{char.nicknameId}</span>
-                    </div>
-                    {isSelected && <span className="check-mark">✓</span>}
-                  </button>
-                );
-              })}
-            </div>
+                        <div
+                          className="character-avatar"
+                          style={{ backgroundColor: char.color }}
+                        >
+                          <img
+                            src={char.imageSrc}
+                            alt={char.name}
+                            className="avatar-img"
+                            width={96}
+                            height={96}
+                            onError={(e) => {
+                              const el = e.currentTarget;
+                              el.style.display = 'none';
+                              const fb =
+                                el.nextElementSibling as HTMLElement | null;
+                              if (fb) fb.style.display = 'inline';
+                            }}
+                          />
+                          <span
+                            className="avatar-emoji"
+                            style={{ display: 'none' }}
+                            aria-hidden
+                          >
+                            {char.emoji}
+                          </span>
+                        </div>
+                        <div className="character-info">
+                          <strong>{char.name}</strong>
+                          <span>{char.nicknameId}</span>
+                        </div>
+                        {isSelected && <span className="check-mark">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <label className="player-name-field name-after-char">
+                  <span>Nama (opsional)</span>
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => handlePlayerNameChange(e.target.value)}
+                    placeholder="Namamu"
+                    maxLength={16}
+                    autoComplete="nickname"
+                  />
+                </label>
+              </>
+            )}
           </section>
         )}
       </div>
 
-      <div className="wizard-nav">
-        {step > 1 && (
-          <button
-            type="button"
-            className="btn-ghost"
-            onClick={() => setStep((s) => (s - 1) as WizardStep)}
-          >
-            Kembali
-          </button>
-        )}
-        {step < 4 ? (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => setStep((s) => (s + 1) as WizardStep)}
-          >
-            Lanjut
-          </button>
-        ) : (
-          <button
-            type="button"
-            className={`btn-primary btn-start ${!canStart ? 'disabled' : ''}`}
-            disabled={!canStart}
-            onClick={() => {
-              if (!selectedCharacterId) return;
-              onStartGame(
-                mode,
-                selectedCharacterId,
-                level,
-                arena,
-                playKind,
-                playKind === 'petualangan' ? adventureDiffId : undefined
-              );
-            }}
-          >
-            {playKind === 'petualangan' ? 'Mulai Petualangan' : 'Mulai Latihan'}
-          </button>
-        )}
+      <div className="wizard-footer-bar">
+        <div className="wizard-progress" aria-label="Langkah">
+          {([1, 2, 3, 4] as WizardStep[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={`wizard-dot ${step === s ? 'active' : ''} ${step > s ? 'done' : ''}`}
+              onClick={() => setStep(s)}
+              aria-label={`Langkah ${s}`}
+            />
+          ))}
+        </div>
+        <div className="wizard-nav">
+          {step > 1 && (
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setStep((s) => (s - 1) as WizardStep)}
+            >
+              Kembali
+            </button>
+          )}
+          {step < 4 ? (
+            <button
+              type="button"
+              className={`btn-primary ${!canGoNext() ? 'disabled' : ''}`}
+              disabled={!canGoNext()}
+              onClick={() => {
+                if (!canGoNext()) return;
+                setStep((s) => (s + 1) as WizardStep);
+              }}
+            >
+              Lanjut
+            </button>
+          ) : (
+            <button
+              type="button"
+              className={`btn-primary btn-start ${!canStart ? 'disabled' : ''}`}
+              disabled={!canStart}
+              onClick={() => {
+                if (
+                  !selectedCharacterId ||
+                  !mode ||
+                  !level ||
+                  !arena ||
+                  !playKind
+                )
+                  return;
+                onStartGame(
+                  mode,
+                  selectedCharacterId,
+                  level,
+                  arena,
+                  playKind,
+                  playKind === 'petualangan'
+                    ? adventureDiffId || undefined
+                    : undefined
+                );
+              }}
+            >
+              Mulai Bermain
+            </button>
+          )}
+        </div>
       </div>
 
       <InstallHint />

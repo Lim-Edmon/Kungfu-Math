@@ -1140,11 +1140,11 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
@@ -1934,4 +1934,79 @@ a.btn-link-trakteer {
 }
 .compact-levels .level-btn span {
   font-size: 0.8rem;
+}
+
+
+/* —— Wizard layout refine —— */
+.wizard-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+  position: relative;
+}
+.wizard-header-text {
+  flex: 1;
+  min-width: 0;
+}
+.display-chip.header-display {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  font-size: 0.95rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.wizard-sticky {
+  padding-bottom: 8px;
+}
+.wizard-sticky-controls {
+  display: none; /* nama pindah ke step 4 */
+}
+.wizard-step-title {
+  display: none;
+}
+.wizard-footer-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+  padding: 8px 0 6px;
+  background: linear-gradient(transparent, var(--color-bg, #fff8e1) 28%);
+}
+.wizard-progress {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin: 4px 0 10px;
+}
+.wizard-nav {
+  position: static;
+  background: transparent;
+  padding: 0;
+}
+.character-list-spaced {
+  margin-top: 18px;
+}
+.name-after-char {
+  display: block;
+  margin-top: 16px;
+  margin-bottom: 4px;
+}
+.name-after-char span {
+  display: block;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+  color: var(--color-text-muted, #888);
+}
+.name-after-char input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-border, #e0d5c0);
+  font: inherit;
+}
+.step-character .mode-buttons {
+  margin-bottom: 4px;
 }
