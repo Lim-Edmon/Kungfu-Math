@@ -13,6 +13,8 @@
   flex: 1;
   width: 100%;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .app.is-game {
@@ -1140,11 +1142,11 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
@@ -2009,4 +2011,93 @@ a.btn-link-trakteer {
 }
 .step-character .mode-buttons {
   margin-bottom: 4px;
+}
+
+
+/* Footer pin bawah saat konten pendek */
+.home-page,
+.dojo-page,
+.settings-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+.home-wizard .wizard-body {
+  flex: 1 1 auto;
+}
+.home-wizard .wizard-footer-bar {
+  margin-top: auto;
+}
+.display-chip,
+.display-chip.header-display,
+.display-chip.cycle {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.wizard-dot.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.wizard-progress {
+  margin: 10px 0 8px;
+}
+
+/* Dojo tabs + tips collapse */
+.dojo-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.dojo-tab {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-border, #e0d5c0);
+  background: var(--color-card, #fff);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dojo-tab.active {
+  border-color: var(--color-primary, #c41e3a);
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+  color: var(--color-primary, #c41e3a);
+}
+.dojo-tips-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-border, #e0d5c0);
+  background: var(--color-card, #fff);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.dojo-tips-section .dojo-tips {
+  margin: 0 0 12px;
+  padding: 0 4px 0 18px;
+}
+.dojo-tips-chevron {
+  opacity: 0.7;
 }

@@ -1,20 +1,21 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
+import { useState } from 'react';
 import { loadProgress } from '../lib/storage';
 import { LEVELS } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
 import { ADVENTURE_CITIES } from '../lib/adventure';
 
-/**
- * Dojo = ringkasan progress pemain (skor per level, total main).
- * Belum ada mode latihan khusus di sini — fokus lihat rekor dulu.
- */
+type DojoTab = 'level' | 'petualangan';
+
 export default function Dojo() {
-  // Baca ulang setiap kali tab Dojo dibuka
   const progress = loadProgress();
   const character = getCharacterById(progress.preferredCharacter);
   const displayName =
     progress.playerName?.trim() || character?.name || 'Pendekar';
+
+  const [tab, setTab] = useState<DojoTab>('level');
+  const [tipsOpen, setTipsOpen] = useState(false);
 
   const rows = LEVELS.map((lv) => ({
     id: lv.id,
@@ -31,6 +32,36 @@ export default function Dojo() {
         <h1>Dojo</h1>
         <p className="dojo-sub">Rekor & progress kamu</p>
       </header>
+
+      <section className="dojo-tips-section">
+        <button
+          type="button"
+          className="dojo-tips-toggle"
+          onClick={() => setTipsOpen((o) => !o)}
+          aria-expanded={tipsOpen}
+        >
+          <span>Tips singkat</span>
+          <span className="dojo-tips-chevron" aria-hidden>
+            {tipsOpen ? '▾' : '▸'}
+          </span>
+        </button>
+        {tipsOpen && (
+          <ul className="dojo-tips">
+            <li>
+              <strong>Tap</strong> — ketuk angka. Cocok karakter tangan kosong.
+            </li>
+            <li>
+              <strong>Slice</strong> — tahan lalu geser melewati angka.
+            </li>
+            <li>
+              <strong>− dan ÷</strong> — urutan klik penting (pertama lalu kedua).
+            </li>
+            <li>
+              Hindari bom 💣 — nyawa berkurang; angka yang dipilih kembali.
+            </li>
+          </ul>
+        )}
+      </section>
 
       <section className="dojo-card dojo-hero">
         <div className="dojo-hero-avatar" aria-hidden>
@@ -49,79 +80,83 @@ export default function Dojo() {
         <div>
           <p className="dojo-hero-name">{displayName}</p>
           <p className="dojo-hero-meta">
-            {progress.totalGamesPlayed} kali latihan · rekor terbaik{' '}
+            {progress.totalGamesPlayed} kali main · rekor terbaik{' '}
             <strong>{bestOverall}</strong>
           </p>
         </div>
       </section>
 
-      <section className="dojo-section">
-        <h2>Skor tertinggi per level</h2>
-        <ul className="dojo-score-list">
-          {rows.map((r) => (
-            <li key={r.id} className="dojo-score-row">
-              <div>
-                <span className="dojo-score-label">{r.label}</span>
-                <span className="dojo-score-desc">{r.desc}</span>
-              </div>
-              <span className="dojo-score-value">
-                {r.score > 0 ? r.score : '—'}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div className="dojo-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'level'}
+          className={`dojo-tab ${tab === 'level' ? 'active' : ''}`}
+          onClick={() => setTab('level')}
+        >
+          Per level
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'petualangan'}
+          className={`dojo-tab ${tab === 'petualangan' ? 'active' : ''}`}
+          onClick={() => setTab('petualangan')}
+        >
+          Petualangan
+        </button>
+      </div>
 
-
-      <section className="dojo-section">
-        <h2>Petualangan</h2>
-        <ul className="dojo-score-list">
-          {ADVENTURE_CITIES.map((c) => {
-            const unlocked = (progress.adventureUnlocked || ['jakarta']).includes(
-              c.id
-            );
-            const hs = progress.adventureHighScores?.[c.id] ?? 0;
-            return (
-              <li key={c.id} className="dojo-score-row">
+      {tab === 'level' && (
+        <section className="dojo-section">
+          <ul className="dojo-score-list">
+            {rows.map((r) => (
+              <li key={r.id} className="dojo-score-row">
                 <div>
-                  <span className="dojo-score-label">
-                    {unlocked ? '📌' : '🔒'} {c.nameId}
-                  </span>
-                  <span className="dojo-score-desc">
-                    Lolos ≥ {c.targetScore}
-                    {unlocked ? '' : ' · terkunci'}
-                  </span>
+                  <span className="dojo-score-label">{r.label}</span>
+                  <span className="dojo-score-desc">{r.desc}</span>
                 </div>
                 <span className="dojo-score-value">
-                  {hs > 0 ? hs : '—'}
+                  {r.score > 0 ? r.score : '—'}
                 </span>
               </li>
-            );
-          })}
-        </ul>
-      </section>
+            ))}
+          </ul>
+        </section>
+      )}
 
-      <section className="dojo-section dojo-tips-section">
-        <h2>Tips singkat</h2>
-        <ul className="dojo-tips">
-          <li>
-            <strong>Tap</strong> — ketuk angka. Cocok karakter tangan kosong.
-          </li>
-          <li>
-            <strong>Slice</strong> — tahan lalu geser melewati angka (mouse/jari).
-          </li>
-          <li>
-            <strong>− dan ÷</strong> — urutan klik penting (pertama lalu kedua).
-          </li>
-          <li>
-            Hindari bom 💣 — nyawa berkurang; angka yang sudah dipilih kembali.
-          </li>
-        </ul>
-      </section>
+      {tab === 'petualangan' && (
+        <section className="dojo-section">
+          <ul className="dojo-score-list">
+            {ADVENTURE_CITIES.map((c) => {
+              const unlocked = (
+                progress.adventureUnlocked || ['jakarta']
+              ).includes(c.id);
+              const hs = progress.adventureHighScores?.[c.id] ?? 0;
+              return (
+                <li key={c.id} className="dojo-score-row">
+                  <div>
+                    <span className="dojo-score-label">
+                      {unlocked ? '📌' : '🔒'} {c.nameId}
+                    </span>
+                    <span className="dojo-score-desc">
+                      Lolos ≥ {c.targetScore}
+                      {unlocked ? '' : ' · terkunci'}
+                    </span>
+                  </div>
+                  <span className="dojo-score-value">
+                    {hs > 0 ? hs : '—'}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <p className="dojo-note">
-        Main di tab <strong>Latihan</strong> untuk menambah rekor. Progress
-        tersimpan di HP ini — bisa dipindah lewat kode di <strong>Pengaturan</strong>.
+        Progress tersimpan di HP ini — bisa dipindah lewat kode di{' '}
+        <strong>Pengaturan</strong>.
       </p>
     </div>
   );

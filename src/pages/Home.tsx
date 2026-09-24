@@ -151,6 +151,19 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     return false;
   };
 
+
+  /** Boleh buka langkah s hanya jika mandatory langkah sebelumnya terpenuhi */
+  const canReachStep = (s: WizardStep): boolean => {
+    if (s === 1) return true;
+    if (s >= 2 && level == null) return false;
+    if (s >= 3) {
+      if (playKind == null) return false;
+      if (playKind === 'petualangan' && adventureDiffId == null) return false;
+    }
+    if (s >= 4 && arena == null) return false;
+    return true;
+  };
+
   const canStart =
     mode != null &&
     selectedCharacterId != null &&
@@ -193,6 +206,24 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </button>
         </div>
       </header>
+
+      <div className="wizard-progress" aria-label="Langkah">
+        {([1, 2, 3, 4] as WizardStep[]).map((s) => {
+          const reach = canReachStep(s);
+          return (
+            <button
+              key={s}
+              type="button"
+              className={`wizard-dot ${step === s ? 'active' : ''} ${step > s ? 'done' : ''} ${!reach ? 'locked' : ''}`}
+              disabled={!reach}
+              onClick={() => {
+                if (reach) setStep(s);
+              }}
+              aria-label={`Langkah ${s}`}
+            />
+          );
+        })}
+      </div>
 
       <div className="wizard-body">
         {step === 1 && (
@@ -473,17 +504,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       </div>
 
       <div className="wizard-footer-bar">
-        <div className="wizard-progress" aria-label="Langkah">
-          {([1, 2, 3, 4] as WizardStep[]).map((s) => (
-            <button
-              key={s}
-              type="button"
-              className={`wizard-dot ${step === s ? 'active' : ''} ${step > s ? 'done' : ''}`}
-              onClick={() => setStep(s)}
-              aria-label={`Langkah ${s}`}
-            />
-          ))}
-        </div>
         <div className="wizard-nav">
           {step > 1 && (
             <button
