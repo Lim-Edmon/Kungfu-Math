@@ -1706,3 +1706,95 @@ a.btn-link-trakteer {
   position: relative;
   z-index: 1;
 }
+
+
+.result-celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  border: none;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: pointer;
+}
+.result-celebrate-box {
+  position: relative;
+  background: color-mix(in srgb, var(--color-card) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 28px 24px 20px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+.result-celebrate-hint {
+  margin: 12px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+.result-summary {
+  text-align: center;
+  padding: 12px 8px 4px;
+}
+.result-score-line {
+  font-size: 1.25rem;
+  margin: 6px 0;
+}
+.result-score-line span {
+  font-weight: 500;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+.result-screen .result-actions {
+  margin-top: 8px;
+}
+
+
+.city-chip-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 2px 10px;
+  margin: 0 0 8px;
+  scrollbar-width: thin;
+}
+.city-chip {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border, #e0d5c0);
+  background: var(--color-card, #fff);
+  color: var(--color-text, #333);
+  font: inherit;
+  cursor: pointer;
+  max-width: 140px;
+}
+.city-chip-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.city-chip-country {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #888);
+  white-space: nowrap;
+}
+.city-chip.active {
+  border-color: var(--color-primary, #c41e3a);
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+}
+.city-chip.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

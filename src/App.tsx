@@ -95,6 +95,7 @@ function App() {
   const [nextCityId, setNextCityId] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
+  const [celebrateOpen, setCelebrateOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [selectedLevel, setSelectedLevel] =
@@ -118,7 +119,13 @@ function App() {
     }
   }, []);
 
-  const handleStartGame = (
+  useEffect(() => {
+    if (!celebrateOpen) return;
+    const t = setTimeout(() => setCelebrateOpen(false), 1800);
+    return () => clearTimeout(t);
+  }, [celebrateOpen]);
+
+    const handleStartGame = (
     mode: InputMode,
     characterId: CharacterId,
     level: DifficultyLevel,
@@ -207,6 +214,13 @@ function App() {
       setNextCityId(nextId);
     }
 
+    const willCelebrate =
+      neu ||
+      (playKind === 'petualangan' &&
+        score >= getCityById(loadProgress().adventureCityId || 'jakarta').targetScore) ||
+      grade === 'S' ||
+      grade === 'A';
+    setCelebrateOpen(willCelebrate);
     setScreen('result');
   };
 
@@ -292,43 +306,58 @@ function App() {
             lastGrade === 'A';
           return (
             <div className={`result-screen tone-${headline.tone}`}>
-              {celebrate && (
-                <div className="result-confetti" aria-hidden>
-                  <span>🎉</span>
-                  <span>✨</span>
-                  <span>🎊</span>
-                  <span>⭐</span>
-                  <span>🏆</span>
-                  <span>💫</span>
-                  <span>🎈</span>
-                  <span>🌟</span>
-                </div>
+              {celebrate && celebrateOpen && (
+                <button
+                  type="button"
+                  className="result-celebrate-overlay"
+                  onClick={() => setCelebrateOpen(false)}
+                  aria-label="Tutup ucapan"
+                >
+                  <div className="result-celebrate-box">
+                    <div className="result-confetti" aria-hidden>
+                      <span>🎉</span>
+                      <span>✨</span>
+                      <span>🎊</span>
+                      <span>⭐</span>
+                      <span>🏆</span>
+                      <span>💫</span>
+                    </div>
+                    <p className="result-float-title">{headline.title}</p>
+                    <p className="result-float-sub">{headline.sub}</p>
+                    <p className="result-celebrate-hint">Ketuk untuk lanjut</p>
+                  </div>
+                </button>
               )}
-              <div className="result-burst" aria-hidden>
-                {celebrate ? '🎉✨🏆' : lastGrade === 'B' ? '⭐👏' : '💪🌟'}
-              </div>
-              <p className="result-float-title">{headline.title}</p>
-              <p className="result-float-sub">{headline.sub}</p>
-              {adventureUnlockedMsg && (
-                <p className="result-adventure">{adventureUnlockedMsg}</p>
-              )}
-              <p className="result-level">
-                {playKind === 'petualangan' && city
-                  ? `Petualangan · ${city.nameId}`
-                  : `Level: ${levelLabel}`}
-              </p>
-              <p className="result-grade">Nilai: {lastGrade}</p>
-              <p className="result-score">Skor: {lastScore}</p>
-              {playKind === 'petualangan' && city && (
-                <p className="result-high">
-                  Target kota: {city.targetScore}
-                  {passedCity ? ' ✓ tercapai' : ' · belum tercapai'}
+
+              <div className="result-summary">
+                <p className="result-level">
+                  {playKind === 'petualangan' && city
+                    ? `Petualangan · ${city.nameId}`
+                    : `Level: ${levelLabel}`}
                 </p>
-              )}
-              <p className="result-high">
-                Rekor terbaik: {lastHighScore}
-                {isNewRecord ? ' · rekor baru!' : ''}
-              </p>
+                <p className="result-score-line">
+                  <strong>Skor {lastScore}</strong>
+                  <span> · Nilai {lastGrade}</span>
+                </p>
+                {playKind === 'petualangan' && city && (
+                  <p className="result-high">
+                    {passedCity
+                      ? `Target ${city.targetScore} tercapai`
+                      : `Target ${city.targetScore} · belum tercapai`}
+                    {isNewRecord ? ' · Rekor baru!' : ''}
+                  </p>
+                )}
+                {playKind !== 'petualangan' && (
+                  <p className="result-high">
+                    Rekor: {lastHighScore}
+                    {isNewRecord ? ' · baru!' : ''}
+                  </p>
+                )}
+                {adventureUnlockedMsg && passedCity && (
+                  <p className="result-adventure">{adventureUnlockedMsg}</p>
+                )}
+              </div>
+
               <div className="result-actions">
                 {playKind === 'petualangan' && passedCity && nextCity && (
                   <button
