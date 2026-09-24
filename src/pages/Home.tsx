@@ -31,6 +31,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [arena, setArena] = useState<ArenaStyle>('static');
   const [playKind, setPlayKind] = useState<PlayKind>(initialPlayKind || 'latihan');
   const [cityId, setCityId] = useState('jakarta');
+  const [travelFrom, setTravelFrom] = useState<string | null>(null);
+  const [travelTo, setTravelTo] = useState<string | null>(null);
   const [adventureDiffId, setAdventureDiffId] = useState('normal');
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
@@ -221,14 +223,34 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
         </div>
         {playKind === 'petualangan' && (
           <div className="city-pick">
-            <AdventureMap
-              unlockedIds={loadProgress().adventureUnlocked || ['jakarta']}
-              activeId={cityId}
-              onSelect={(id) => {
-                setCityId(id);
-                updateProgress({ adventureCityId: id });
-              }}
-            />
+            {(() => {
+              const prog = loadProgress();
+              const unlocked = prog.adventureUnlocked || ['jakarta'];
+              const wonIds = ADVENTURE_CITIES.filter((c) => {
+                const hs = prog.adventureHighScores?.[c.id] ?? 0;
+                return hs >= c.targetScore;
+              }).map((c) => c.id);
+              return (
+                <AdventureMap
+                  unlockedIds={unlocked}
+                  wonIds={wonIds}
+                  activeId={cityId}
+                  travelFromId={travelFrom}
+                  travelToId={travelTo}
+                  onTravelDone={() => {
+                    setTravelFrom(null);
+                    setTravelTo(null);
+                  }}
+                  onSelect={(id) => {
+                    if (id === cityId) return;
+                    setTravelFrom(cityId);
+                    setTravelTo(id);
+                    setCityId(id);
+                    updateProgress({ adventureCityId: id });
+                  }}
+                />
+              );
+            })()}
             <p className="character-hint">Pilih kota yang sudah terbuka</p>
             <div className="level-list">
               {ADVENTURE_CITIES.map((c) => {
