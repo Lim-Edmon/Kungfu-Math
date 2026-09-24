@@ -1642,8 +1642,9 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 200px;
-  max-height: 280px;
+  min-height: 220px;
+  max-height: 320px;
+  background: #81d4fa;
 }
 .adventure-map-legend {
   margin: 0;
