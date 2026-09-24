@@ -236,6 +236,10 @@ function App() {
     if (tab === 'home') setScreen('home');
     else if (tab === 'dojo') setScreen('dojo');
     else setScreen('settings');
+    // Selalu mulai dari atas saat pindah tab bawah
+    window.scrollTo(0, 0);
+    const main = document.querySelector('.app-main');
+    if (main) main.scrollTop = 0;
   };
 
   const navActive: NavTab =

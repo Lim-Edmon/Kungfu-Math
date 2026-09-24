@@ -174,7 +174,9 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
   if (!ready) {
     return (
-      <div className="home-page">
+      <div className="home-page home-loading">
+        <img src="/logo.png" alt="" className="home-loading-logo" width={72} height={72} />
+        <p className="home-loading-title">Kungfu Math</p>
         <p className="loading-text">Memuat…</p>
       </div>
     );
@@ -188,8 +190,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             src="/logo.png"
             alt=""
             className="home-logo"
-            width={40}
-            height={40}
+            width={56}
+            height={56}
           />
           <div className="wizard-header-text">
             <h1 className="home-title">Kungfu Math</h1>

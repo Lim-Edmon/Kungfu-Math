@@ -14,6 +14,18 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>
 );
 
+/** Sembunyikan splash boot setelah React siap */
+function hideBootSplash() {
+  const el = document.getElementById('boot-splash');
+  if (!el) return;
+  el.classList.add('boot-hide');
+  window.setTimeout(() => el.remove(), 300);
+}
+// Setelah frame pertama
+requestAnimationFrame(() => {
+  requestAnimationFrame(hideBootSplash);
+});
+
 /** Daftarkan Service Worker (PWA) */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

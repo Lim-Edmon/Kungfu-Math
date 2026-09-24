@@ -12,12 +12,54 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Kungfu Math" />
-    
     <title>Kungfu Math</title>
-    <script type="module" crossorigin src="/assets/index-B2ibbC_n.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CD7wIdXR.css">
+    <style>
+      /* Splash sebelum JS siap — logo + nama */
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: #fff8e1;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        transition: opacity 0.25s ease;
+      }
+      #boot-splash img {
+        width: 88px;
+        height: 88px;
+        border-radius: 20px;
+        object-fit: cover;
+      }
+      #boot-splash .boot-title {
+        margin: 0;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        letter-spacing: -0.02em;
+      }
+      #boot-splash .boot-sub {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #888;
+      }
+      #boot-splash.boot-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-nhS-KBQt.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BB-r8t-R.css">
   </head>
   <body>
+    <div id="boot-splash" aria-live="polite">
+      <img src="/logo.png" alt="" width="88" height="88" />
+      <p class="boot-title">Kungfu Math</p>
+      <p class="boot-sub">Latih hitung ala pendekar</p>
+    </div>
     <div id="root"></div>
   </body>
 </html>

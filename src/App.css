@@ -1142,11 +1142,11 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
@@ -2100,4 +2100,38 @@ a.btn-link-trakteer {
 }
 .dojo-tips-chevron {
   opacity: 0.7;
+}
+
+.home-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.home-logo {
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.home-loading {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 48px 16px;
+}
+.home-loading-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+.home-loading-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
 }
