@@ -1140,11 +1140,11 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(44px + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
@@ -1869,30 +1869,44 @@ a.btn-link-trakteer {
 }
 .wizard-progress {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   justify-content: center;
-  margin: 6px 0 4px;
+  align-items: center;
+  margin: 12px 0 8px;
 }
 .wizard-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
   border-radius: 50%;
   border: none;
   background: #ccc;
   padding: 0;
+  margin: 0;
   cursor: pointer;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+  line-height: 0;
 }
 .wizard-dot.active {
   background: var(--color-primary, #c41e3a);
-  transform: scale(1.25);
+  transform: scale(1.2);
 }
 .wizard-dot.done {
   background: #66bb6a;
 }
 .wizard-step-title {
-  margin: 4px 0 8px;
+  margin: 6px 0 10px;
   font-size: 1.05rem;
   text-align: center;
+}
+.wizard-sticky-controls {
+  margin-top: 4px;
+}
+.display-chip.cycle {
+  flex-shrink: 0;
 }
 .wizard-body {
   flex: 1;

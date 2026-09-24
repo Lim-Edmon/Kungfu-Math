@@ -44,7 +44,7 @@ const STEP_TITLE: Record<WizardStep, string> = {
   1: 'Pilih level',
   2: 'Latihan atau Petualangan',
   3: 'Jenis permainan',
-  4: 'Pilih pendekar',
+  4: 'Cara main & pendekar',
 };
 
 export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
@@ -104,6 +104,22 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     updateProgress({ displayMode: newMode });
   };
 
+  const cycleDisplayMode = () => {
+    const order: DisplayMode[] = ['siang', 'malam', 'nyaman'];
+    const i = order.indexOf(displayMode);
+    const next = order[(i + 1) % order.length];
+    handleDisplayChange(next);
+  };
+
+  const displayIcon =
+    displayMode === 'malam' ? '🌙' : displayMode === 'nyaman' ? '👁️' : '☀️';
+  const displayTitle =
+    displayMode === 'malam'
+      ? 'Malam'
+      : displayMode === 'nyaman'
+        ? 'Nyaman'
+        : 'Siang';
+
   const handleSelectCharacter = (id: CharacterId) => {
     const char = getCharacterById(id);
     if (!char) return;
@@ -114,8 +130,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   };
 
   const canStart = !!selectedCharacterId;
-  const sliceChars = getCharactersByMode('slice');
-  const tapChars = getCharactersByMode('tap');
 
   if (!ready) {
     return (
@@ -144,7 +158,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
         </div>
         <div className="wizard-sticky-controls">
           <label className="player-name-field compact">
-            <span>Nama</span>
+            <span>Nama (opsional)</span>
             <input
               type="text"
               value={playerName}
@@ -154,25 +168,15 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               autoComplete="nickname"
             />
           </label>
-          <div className="display-mode-row compact" role="group">
-            {(
-              [
-                ['siang', '☀️'],
-                ['malam', '🌙'],
-                ['nyaman', '👁️'],
-              ] as const
-            ).map(([id, icon]) => (
-              <button
-                key={id}
-                type="button"
-                className={`display-chip ${displayMode === id ? 'active' : ''}`}
-                onClick={() => handleDisplayChange(id)}
-                title={id}
-              >
-                {icon}
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            className="display-chip cycle active"
+            onClick={cycleDisplayMode}
+            title={`Tampilan: ${displayTitle} (ketuk ganti)`}
+            aria-label={`Tampilan ${displayTitle}, ketuk untuk ganti`}
+          >
+            {displayIcon}
+          </button>
         </div>
         <div className="wizard-progress" aria-label="Langkah">
           {([1, 2, 3, 4] as WizardStep[]).map((s) => (
@@ -237,6 +241,22 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
             {playKind === 'petualangan' && (
               <div className="city-pick">
+                <h3 className="subsection-title">Tingkat petualangan</h3>
+                <div className="mode-buttons adventure-diff-buttons">
+                  {ADVENTURE_DIFFICULTIES.map((d) => (
+                    <button
+                      type="button"
+                      key={d.id}
+                      className={`mode-btn ${adventureDiffId === d.id ? 'active' : ''}`}
+                      onClick={() => setAdventureDiffId(d.id)}
+                    >
+                      <span className="mode-name">{d.labelId}</span>
+                      <span className="mode-desc">{d.descId}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <h3 className="subsection-title">Pilih kota</h3>
                 {(() => {
                   const prog = loadProgress();
                   const unlocked = prog.adventureUnlocked || ['jakarta'];
@@ -328,20 +348,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     );
                   })}
                 </div>
-                <h3 className="subsection-title">Tingkat petualangan</h3>
-                <div className="mode-buttons adventure-diff-buttons">
-                  {ADVENTURE_DIFFICULTIES.map((d) => (
-                    <button
-                      type="button"
-                      key={d.id}
-                      className={`mode-btn ${adventureDiffId === d.id ? 'active' : ''}`}
-                      onClick={() => setAdventureDiffId(d.id)}
-                    >
-                      <span className="mode-name">{d.labelId}</span>
-                      <span className="mode-desc">{d.descId}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
           </section>
@@ -382,57 +388,49 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
         {/* 4. Pendekar (Slice & Tap digabung) */}
         {step === 4 && (
           <section className="wizard-panel">
-            <p className="character-hint">
-              Senjata = Slice · Tangan kosong = Tap
-            </p>
-            <h3 className="subsection-title">Bersenjata (Slice)</h3>
-            <div className="character-list">
-              {sliceChars.map((char) => {
-                const isSelected = selectedCharacterId === char.id;
-                return (
-                  <button
-                    type="button"
-                    key={char.id}
-                    className={`character-card ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handleSelectCharacter(char.id)}
-                  >
-                    <div
-                      className="character-avatar"
-                      style={{ backgroundColor: char.color }}
-                    >
-                      <img
-                        src={char.imageSrc}
-                        alt={char.name}
-                        className="avatar-img"
-                        width={96}
-                        height={96}
-                        onError={(e) => {
-                          const el = e.currentTarget;
-                          el.style.display = 'none';
-                          const fb = el.nextElementSibling as HTMLElement | null;
-                          if (fb) fb.style.display = 'inline';
-                        }}
-                      />
-                      <span
-                        className="avatar-emoji"
-                        style={{ display: 'none' }}
-                        aria-hidden
-                      >
-                        {char.emoji}
-                      </span>
-                    </div>
-                    <div className="character-info">
-                      <strong>{char.name}</strong>
-                      <span>{char.nicknameId}</span>
-                    </div>
-                    {isSelected && <span className="check-mark">✓</span>}
-                  </button>
-                );
-              })}
+            <h3 className="subsection-title">Cara main</h3>
+            <div className="mode-buttons">
+              <button
+                type="button"
+                className={`mode-btn ${mode === 'slice' ? 'active' : ''}`}
+                onClick={() => {
+                  setMode('slice');
+                  const def = getDefaultCharacter('slice');
+                  setSelectedCharacterId(def.id);
+                  updateProgress({
+                    preferredMode: 'slice',
+                    preferredCharacter: def.id,
+                  });
+                }}
+              >
+                <span className="mode-icon">⚔️</span>
+                <span className="mode-name">Slice</span>
+                <span className="mode-desc">Geser / tebas</span>
+              </button>
+              <button
+                type="button"
+                className={`mode-btn ${mode === 'tap' ? 'active' : ''}`}
+                onClick={() => {
+                  setMode('tap');
+                  const def = getDefaultCharacter('tap');
+                  setSelectedCharacterId(def.id);
+                  updateProgress({
+                    preferredMode: 'tap',
+                    preferredCharacter: def.id,
+                  });
+                }}
+              >
+                <span className="mode-icon">👊</span>
+                <span className="mode-name">Tap</span>
+                <span className="mode-desc">Tekan bola</span>
+              </button>
             </div>
-            <h3 className="subsection-title">Tangan kosong (Tap)</h3>
+
+            <h3 className="subsection-title">
+              Pilih pendekar ({mode === 'slice' ? 'bersenjata' : 'tangan kosong'})
+            </h3>
             <div className="character-list">
-              {tapChars.map((char) => {
+              {getCharactersByMode(mode).map((char) => {
                 const isSelected = selectedCharacterId === char.id;
                 return (
                   <button
