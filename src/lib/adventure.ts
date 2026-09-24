@@ -14,6 +14,8 @@ export interface AdventureCity {
   nameId: string;
   nameEn: string;
   countryId: string;
+  /** Cluster kawasan, e.g. sea = Asia Tenggara */
+  regionId: string;
   theme: string;
   /** Skor minimum agar kota berikutnya terbuka */
   targetScore: number;
@@ -30,6 +32,11 @@ export interface AdventureDifficulty {
   timeBonus: number;
   descId: string;
 }
+
+export const ADVENTURE_REGIONS: { id: string; labelId: string }[] = [
+  { id: 'sea', labelId: 'Asia Tenggara' },
+  // nanti: asia-timur, eropa, dll.
+];
 
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
   { id: 'mudah', labelId: 'Mudah', timeBonus: 5, descId: '+5 dtk tiap benar' },
@@ -52,6 +59,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Jakarta',
     nameEn: 'Jakarta',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'jakarta',
     targetScore: 500,
     blurbId: 'Ibukota — mulai petualangan',
@@ -64,6 +72,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Bandung',
     nameEn: 'Bandung',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'bandung',
     targetScore: 550,
     blurbId: 'Kota kembang di pegunungan',
@@ -76,6 +85,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Yogyakarta',
     nameEn: 'Yogyakarta',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'yogyakarta',
     targetScore: 600,
     blurbId: 'Kota budaya & Malioboro',
@@ -88,6 +98,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Surabaya',
     nameEn: 'Surabaya',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'surabaya',
     targetScore: 650,
     blurbId: 'Kota pahlawan & pelabuhan',
@@ -100,6 +111,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Medan',
     nameEn: 'Medan',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'medan',
     targetScore: 700,
     blurbId: 'Gerbang Sumatera',
@@ -112,6 +124,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Makassar',
     nameEn: 'Makassar',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'makassar',
     targetScore: 750,
     blurbId: 'Pantai Losari',
@@ -124,6 +137,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Bali',
     nameEn: 'Bali',
     countryId: 'id',
+    regionId: 'sea',
     theme: 'bali',
     targetScore: 800,
     blurbId: 'Pulau yang dikenal dunia',
@@ -136,6 +150,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Malacca',
     nameEn: 'Malacca',
     countryId: 'my',
+    regionId: 'sea',
     theme: 'malacca',
     targetScore: 850,
     blurbId: 'Kota tua bersejarah',
@@ -148,6 +163,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Penang',
     nameEn: 'Penang',
     countryId: 'my',
+    regionId: 'sea',
     theme: 'penang',
     targetScore: 900,
     blurbId: 'George Town penuh warna',
@@ -160,6 +176,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Kuala Lumpur',
     nameEn: 'Kuala Lumpur',
     countryId: 'my',
+    regionId: 'sea',
     theme: 'kuala-lumpur',
     targetScore: 950,
     blurbId: 'Ibukota Malaysia',
@@ -172,6 +189,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     nameId: 'Singapore',
     nameEn: 'Singapore',
     countryId: 'sg',
+    regionId: 'sea',
     theme: 'singapore',
     targetScore: 1000,
     blurbId: 'Kota modern tetangga',

@@ -13,7 +13,7 @@ interface AdventureMapProps {
   onTravelDone?: () => void;
 }
 
-const MAP_ASPECT = 1600 / 872;
+const MAP_ASPECT = 2800 / 1527; // world.webp aspect
 
 export default function AdventureMap({
   unlockedIds,
@@ -35,14 +35,14 @@ export default function AdventureMap({
 
   const xs = windowCities.map((c) => c.mapX);
   const ys = windowCities.map((c) => c.mapY);
-  const pad = 2.2;
+  const pad = 1.4;
   let minX = Math.min(...xs) - pad;
   let maxX = Math.max(...xs) + pad;
   let minY = Math.min(...ys) - pad;
   let maxY = Math.max(...ys) + pad;
 
   // minimal zoom area biar tidak terlalu ketat 1 titik
-  const minSpan = 4.5;
+  const minSpan = 3.2;
   if (maxX - minX < minSpan) {
     const m = (minX + maxX) / 2;
     minX = m - minSpan / 2;
@@ -91,7 +91,7 @@ export default function AdventureMap({
     setT(0);
     let raf = 0;
     const start = performance.now();
-    const dur = 1600;
+    const dur = 1000;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
       setT(p);

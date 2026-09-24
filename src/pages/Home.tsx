@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { ArenaStyle, CharacterId, DisplayMode, InputMode } from '../lib/types';
-import { ADVENTURE_CITIES, ADVENTURE_DIFFICULTIES } from '../lib/adventure';
+import { ADVENTURE_CITIES, ADVENTURE_DIFFICULTIES, ADVENTURE_REGIONS } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
@@ -254,42 +254,53 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             <p className="character-hint">
               Ketuk pin di peta, atau pilih chip kota di bawah
             </p>
-            <div className="city-chip-row" role="list">
-              {ADVENTURE_CITIES.map((c) => {
-                const prog = loadProgress();
-                const unlockedList = prog.adventureUnlocked?.length
-                  ? prog.adventureUnlocked
-                  : ['jakarta'];
-                const unlocked =
-                  c.id === 'jakarta' || unlockedList.includes(c.id);
-                const country =
-                  c.countryId === 'id'
-                    ? 'Indonesia'
-                    : c.countryId === 'my'
-                      ? 'Malaysia'
-                      : c.countryId === 'sg'
-                        ? 'Singapura'
-                        : c.countryId;
+            <div className="city-region-stack">
+              {ADVENTURE_REGIONS.map((reg) => {
+                const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
+                if (cities.length === 0) return null;
                 return (
-                  <button
-                    type="button"
-                    key={c.id}
-                    role="listitem"
-                    className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
-                    disabled={!unlocked}
-                    onClick={() => {
-                      if (!unlocked) return;
-                      if (c.id !== cityId) {
-                        setTravelFrom(cityId);
-                        setTravelTo(c.id);
-                      }
-                      setCityId(c.id);
-                      updateProgress({ adventureCityId: c.id });
-                    }}
-                  >
-                    <span className="city-chip-name">{c.nameId}</span>
-                    <span className="city-chip-country">{country}</span>
-                  </button>
+                  <div key={reg.id} className="city-region-block">
+                    <p className="city-region-label">{reg.labelId}</p>
+                    <div className="city-chip-row" role="list">
+                      {cities.map((c) => {
+                        const prog = loadProgress();
+                        const unlockedList = prog.adventureUnlocked?.length
+                          ? prog.adventureUnlocked
+                          : ['jakarta'];
+                        const unlocked =
+                          c.id === 'jakarta' || unlockedList.includes(c.id);
+                        const country =
+                          c.countryId === 'id'
+                            ? 'Indonesia'
+                            : c.countryId === 'my'
+                              ? 'Malaysia'
+                              : c.countryId === 'sg'
+                                ? 'Singapura'
+                                : c.countryId;
+                        return (
+                          <button
+                            type="button"
+                            key={c.id}
+                            role="listitem"
+                            className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
+                            disabled={!unlocked}
+                            onClick={() => {
+                              if (!unlocked) return;
+                              if (c.id !== cityId) {
+                                setTravelFrom(cityId);
+                                setTravelTo(c.id);
+                              }
+                              setCityId(c.id);
+                              updateProgress({ adventureCityId: c.id });
+                            }}
+                          >
+                            <span className="city-chip-name">{c.nameId}</span>
+                            <span className="city-chip-country">{country}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>

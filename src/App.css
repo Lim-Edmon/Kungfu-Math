@@ -1642,7 +1642,7 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1600 / 872;
+  aspect-ratio: 2800 / 1527;
   max-height: 340px;
   background: #81d4fa;
 }
@@ -1797,4 +1797,19 @@ a.btn-link-trakteer {
 .city-chip.disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.city-region-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.city-region-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted, #888);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
