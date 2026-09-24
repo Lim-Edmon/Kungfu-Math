@@ -7,6 +7,7 @@ import {
   exportProgress,
   importProgress,
 } from '../lib/storage';
+import { TRAKTEER_URL } from '../lib/constants';
 
 interface SettingsProps {
   onBack: () => void;
@@ -145,7 +146,32 @@ export default function Settings({ onBack }: SettingsProps) {
         </button>
       </section>
 
+      <section className="settings-section">
+        <h2>Privasi</h2>
+        <p className="settings-note">
+          Progress disimpan di HP ini saja (localStorage). Tidak ada login,
+          tidak ada kirim data ke server.
+        </p>
+      </section>
+
+      <section className="settings-section">
+        <h2>Saran & Dukung</h2>
+        <p className="settings-note">
+          Suka mainnya atau punya saran? Bisa dukung lewat Trakteer.
+          Tulis pesan di kolom Trakteer (saran & feedback boleh).
+        </p>
+        <a
+          href={TRAKTEER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-primary btn-link-trakteer"
+        >
+          ☕ Buka Trakteer
+        </a>
+      </section>
+
       {message && <p className="settings-message">{message}</p>}
     </div>
   );
 }
+

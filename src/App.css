@@ -1140,11 +1140,11 @@
 
 /* ===== Bottom navigation (ribbon) ===== */
 .app.has-bottom-nav .app-main {
-  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
 
 .app.has-bottom-nav .app-footer {
-  margin-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
 .bottom-nav {
@@ -1642,8 +1642,8 @@
   display: block;
   width: 100%;
   height: auto;
-  min-height: 160px;
-  max-height: 220px;
+  min-height: 200px;
+  max-height: 280px;
 }
 .adventure-map-legend {
   margin: 0;
@@ -1651,4 +1651,13 @@
   font-size: 0.72rem;
   color: var(--color-text-muted);
   background: var(--color-card);
+}
+
+
+a.btn-link-trakteer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  margin-top: 0.5rem;
 }

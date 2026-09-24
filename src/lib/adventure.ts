@@ -56,7 +56,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 500,
     blurbId: 'Ibukota — mulai petualangan',
     landmarkId: 'Monas',
-    mapX: 12,
+    mapX: 48,
     mapY: 58,
   },
   {
@@ -68,7 +68,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 550,
     blurbId: 'Kota kembang di pegunungan',
     landmarkId: 'Gedung Sate',
-    mapX: 20,
+    mapX: 54,
     mapY: 62,
   },
   {
@@ -80,7 +80,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 600,
     blurbId: 'Kota budaya & Malioboro',
     landmarkId: 'Tugu Yogya',
-    mapX: 28,
+    mapX: 60,
     mapY: 68,
   },
   {
@@ -92,8 +92,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 650,
     blurbId: 'Kota pahlawan & pelabuhan',
     landmarkId: 'Tugu Pahlawan',
-    mapX: 36,
-    mapY: 64,
+    mapX: 70,
+    mapY: 62,
   },
   {
     id: 'medan',
@@ -104,7 +104,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 700,
     blurbId: 'Gerbang Sumatera',
     landmarkId: 'Masjid Raya',
-    mapX: 8,
+    mapX: 22,
     mapY: 28,
   },
   {
@@ -116,8 +116,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 750,
     blurbId: 'Pantai Losari',
     landmarkId: 'Losari',
-    mapX: 48,
-    mapY: 72,
+    mapX: 88,
+    mapY: 55,
   },
   {
     id: 'bali',
@@ -128,8 +128,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 800,
     blurbId: 'Pulau yang dikenal dunia',
     landmarkId: 'Pura laut',
-    mapX: 42,
-    mapY: 78,
+    mapX: 76,
+    mapY: 70,
   },
   {
     id: 'malacca',
@@ -140,8 +140,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 850,
     blurbId: 'Kota tua bersejarah',
     landmarkId: 'Stadthuys',
-    mapX: 58,
-    mapY: 42,
+    mapX: 40,
+    mapY: 38,
   },
   {
     id: 'penang',
@@ -152,8 +152,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 900,
     blurbId: 'George Town penuh warna',
     landmarkId: 'Street art',
-    mapX: 62,
-    mapY: 32,
+    mapX: 38,
+    mapY: 18,
   },
   {
     id: 'kuala-lumpur',
@@ -164,8 +164,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 950,
     blurbId: 'Ibukota Malaysia',
     landmarkId: 'Petronas',
-    mapX: 68,
-    mapY: 38,
+    mapX: 42,
+    mapY: 28,
   },
   {
     id: 'singapore',
@@ -176,8 +176,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 1000,
     blurbId: 'Kota modern tetangga',
     landmarkId: 'Marina Bay',
-    mapX: 78,
-    mapY: 55,
+    mapX: 48,
+    mapY: 48,
   },
 ];
 

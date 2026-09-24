@@ -1,11 +1,13 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
+import { TRAKTEER_URL } from '../lib/constants';
+
 /** Footer yang selalu muncul di setiap halaman */
 export default function Footer() {
   return (
     <footer className="app-footer">
       <a
-        href="https://trakteer.id/lim.edmon"
+        href={TRAKTEER_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="footer-support"
