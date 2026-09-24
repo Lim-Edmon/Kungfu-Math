@@ -22,12 +22,14 @@ interface HomeProps {
     playKind: PlayKind,
     adventureDiffId?: string
   ) => void;
+  /** Saat kembali dari game petualangan → buka tab Petualangan + peta */
+  initialPlayKind?: PlayKind;
 }
 
-export default function Home({ onStartGame }: HomeProps) {
+export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [mode, setMode] = useState<InputMode>('slice');
   const [arena, setArena] = useState<ArenaStyle>('static');
-  const [playKind, setPlayKind] = useState<PlayKind>('latihan');
+  const [playKind, setPlayKind] = useState<PlayKind>(initialPlayKind || 'latihan');
   const [cityId, setCityId] = useState('jakarta');
   const [adventureDiffId, setAdventureDiffId] = useState('normal');
   const [selectedCharacterId, setSelectedCharacterId] =
@@ -37,6 +39,10 @@ export default function Home({ onStartGame }: HomeProps) {
   const [highScores, setHighScores] = useState<Record<string, number>>({});
   const [playerName, setPlayerName] = useState('');
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (initialPlayKind) setPlayKind(initialPlayKind);
+  }, [initialPlayKind]);
 
   useEffect(() => {
     const progress = loadProgress();

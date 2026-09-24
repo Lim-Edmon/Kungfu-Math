@@ -16,6 +16,12 @@ import {
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
 import { sfx, playCityMusic, stopCityMusic } from '../lib/sound';
+
+function playEndSound(score: number, target?: number) {
+  if (target != null && score >= target) sfx.win();
+  else sfx.finish();
+}
+
 import { loadProgress } from '../lib/storage';
 
 interface GameProps {
@@ -283,7 +289,7 @@ export default function Game({
         if (prev.timeLeft <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
           clearNextQuestionTimeout();
-          sfx.finish();
+          playEndSound(prev.score, targetScore);
           const grade = calcGrade(
             prev.score,
             prev.questionsSolved,
@@ -356,7 +362,7 @@ export default function Game({
       const newLives = prev.lives - 1;
       if (newLives <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
-        sfx.finish();
+        playEndSound(prev.score, targetScore);
         const grade = calcGrade(
           prev.score,
           prev.questionsSolved,
@@ -421,7 +427,7 @@ export default function Game({
           const newLives = prev.lives - 1;
           if (newLives <= 0) {
             if (timerRef.current) clearInterval(timerRef.current);
-            sfx.finish();
+            playEndSound(prev.score, targetScore);
             const grade = calcGrade(
               prev.score,
               prev.questionsSolved,

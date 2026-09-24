@@ -19,7 +19,7 @@ export interface AdventureCity {
   targetScore: number;
   blurbId: string;
   landmarkId: string;
-  /** Posisi pin di peta jalur (0–100 % dari kiri/atas viewBox) */
+  /** Posisi pin ABSOLUT di gambar world.webp (0–100 % lebar/tinggi gambar penuh, bukan relatif zoom) */
   mapX: number;
   mapY: number;
 }
@@ -56,8 +56,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 500,
     blurbId: 'Ibukota — mulai petualangan',
     landmarkId: 'Monas',
-    mapX: 80.8,
-    mapY: 54.1,
+    mapX: 76.9,
+    mapY: 58.6,
   },
   {
     id: 'bandung',
@@ -68,8 +68,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 550,
     blurbId: 'Kota kembang di pegunungan',
     landmarkId: 'Gedung Sate',
-    mapX: 81.15,
-    mapY: 54.59,
+    mapX: 77.2,
+    mapY: 59.2,
   },
   {
     id: 'yogyakarta',
@@ -80,8 +80,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 600,
     blurbId: 'Kota budaya & Malioboro',
     landmarkId: 'Tugu Yogya',
-    mapX: 82.43,
-    mapY: 55.18,
+    mapX: 78.2,
+    mapY: 59.4,
   },
   {
     id: 'surabaya',
@@ -92,8 +92,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 650,
     blurbId: 'Kota pahlawan & pelabuhan',
     landmarkId: 'Tugu Pahlawan',
-    mapX: 83.54,
-    mapY: 54.81,
+    mapX: 79.0,
+    mapY: 59.4,
   },
   {
     id: 'medan',
@@ -104,8 +104,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 700,
     blurbId: 'Gerbang Sumatera',
     landmarkId: 'Masjid Raya',
-    mapX: 77.0,
-    mapY: 47.5,
+    mapX: 75.0,
+    mapY: 54.2,
   },
   {
     id: 'makassar',
@@ -116,8 +116,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 750,
     blurbId: 'Pantai Losari',
     landmarkId: 'Losari',
-    mapX: 86.64,
-    mapY: 53.39,
+    mapX: 80.2,
+    mapY: 57.8,
   },
   {
     id: 'bali',
@@ -128,8 +128,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 800,
     blurbId: 'Pulau yang dikenal dunia',
     landmarkId: 'Pura laut',
-    mapX: 84.68,
-    mapY: 55.77,
+    mapX: 79.2,
+    mapY: 59.4,
   },
   {
     id: 'malacca',
@@ -140,8 +140,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 850,
     blurbId: 'Kota tua bersejarah',
     landmarkId: 'Stadthuys',
-    mapX: 78.66,
-    mapY: 48.44,
+    mapX: 75.4,
+    mapY: 54.4,
   },
   {
     id: 'penang',
@@ -152,8 +152,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 900,
     blurbId: 'George Town penuh warna',
     landmarkId: 'Street art',
-    mapX: 77.78,
-    mapY: 46.27,
+    mapX: 75.2,
+    mapY: 52.7,
   },
   {
     id: 'kuala-lumpur',
@@ -164,8 +164,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 950,
     blurbId: 'Ibukota Malaysia',
     landmarkId: 'Petronas',
-    mapX: 78.4,
-    mapY: 47.8,
+    mapX: 75.3,
+    mapY: 53.6,
   },
   {
     id: 'singapore',
@@ -176,8 +176,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     targetScore: 1000,
     blurbId: 'Kota modern tetangga',
     landmarkId: 'Marina Bay',
-    mapX: 79.39,
-    mapY: 49.01,
+    mapX: 76.2,
+    mapY: 55.2,
   },
 ];
 

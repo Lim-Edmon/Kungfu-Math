@@ -240,6 +240,32 @@ export const sfx = {
       playTone(988, 0.1, 'sine', 0.12, 90);
     });
   },
+  /** Menang / lolos kota / rekor — nada lebih ceria */
+  win(): void {
+    playOrFallback('finish', () => {
+      const ctx = getCtx();
+      if (!ctx) return;
+      try {
+        const now = ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+          const o = ctx.createOscillator();
+          const g = ctx.createGain();
+          o.type = 'triangle';
+          o.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, now + i * 0.12);
+          g.gain.exponentialRampToValueAtTime(0.2, now + i * 0.12 + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 0.35);
+          o.connect(g);
+          g.connect(ctx.destination);
+          o.start(now + i * 0.12);
+          o.stop(now + i * 0.12 + 0.4);
+        });
+      } catch {
+        /* ignore */
+      }
+    });
+  },
+  /** Waktu habis / biasa */
   finish(): void {
     playOrFallback('finish', () => {
       playTone(392, 0.1, 'sine', 0.1);

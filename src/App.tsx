@@ -37,46 +37,49 @@ type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
 function resultHeadline(
   grade: string,
   isNewRecord: boolean,
-  score: number
+  score: number,
+  opts?: { passedCity?: boolean; cityName?: string }
 ): { title: string; sub: string; tone: string } {
   if (isNewRecord) {
     return {
-      title: 'NEW RECORD!',
-      sub: 'Rekor baru — hebat sekali!',
+      title: 'Rekor baru!',
+      sub: 'Kamu pecahkan rekor sendiri. Hebat!',
       tone: 'record',
     };
   }
-  if (grade === 'S') {
+  if (opts?.passedCity) {
     return {
-      title: 'CONGRATULATIONS!',
-      sub: 'Master hitung! Kamu luar biasa!',
+      title: 'Kota berhasil!',
+      sub: opts.cityName
+        ? `Target ${opts.cityName} tercapai. Siap jalan lagi?`
+        : 'Target kota tercapai. Siap jalan lagi?',
       tone: 'great',
     };
   }
-  if (grade === 'A') {
+  if (grade === 'S' || grade === 'A') {
     return {
-      title: 'WELL DONE!',
-      sub: 'Kerja bagus, pendekar!',
+      title: 'Keren banget!',
+      sub: 'Hitunganmu sudah jago, pendekar!',
       tone: 'great',
     };
   }
   if (grade === 'B') {
     return {
-      title: 'DOING WELL!',
-      sub: 'Bagus belajar, terus latihan!',
+      title: 'Bagus semangat!',
+      sub: 'Sudah bagus. Coba sekali lagi biar lebih tinggi!',
       tone: 'good',
     };
   }
   if (score <= 0) {
     return {
-      title: 'TIME UP!',
-      sub: 'Coba lagi — kamu pasti bisa!',
+      title: 'Waktu habis!',
+      sub: 'Tidak apa-apa. Yuk coba lagi!',
       tone: 'try',
     };
   }
   return {
-    title: 'NICE TRY!',
-    sub: 'Latihan lagi biar makin jago!',
+    title: 'Sudah berusaha!',
+    sub: 'Tetap semangat. Latihan lagi, pasti naik!',
     tone: 'try',
   };
 }
@@ -88,6 +91,10 @@ function App() {
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
   const [adventureDiffId, setAdventureDiffId] = useState('normal');
   const [adventureUnlockedMsg, setAdventureUnlockedMsg] = useState('');
+  const [passedCity, setPassedCity] = useState(false);
+  const [nextCityId, setNextCityId] = useState<string | null>(null);
+  const [lastCityId, setLastCityId] = useState('jakarta');
+  const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [selectedLevel, setSelectedLevel] =
@@ -130,6 +137,25 @@ function App() {
   };
 
   const handleExitGame = () => {
+    // Dari petualangan → langsung tampil peta petualangan di Home
+    if (playKind === 'petualangan') {
+      setHomePlayKind('petualangan');
+    } else {
+      setHomePlayKind(undefined);
+    }
+    setScreen('home');
+  };
+
+  const handleContinueNextCity = () => {
+    if (!nextCityId || !selectedCharacterId) return;
+    updateProgress({ adventureCityId: nextCityId });
+    setAdventureUnlockedMsg('');
+    setPassedCity(false);
+    setScreen('game');
+  };
+
+  const handleBackToAdventureMap = () => {
+    setHomePlayKind('petualangan');
     setScreen('home');
   };
 
@@ -142,10 +168,13 @@ function App() {
     setLastGrade(grade);
     setLastHighScore(highScore);
     setIsNewRecord(neu);
+    setPassedCity(false);
+    setNextCityId(null);
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
       const cityId = prog.adventureCityId || 'jakarta';
+      setLastCityId(cityId);
       const city = getCityById(cityId);
       const prevHs = prog.adventureHighScores?.[cityId] ?? 0;
       const best = Math.max(prevHs, score);
@@ -153,22 +182,29 @@ function App() {
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
       let msg = '';
+      let nextId: string | null = null;
+      let passed = false;
       if (score >= city.targetScore) {
-        const nextId = getNextCityId(cityId);
+        passed = true;
+        nextId = getNextCityId(cityId);
         if (nextId && !unlocked.includes(nextId)) {
           unlocked = [...unlocked, nextId];
           msg = `Kota baru terbuka: ${getCityById(nextId).nameId}!`;
         } else if (!nextId) {
-          msg = 'Semua kota MVP sudah dijelajahi!';
+          msg = 'Semua kota di jalur ini sudah dijelajahi. Hebat!';
         } else {
           msg = `Target ${city.nameId} tercapai!`;
         }
+      } else {
+        msg = `Belum sampai target ${city.targetScore}. Coba lagi di ${city.nameId}!`;
       }
       updateProgress({
         adventureHighScores: ahs,
         adventureUnlocked: unlocked,
       });
       setAdventureUnlockedMsg(msg);
+      setPassedCity(passed);
+      setNextCityId(nextId);
     }
 
     setScreen('result');
@@ -201,7 +237,7 @@ function App() {
       }`}
     >
       <main className="app-main">
-        {screen === 'home' && <Home onStartGame={handleStartGame} />}
+        {screen === 'home' && <Home onStartGame={handleStartGame} initialPlayKind={homePlayKind} />}
 
         {screen === 'dojo' && <Dojo />}
 
@@ -242,19 +278,34 @@ function App() {
         )}
 
         {screen === 'result' && (() => {
-          const headline = resultHeadline(
-            lastGrade,
-            isNewRecord,
-            lastScore
-          );
+          const city =
+            playKind === 'petualangan' ? getCityById(lastCityId) : null;
+          const nextCity = nextCityId ? getCityById(nextCityId) : null;
+          const headline = resultHeadline(lastGrade, isNewRecord, lastScore, {
+            passedCity: playKind === 'petualangan' && passedCity,
+            cityName: city?.nameId,
+          });
+          const celebrate =
+            isNewRecord ||
+            passedCity ||
+            lastGrade === 'S' ||
+            lastGrade === 'A';
           return (
             <div className={`result-screen tone-${headline.tone}`}>
+              {celebrate && (
+                <div className="result-confetti" aria-hidden>
+                  <span>🎉</span>
+                  <span>✨</span>
+                  <span>🎊</span>
+                  <span>⭐</span>
+                  <span>🏆</span>
+                  <span>💫</span>
+                  <span>🎈</span>
+                  <span>🌟</span>
+                </div>
+              )}
               <div className="result-burst" aria-hidden>
-                {isNewRecord || lastGrade === 'S' || lastGrade === 'A'
-                  ? '🎉✨🏆'
-                  : lastGrade === 'B'
-                    ? '⭐👏'
-                    : '💪🌟'}
+                {celebrate ? '🎉✨🏆' : lastGrade === 'B' ? '⭐👏' : '💪🌟'}
               </div>
               <p className="result-float-title">{headline.title}</p>
               <p className="result-float-sub">{headline.sub}</p>
@@ -262,31 +313,58 @@ function App() {
                 <p className="result-adventure">{adventureUnlockedMsg}</p>
               )}
               <p className="result-level">
-                {playKind === 'petualangan'
-                  ? `Petualangan · ${getCityById(loadProgress().adventureCityId || 'jakarta').nameId}`
+                {playKind === 'petualangan' && city
+                  ? `Petualangan · ${city.nameId}`
                   : `Level: ${levelLabel}`}
               </p>
-              <p className="result-grade">Grade: {lastGrade}</p>
+              <p className="result-grade">Nilai: {lastGrade}</p>
               <p className="result-score">Skor: {lastScore}</p>
+              {playKind === 'petualangan' && city && (
+                <p className="result-high">
+                  Target kota: {city.targetScore}
+                  {passedCity ? ' ✓ tercapai' : ' · belum tercapai'}
+                </p>
+              )}
               <p className="result-high">
-                Rekor level ini: {lastHighScore}
-                {isNewRecord ? ' 🎉' : ''}
+                Rekor terbaik: {lastHighScore}
+                {isNewRecord ? ' · rekor baru!' : ''}
               </p>
               <div className="result-actions">
+                {playKind === 'petualangan' && passedCity && nextCity && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleContinueNextCity}
+                  >
+                    Lanjut ke {nextCity.nameId}
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn-primary"
                   onClick={handlePlayAgain}
                 >
-                  Main Lagi
+                  {playKind === 'petualangan' && city
+                    ? `Main lagi di ${city.nameId}`
+                    : 'Main lagi'}
                 </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={handleExitGame}
-                >
-                  Kembali ke Latihan
-                </button>
+                {playKind === 'petualangan' ? (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={handleBackToAdventureMap}
+                  >
+                    Kembali ke peta
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={handleExitGame}
+                  >
+                    Kembali ke Latihan
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn-ghost"

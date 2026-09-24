@@ -12,7 +12,8 @@ interface AdventureMapProps {
 const MAP_ASPECT = 1600 / 872;
 
 /**
- * Pin = mapX/mapY persen gambar (0–100).
+ * Pin = mapX/mapY ABSOLUT di world.webp (0–100 % gambar penuh).
+ * Zoom hanya memotong tampilan; tidak mengubah arti mapX/mapY.
  * Zoom ke bounding box kota + padding, viewBox aspek = MAP_ASPECT (tidak gepeng).
  */
 export default function AdventureMap({
