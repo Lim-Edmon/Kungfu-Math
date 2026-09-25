@@ -2108,17 +2108,9 @@ a.btn-link-trakteer {
 }
 
 .home-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.home-logo {
-  width: 56px !important;
-  height: 56px !important;
-  border-radius: 14px;
+  width: 84px !important;
+  height: 84px !important;
+  border-radius: 18px;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -2139,4 +2131,10 @@ a.btn-link-trakteer {
   margin: 0;
   font-size: 1.35rem;
   font-weight: 800;
+}
+
+.home-loading-copy {
+  margin: 12px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #999);
 }

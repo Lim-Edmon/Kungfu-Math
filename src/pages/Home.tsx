@@ -175,9 +175,10 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   if (!ready) {
     return (
       <div className="home-page home-loading">
-        <img src="/logo.png" alt="" className="home-loading-logo" width={72} height={72} />
+        <img src="/logo.png" alt="" className="home-loading-logo" width={88} height={88} />
         <p className="home-loading-title">Kungfu Math</p>
         <p className="loading-text">Memuat…</p>
+        <p className="home-loading-copy">© Lim Edmon 2026</p>
       </div>
     );
   }
@@ -190,8 +191,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             src="/logo.png"
             alt=""
             className="home-logo"
-            width={56}
-            height={56}
+            width={84}
+            height={84}
           />
           <div className="wizard-header-text">
             <h1 className="home-title">Kungfu Math</h1>

@@ -240,17 +240,25 @@ export default function AdventureMap({
           );
         })}
 
-        {traveling && (
-          <text
-            x={planeX}
-            y={planeY}
-            fontSize={Math.min(vbW, vbH) * 0.08}
-            textAnchor="middle"
-            dominantBaseline="middle"
-          >
-            ✈️
-          </text>
-        )}
+        {traveling && fromCity && toCity && (() => {
+          // Emoji ✈️ default menghadap ~45° (timur laut). Sesuaikan ke arah tujuan.
+          const dx = toCity.mapX - fromCity.mapX;
+          const dy = toCity.mapY - fromCity.mapY;
+          const deg = (Math.atan2(dy, dx) * 180) / Math.PI;
+          const rot = deg - 45;
+          return (
+            <text
+              x={planeX}
+              y={planeY}
+              fontSize={Math.min(vbW, vbH) * 0.08}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              transform={`rotate(${rot}, ${planeX}, ${planeY})`}
+            >
+              ✈️
+            </text>
+          );
+        })()}
       </svg>
       <p className="adventure-map-legend">
         Ketuk pin di peta · 📍 aktif · ◆ menang · ▲ terkunci

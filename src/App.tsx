@@ -95,6 +95,7 @@ function App() {
   const [nextCityId, setNextCityId] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
+  const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
@@ -144,12 +145,9 @@ function App() {
   };
 
   const handleExitGame = () => {
-    // Dari petualangan → langsung tampil peta petualangan di Home
-    if (playKind === 'petualangan') {
-      setHomePlayKind('petualangan');
-    } else {
-      setHomePlayKind(undefined);
-    }
+    // Keluar di tengah game → selalu ke menu paling awal (langkah 1)
+    setHomePlayKind(undefined);
+    setHomeKey((k) => k + 1);
     setScreen('home');
   };
 
@@ -271,7 +269,13 @@ function App() {
       }`}
     >
       <main className="app-main">
-        {screen === 'home' && <Home onStartGame={handleStartGame} initialPlayKind={homePlayKind} />}
+        {screen === 'home' && (
+          <Home
+            key={homeKey}
+            onStartGame={handleStartGame}
+            initialPlayKind={homePlayKind}
+          />
+        )}
 
         {screen === 'dojo' && <Dojo />}
 

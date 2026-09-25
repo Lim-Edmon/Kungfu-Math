@@ -14,51 +14,57 @@
     <meta name="apple-mobile-web-app-title" content="Kungfu Math" />
     <title>Kungfu Math</title>
     <style>
-      /* Splash sebelum JS siap — logo + nama */
       #boot-splash {
         position: fixed;
         inset: 0;
-        z-index: 9999;
+        z-index: 99999;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 14px;
+        gap: 10px;
         background: #fff8e1;
-        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-        transition: opacity 0.25s ease;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        transition: opacity 0.3s ease;
       }
       #boot-splash img {
-        width: 88px;
-        height: 88px;
-        border-radius: 20px;
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
         object-fit: cover;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
       }
       #boot-splash .boot-title {
-        margin: 0;
-        font-size: 1.45rem;
+        margin: 4px 0 0;
+        font-size: 1.6rem;
         font-weight: 800;
         color: #1a1a1a;
         letter-spacing: -0.02em;
       }
       #boot-splash .boot-sub {
         margin: 0;
-        font-size: 0.9rem;
-        color: #888;
+        font-size: 0.95rem;
+        color: #666;
+      }
+      #boot-splash .boot-copy {
+        margin: 16px 0 0;
+        font-size: 0.75rem;
+        color: #999;
       }
       #boot-splash.boot-hide {
         opacity: 0;
         pointer-events: none;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-BlCdB-ax.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DHdsQlur.css">
+    <script type="module" crossorigin src="/assets/index-Au_iP4eA.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CS4m1lQW.css">
   </head>
   <body>
     <div id="boot-splash" aria-live="polite">
-      <img src="/logo.png" alt="" width="88" height="88" />
+      <img src="/logo.png" alt="Kungfu Math" width="96" height="96" />
       <p class="boot-title">Kungfu Math</p>
       <p class="boot-sub">Latih hitung ala pendekar</p>
+      <p class="boot-copy">© Lim Edmon 2026</p>
     </div>
     <div id="root"></div>
   </body>

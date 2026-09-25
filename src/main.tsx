@@ -22,9 +22,8 @@ function hideBootSplash() {
   window.setTimeout(() => el.remove(), 300);
 }
 // Setelah frame pertama
-requestAnimationFrame(() => {
-  requestAnimationFrame(hideBootSplash);
-});
+// Biarkan splash (logo + judul + ©) sempat terbaca
+window.setTimeout(hideBootSplash, 600);
 
 /** Daftarkan Service Worker (PWA) */
 if ('serviceWorker' in navigator) {
