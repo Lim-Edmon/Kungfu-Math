@@ -3,13 +3,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ADVENTURE_CITIES } from '../lib/adventure';
 
-/** Aktifkan dengan ?mapdebug=1 di URL (dev atur pin tanpa edit-kode bolak-balik) */
-function useMapDebug(): boolean {
+/**
+ * Dev peta:
+ *   ?mapdebug=1          → semua kota + zoom longgar
+ *   ?mapdebug=1&mapzoom=2 → lebih zoom out (angka lebih besar = lebih jauh)
+ *   ?mapdebug=1&mapzoom=0.6 → lebih zoom in
+ */
+function useMapDebug(): { on: boolean; zoom: number } {
   return useMemo(() => {
     try {
-      return new URLSearchParams(window.location.search).get('mapdebug') === '1';
+      const q = new URLSearchParams(window.location.search);
+      const on = q.get('mapdebug') === '1';
+      const z = parseFloat(q.get('mapzoom') || '1');
+      const zoom = Number.isFinite(z) && z > 0.2 && z < 20 ? z : 1;
+      return { on, zoom };
     } catch {
-      return false;
+      return { on: false, zoom: 1 };
     }
   }, []);
 }
@@ -41,23 +50,24 @@ export default function AdventureMap({
     ADVENTURE_CITIES.findIndex((c) => c.id === activeId)
   );
   // Debug: tampilkan semua kota. Normal: 1 sebelum + aktif + 2 sesudah
-  const winStart = mapDebug
+  const winStart = mapDebug.on
     ? 0
     : Math.max(0, activeIdx - 1);
-  const winEnd = mapDebug
+  const winEnd = mapDebug.on
     ? ADVENTURE_CITIES.length - 1
     : Math.min(ADVENTURE_CITIES.length - 1, activeIdx + 2);
   const windowCities = ADVENTURE_CITIES.slice(winStart, winEnd + 1);
 
   const xs = windowCities.map((c) => c.mapX);
   const ys = windowCities.map((c) => c.mapY);
-  const pad = mapDebug ? 4 : 1.4;
+  // pad/minSpan naik → peta lebih zoom out
+  const pad = mapDebug.on ? 4 * mapDebug.zoom : 1.4;
   let minX = Math.min(...xs) - pad;
   let maxX = Math.max(...xs) + pad;
   let minY = Math.min(...ys) - pad;
   let maxY = Math.max(...ys) + pad;
 
-  const minSpan = mapDebug ? 12 : 3.2;
+  const minSpan = mapDebug.on ? 12 * mapDebug.zoom : 3.2;
   if (maxX - minX < minSpan) {
     const m = (minX + maxX) / 2;
     minX = m - minSpan / 2;
@@ -85,8 +95,9 @@ export default function AdventureMap({
     vbW = needW;
   }
 
-  const pinR = Math.min(vbW, vbH) * 0.028;
-  const fontSize = Math.min(vbW, vbH) * 0.055;
+  const pinR = Math.min(vbW, vbH) * (mapDebug.on ? 0.018 : 0.028);
+  // Debug: font lebih kecil supaya nama tidak saling numpuk
+  const fontSize = Math.min(vbW, vbH) * (mapDebug.on ? 0.028 : 0.055);
 
   const fromCity = travelFromId
     ? ADVENTURE_CITIES.find((c) => c.id === travelFromId)
@@ -249,9 +260,7 @@ export default function AdventureMap({
                 strokeWidth={fontSize * 0.1}
                 paintOrder="stroke"
               >
-                {mapDebug
-                  ? `${short} ${c.mapX.toFixed(1)},${c.mapY.toFixed(1)}`
-                  : short}
+                {short}
               </text>
             </g>
           );
@@ -263,7 +272,7 @@ export default function AdventureMap({
           const dx = toCity.mapX - fromCity.mapX;
           const dy = toCity.mapY - fromCity.mapY;
           const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
-          const s = Math.min(vbW, vbH) * (mapDebug ? 0.06 : 0.09);
+          const s = Math.min(vbW, vbH) * (mapDebug.on ? 0.05 : 0.09);
           return (
             <image
               href="/cities/map/plane.png"
@@ -278,11 +287,11 @@ export default function AdventureMap({
         })()}
       </svg>
       <p className="adventure-map-legend">
-        {mapDebug ? (
+        {mapDebug.on ? (
           <>
-            MODE DEBUG PIN — label = mapX, mapY · edit di{' '}
-            <code>src/lib/adventure.ts</code> · matikan: hapus{' '}
-            <code>?mapdebug=1</code>
+            Debug pin · zoom={mapDebug.zoom} · edit mapX/mapY di adventure.ts ·{' '}
+            <code>?mapdebug=1&amp;mapzoom=2</code> (out) /{' '}
+            <code>mapzoom=0.6</code> (in)
           </>
         ) : (
           <>Ketuk pin di peta · 📍 aktif · ◆ menang · ▲ terkunci</>
