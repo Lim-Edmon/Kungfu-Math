@@ -1,4 +1,17 @@
-Peta dunia
-===========
-File: world.webp (utama) atau world.png
-Ganti file dengan nama sama. Pin dihitung dari lat/long di adventure.ts
+Peta & pesawat
+==============
+- world.webp  = gambar peta (jaga rasio; sesuaikan mapX/mapY di adventure.ts)
+- plane.png   = ikon pesawat top-view, moncong default KE ATAS
+  Ganti file plane.png saja (PNG transparan). Rotasi dihitung otomatis ke kota tujuan.
+
+Atur koordinat pin (dev)
+========================
+1. Buka URL dengan ?mapdebug=1
+   contoh: https://kungfu-math.vercel.app/?mapdebug=1
+   atau lokal: http://localhost:5173/?mapdebug=1
+2. Masuk mode Petualangan — peta zoom longgar, semua kota + label mapX,mapY
+3. Edit angka mapX / mapY di src/lib/adventure.ts
+   - mapX lebih besar = lebih ke kanan (timur)
+   - mapY lebih besar = lebih ke bawah (selatan)
+4. Simpan → hot reload → cek lagi
+5. Hapus ?mapdebug=1 kalau sudah pas
