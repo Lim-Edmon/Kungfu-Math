@@ -28,7 +28,14 @@ import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
 import { loadProgress, recordGameResult, updateProgress } from './lib/storage';
-import { getCityById, getNextCityId, getAdventureDifficulty, pickCityFunFact } from './lib/adventure';
+import {
+  getCityById,
+  getNextCityId,
+  getAdventureDifficulty,
+  pickCityFunFact,
+  MVP_REGION_LAST_CITY_ID,
+  MVP_REGION_UNLOCK_MSG,
+} from './lib/adventure';
 import './styles/theme.css';
 import './App.css';
 
@@ -384,6 +391,13 @@ function App() {
                   <div className="result-funfact">
                     <p className="result-funfact-label">Tahukah kamu?</p>
                     <p className="result-funfact-text">{funFact}</p>
+                  </div>
+                )}
+                {passedCity &&
+                  lastCityId === MVP_REGION_LAST_CITY_ID &&
+                  !nextCity && (
+                  <div className="result-funfact result-region-unlock">
+                    <p className="result-funfact-text">{MVP_REGION_UNLOCK_MSG}</p>
                   </div>
                 )}
               </div>
