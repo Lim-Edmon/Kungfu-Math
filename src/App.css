@@ -15,6 +15,9 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .app.is-game {
@@ -2137,4 +2140,26 @@ a.btn-link-trakteer {
   margin: 12px 0 0;
   font-size: 0.75rem;
   color: var(--color-text-muted, #999);
+}
+
+.result-funfact {
+  margin: 12px 8px 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 8%, var(--color-card, #fff));
+  border: 1px solid color-mix(in srgb, var(--color-primary, #c41e3a) 18%, transparent);
+  text-align: left;
+}
+.result-funfact-label {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-primary, #c41e3a);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.result-funfact-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }

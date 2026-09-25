@@ -28,7 +28,7 @@ import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
 import { loadProgress, recordGameResult, updateProgress } from './lib/storage';
-import { getCityById, getNextCityId, getAdventureDifficulty } from './lib/adventure';
+import { getCityById, getNextCityId, getAdventureDifficulty, pickCityFunFact } from './lib/adventure';
 import './styles/theme.css';
 import './App.css';
 
@@ -51,8 +51,8 @@ function resultHeadline(
     return {
       title: 'Kota berhasil!',
       sub: opts.cityName
-        ? `Target ${opts.cityName} tercapai. Siap jalan lagi?`
-        : 'Target kota tercapai. Siap jalan lagi?',
+        ? `Target ${opts.cityName} tercapai. Kamu bisa lanjut ke kota berikut!`
+        : 'Target kota tercapai. Kamu bisa lanjut ke kota berikut!',
       tone: 'great',
     };
   }
@@ -90,8 +90,8 @@ function App() {
   const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
   const [adventureDiffId, setAdventureDiffId] = useState('normal');
-  const [adventureUnlockedMsg, setAdventureUnlockedMsg] = useState('');
   const [passedCity, setPassedCity] = useState(false);
+  const [funFact, setFunFact] = useState<string | null>(null);
   const [nextCityId, setNextCityId] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
@@ -140,7 +140,6 @@ function App() {
     setSelectedLevel(level);
     setPlayKind(kind);
     setAdventureDiffId(diffId || 'normal');
-    setAdventureUnlockedMsg('');
     setScreen('game');
   };
 
@@ -154,7 +153,6 @@ function App() {
   const handleContinueNextCity = () => {
     if (!nextCityId || !selectedCharacterId) return;
     updateProgress({ adventureCityId: nextCityId });
-    setAdventureUnlockedMsg('');
     setPassedCity(false);
     setScreen('game');
   };
@@ -175,6 +173,7 @@ function App() {
     setIsNewRecord(neu);
     setPassedCity(false);
     setNextCityId(null);
+    setFunFact(null);
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
@@ -186,7 +185,6 @@ function App() {
       const ahs = { ...(prog.adventureHighScores || {}), [cityId]: best };
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
-      let msg = '';
       let nextId: string | null = null;
       let passed = false;
       if (score >= city.targetScore) {
@@ -194,22 +192,15 @@ function App() {
         nextId = getNextCityId(cityId);
         if (nextId && !unlocked.includes(nextId)) {
           unlocked = [...unlocked, nextId];
-          msg = `Kota baru terbuka: ${getCityById(nextId).nameId}!`;
-        } else if (!nextId) {
-          msg = 'Semua kota di jalur ini sudah dijelajahi. Hebat!';
-        } else {
-          msg = `Target ${city.nameId} tercapai!`;
         }
-      } else {
-        msg = `Belum sampai target ${city.targetScore}. Coba lagi di ${city.nameId}!`;
       }
       updateProgress({
         adventureHighScores: ahs,
         adventureUnlocked: unlocked,
       });
-      setAdventureUnlockedMsg(msg);
       setPassedCity(passed);
       setNextCityId(nextId);
+      setFunFact(passed ? pickCityFunFact(cityId) : null);
     }
 
     const willCelebrate =
@@ -231,28 +222,36 @@ function App() {
   };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    const main = document.querySelector('.app-main');
-    if (main) main.scrollTop = 0;
+    const top = () => {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      document.querySelectorAll('.app-main, .home-page, .dojo-page, .settings-page, .app').forEach((el) => {
+        (el as HTMLElement).scrollTop = 0;
+      });
+    };
+    top();
+    requestAnimationFrame(top);
   };
 
   const handleNav = (tab: NavTab) => {
     if (tab === 'home') setScreen('home');
     else if (tab === 'dojo') setScreen('dojo');
     else setScreen('settings');
+    // Langsung scroll saat klik tab (jangan tunggu effect saja)
+    scrollToTop();
   };
 
-  // Setiap ganti layar (tab bawah / keluar game) → mulai dari atas
+  // Setiap ganti layar → mulai dari atas
   useEffect(() => {
     scrollToTop();
-    // Setelah render konten baru, pastikan lagi
-    const t = window.setTimeout(scrollToTop, 0);
-    const t2 = window.setTimeout(scrollToTop, 50);
+    const t1 = window.setTimeout(scrollToTop, 0);
+    const t2 = window.setTimeout(scrollToTop, 80);
+    const t3 = window.setTimeout(scrollToTop, 200);
     return () => {
-      window.clearTimeout(t);
+      window.clearTimeout(t1);
       window.clearTimeout(t2);
+      window.clearTimeout(t3);
     };
   }, [screen]);
 
@@ -366,9 +365,13 @@ function App() {
                 {playKind === 'petualangan' && city && (
                   <p className="result-high">
                     {passedCity
-                      ? `Target ${city.targetScore} tercapai`
-                      : `Target ${city.targetScore} · belum tercapai`}
-                    {isNewRecord ? ' · Rekor baru!' : ''}
+                      ? `Target ${city.targetScore} poin ${city.nameId} tercapai${
+                          nextCity
+                            ? ', kamu bisa lanjut ke kota berikut.'
+                            : '.'
+                        }`
+                      : `Target ${city.targetScore} poin · belum tercapai. Coba lagi ya!`}
+                    {isNewRecord ? ' Rekor baru!' : ''}
                   </p>
                 )}
                 {playKind !== 'petualangan' && (
@@ -377,8 +380,11 @@ function App() {
                     {isNewRecord ? ' · baru!' : ''}
                   </p>
                 )}
-                {adventureUnlockedMsg && passedCity && (
-                  <p className="result-adventure">{adventureUnlockedMsg}</p>
+                {funFact && passedCity && (
+                  <div className="result-funfact">
+                    <p className="result-funfact-label">Tahukah kamu?</p>
+                    <p className="result-funfact-text">{funFact}</p>
+                  </div>
                 )}
               </div>
 

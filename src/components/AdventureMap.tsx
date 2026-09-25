@@ -241,22 +241,27 @@ export default function AdventureMap({
         })}
 
         {traveling && fromCity && toCity && (() => {
-          // Emoji ✈️ default menghadap ~45° (timur laut). Sesuaikan ke arah tujuan.
+          // Koordinat peta: X kanan, Y bawah (SVG).
+          // Pesawat digambar menghadap ATAS (utara = -Y), lalu diputar ke tujuan.
           const dx = toCity.mapX - fromCity.mapX;
           const dy = toCity.mapY - fromCity.mapY;
-          const deg = (Math.atan2(dy, dx) * 180) / Math.PI;
-          const rot = deg - 45;
+          // 0° = atas, naik searah jarum jam di layar
+          const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
+          const s = Math.min(vbW, vbH) * 0.045;
           return (
-            <text
-              x={planeX}
-              y={planeY}
-              fontSize={Math.min(vbW, vbH) * 0.08}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              transform={`rotate(${rot}, ${planeX}, ${planeY})`}
-            >
-              ✈️
-            </text>
+            <g transform={`translate(${planeX}, ${planeY}) rotate(${rot})`}>
+              {/* Pesawat sederhana, moncong ke atas */}
+              <path
+                d={`M 0 ${-s * 1.2}
+                   L ${s * 0.45} ${s * 0.9}
+                   L 0 ${s * 0.35}
+                   L ${-s * 0.45} ${s * 0.9} Z`}
+                fill="#c41e3a"
+                stroke="#fff"
+                strokeWidth={s * 0.08}
+              />
+              <circle cx={0} cy={-s * 0.35} r={s * 0.12} fill="#fff" />
+            </g>
           );
         })()}
       </svg>
