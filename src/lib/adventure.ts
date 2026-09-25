@@ -108,7 +108,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Kota Lama Semarang dilestarikan sebagai kawasan bersejarah.',
     ],
     mapX: 77.7,
-    mapY: 58.2,
+    mapY: 58.7,
   },
   {
     id: 'yogyakarta',
@@ -143,8 +143,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Motif batik parang dan kawung khas Solo.',
       'Pasar Klewer termasuk pasar batik terbesar di Indonesia.',
     ],
-    mapX: 78.35,
-    mapY: 59.3,
+    mapX: 78.7,
+    mapY: 59.2,
   },
   {
     id: 'surabaya',
@@ -197,8 +197,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Danau Kelimutu bisa berganti warna karena mineral di air.',
       'Pulau Padar punya tiga teluk terlihat dari satu puncak.',
     ],
-    mapX: 81.2,
-    mapY: 59.8,
+    mapX: 80.7,
+    mapY: 59.6,
   },
   {
     id: 'makassar',
@@ -215,8 +215,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Fort Rotterdam di atas bekas benteng kerajaan Gowa.',
       'Losari jalur rekreasi panjang menghadap selat.',
     ],
-    mapX: 80.36,
-    mapY: 57.53,
+    mapX: 80.2,
+    mapY: 57.9,
   },
   {
     id: 'derawan',
@@ -233,8 +233,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Penyu hijau bertelur di pantai Derawan.',
       'Masuk segitiga terumbu karang dunia (Coral Triangle).',
     ],
-    mapX: 82.5,
-    mapY: 54.5,
+    mapX: 79.5,
+    mapY: 55.8,
   },
   {
     id: 'manado',
@@ -251,8 +251,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Satu titik selam bisa memuat puluhan spesies ikan tropis.',
       'Taman Nasional Bunaken dilindungi sejak 1991.',
     ],
-    mapX: 82.8,
-    mapY: 52.8,
+    mapX: 81.4,
+    mapY: 55.2,
   },
   {
     id: 'raja-ampat',
@@ -269,7 +269,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Karst Wayag seperti gundukan hijau di laut toska.',
       'Nama Ampat dari empat pulau utama: Waigeo, Batanta, Salawati, Misool.',
     ],
-    mapX: 84.2,
+    mapX: 83.6,
     mapY: 55.5,
   },
   {
@@ -287,8 +287,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Satu-satunya gletser tropis di Indonesia ada di sini.',
       'Gletsernya mencair cepat dalam beberapa dekade terakhir.',
     ],
-    mapX: 86.5,
-    mapY: 56.2,
+    mapX: 83.5,
+    mapY: 57.2,
   },
   {
     id: 'medan',
@@ -305,8 +305,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Danau Toba dekat Medan dari letusan supervulkan ~74.000 tahun lalu.',
       'Pulau Samosir di tengah Toba hampir seluas Singapura.',
     ],
-    mapX: 74.84,
-    mapY: 51.26,
+    mapX: 75,
+    mapY: 54.2,
   },
 ];
 
