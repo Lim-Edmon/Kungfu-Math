@@ -41,6 +41,25 @@ export const ADVENTURE_REGIONS: { id: string; labelId: string }[] = [
   { id: 'sea', labelId: 'Asia Tenggara' },
 ];
 
+/** Nama negara lengkap (untuk anak — jangan tampilkan kode tl/bn/ph) */
+export const COUNTRY_NAMES_ID: Record<string, string> = {
+  id: 'Indonesia',
+  my: 'Malaysia',
+  sg: 'Singapura',
+  th: 'Thailand',
+  kh: 'Kamboja',
+  la: 'Laos',
+  mm: 'Myanmar',
+  vn: 'Vietnam',
+  ph: 'Filipina',
+  bn: 'Brunei',
+  tl: 'Timor Leste',
+};
+
+export function getCountryNameId(countryId: string): string {
+  return COUNTRY_NAMES_ID[countryId] ?? countryId;
+}
+
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
   { id: 'mudah', labelId: 'Mudah', timeBonus: 5, descId: '+5 dtk tiap benar' },
   { id: 'normal', labelId: 'Normal', timeBonus: 3, descId: '+3 dtk tiap benar' },

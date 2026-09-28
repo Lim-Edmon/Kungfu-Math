@@ -11,6 +11,7 @@ import {
   ADVENTURE_CITIES,
   ADVENTURE_DIFFICULTIES,
   ADVENTURE_REGIONS,
+  getCountryNameId,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
@@ -340,14 +341,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                             const unlocked =
                               c.id === 'jakarta' ||
                               unlockedList.includes(c.id);
-                            const country =
-                              c.countryId === 'id'
-                                ? 'Indonesia'
-                                : c.countryId === 'my'
-                                  ? 'Malaysia'
-                                  : c.countryId === 'sg'
-                                    ? 'Singapura'
-                                    : c.countryId;
+                            const country = getCountryNameId(c.countryId);
                             const order =
                               ADVENTURE_CITIES.findIndex((x) => x.id === c.id) +
                               1;
