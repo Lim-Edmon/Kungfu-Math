@@ -183,7 +183,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Kawah Putih berwarna putih kehijauan karena belerang.',
     ],
     mapX: 77.23,
-    mapY: 58.7,
+    mapY: 58.95,
   },
   {
     id: 'semarang',
@@ -218,8 +218,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Tugu Yogya titik nol kilometer resmi kota.',
       'Keraton masih menjalankan upacara adat Kesultanan.',
     ],
-    mapX: 78.2,
-    mapY: 59.6,
+    mapX: 77.7,
+    mapY: 59.4,
   },
   {
     id: 'solo',
@@ -236,8 +236,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Motif batik parang dan kawung khas Solo.',
       'Pasar Klewer termasuk pasar batik terbesar di Indonesia.',
     ],
-    mapX: 78.7,
-    mapY: 59.2,
+    mapX: 77.8,
+    mapY: 59.23,
   },
   {
     id: 'surabaya',
@@ -254,8 +254,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       '10 November 1945 jadi Hari Pahlawan nasional.',
       'Jembatan Suramadu menghubungkan Surabaya–Madura.',
     ],
-    mapX: 78.43,
-    mapY: 58.85,
+    mapX: 78.2,
+    mapY: 59.03,
   },
   // —— Sumatera ——
   {
@@ -273,8 +273,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Danau Toba dekat Medan dari letusan supervulkan ~74.000 tahun lalu.',
       'Pulau Samosir di tengah Toba hampir seluas Singapura.',
     ],
-    mapX: 75,
-    mapY: 54.2,
+    mapX: 75.28,
+    mapY: 52.28,
   },
   // —— Kalimantan ——
   {
@@ -292,8 +292,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Penyu hijau bertelur di pantai Derawan.',
       'Masuk segitiga terumbu karang dunia (Coral Triangle).',
     ],
-    mapX: 79.5,
-    mapY: 55.8,
+    mapX: 79.34,
+    mapY: 53.09,
   },
   // —— Sulawesi ——
   {
@@ -311,8 +311,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Fort Rotterdam di atas bekas benteng kerajaan Gowa.',
       'Losari jalur rekreasi panjang menghadap selat.',
     ],
-    mapX: 80.2,
-    mapY: 57.9,
+    mapX: 79.58,
+    mapY: 57.72,
   },
   {
     id: 'manado',
@@ -329,8 +329,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Satu titik selam bisa memuat puluhan spesies ikan tropis.',
       'Taman Nasional Bunaken dilindungi sejak 1991.',
     ],
-    mapX: 81.4,
-    mapY: 55.2,
+    mapX: 80.71,
+    mapY: 53.59,
   },
   // —— Papua / pulau timur ——
   {
@@ -348,8 +348,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Karst Wayag seperti gundukan hijau di laut toska.',
       'Nama Ampat dari empat pulau utama: Waigeo, Batanta, Salawati, Misool.',
     ],
-    mapX: 83.6,
-    mapY: 55.5,
+    mapX: 81.95,
+    mapY: 54.76,
   },
   {
     id: 'jayapura',
@@ -366,8 +366,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Satu-satunya gletser tropis di Indonesia ada di sini.',
       'Gletsernya mencair cepat dalam beberapa dekade terakhir.',
     ],
-    mapX: 83.5,
-    mapY: 57.2,
+    mapX: 83.99,
+    mapY: 56.09,
   },
   // —— Nusa Tenggara ——
   {
@@ -385,8 +385,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Danau Kelimutu bisa berganti warna karena mineral di air.',
       'Pulau Padar punya tiga teluk terlihat dari satu puncak.',
     ],
-    mapX: 80.7,
-    mapY: 59.6,
+    mapX: 79.93,
+    mapY: 59.84,
   },
   // —— Bali terakhir di Indonesia ——
   {
@@ -404,8 +404,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Pura Uluwatu di tebing kapur menghadap Samudra Hindia.',
       'Selat Lombok adalah garis Wallace pemisah fauna Asia–Australasia.',
     ],
-    mapX: 79.24,
-    mapY: 60.05,
+    mapX: 78.71,
+    mapY: 59.9,
   },
 
   // —— Asia Tenggara (setelah lolos Bali) ——
@@ -425,8 +425,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Timor-Leste merdeka sebagai negara pada tahun 2002.',
       'Bahasa resmi termasuk Tetum dan Portugis.',
     ],
-    mapX: 82.0,
-    mapY: 58.2,
+    mapX: 80.85,
+    mapY: 59.85,
   },
   {
     id: 'brunei',
@@ -443,8 +443,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Brunei salah satu negara terkecil di Asia dengan hutan hujan yang luas.',
       'Kampong Ayer adalah permukiman di atas air yang sudah berusia berabad-abad.',
     ],
-    mapX: 80.2,
-    mapY: 54.0,
+    mapX: 78.65,
+    mapY: 51.46,
   },
   {
     id: 'cebu',
@@ -461,8 +461,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Cebu termasuk pusat perdagangan pulau yang ramai di Visayas.',
       'Pantai dan pulau kecil di sekitar Cebu populer untuk snorkel.',
     ],
-    mapX: 81.0,
-    mapY: 50.2,
+    mapX: 80.51,
+    mapY: 48.09,
   },
   {
     id: 'manila',
@@ -479,8 +479,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Manila Bay terkenal dengan pemandangan matahari terbenam yang oranye.',
       'Jeepney warna-warni adalah transportasi ikonik di jalanan Filipina.',
     ],
-    mapX: 80.1,
-    mapY: 48.0,
+    mapX: 79.91,
+    mapY: 45.42,
   },
   {
     id: 'penang',
@@ -497,8 +497,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Rumah toko lama di Penang sering berwarna cerah dan berlantai dua.',
       'Jembatan Penang menghubungkan pulau dengan semenanjung Malaysia.',
     ],
-    mapX: 75.28,
-    mapY: 49.96,
+    mapX: 75.62,
+    mapY: 51.14,
   },
   {
     id: 'kuala-lumpur',
@@ -515,8 +515,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Tiap menara tingginya 452 meter dengan 88 lantai.',
       'Desain denah menara terinspirasi motif bintang segi delapan.',
     ],
-    mapX: 75.64,
-    mapY: 51.58,
+    mapX: 75.91,
+    mapY: 52.56,
   },
   {
     id: 'singapore',
@@ -533,8 +533,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Supertree di Gardens by the Bay menyala dengan lampu LED di malam hari.',
       'Hampir setengah wilayah Singapura adalah ruang hijau dan taman.',
     ],
-    mapX: 76.21,
-    mapY: 52.87,
+    mapX: 76.35,
+    mapY: 53.67,
   },
   {
     id: 'phuket',
@@ -551,8 +551,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Teluk Phang Nga punya batu karst yang muncul dari laut toska.',
       'Kota tua Phuket menyimpan bangunan Sino-Portuguese berwarna cerah.',
     ],
-    mapX: 73.6,
-    mapY: 51.2,
+    mapX: 75.22,
+    mapY: 49.61,
   },
   {
     id: 'ho-chi-minh',
@@ -569,8 +569,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Pasar Ben Thanh menjadi titik orientasi pusat kota yang ramai.',
       'Sungai Saigon membelah kota; dulu jalur dagang penting di selatan Vietnam.',
     ],
-    mapX: 77.4,
-    mapY: 50.6,
+    mapX: 76.93,
+    mapY: 47.77,
   },
   {
     id: 'bangkok',
@@ -587,8 +587,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Nama resmi Bangkok termasuk yang terpanjang di dunia untuk nama tempat.',
       'Perahu long-tail menjadi transportasi khas di sungai Chao Phraya.',
     ],
-    mapX: 74.5,
-    mapY: 48.2,
+    mapX: 75.66,
+    mapY: 45.94,
   },
   {
     id: 'siem-reap',
@@ -605,8 +605,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Relief batu di dinding Angkor menceritakan legenda Hindu-Buddha.',
       'Kompleks Angkor pernah menjadi pusat kekaisaran Khmer yang luas.',
     ],
-    mapX: 74.3,
-    mapY: 49.4,
+    mapX: 76.35,
+    mapY: 46.19,
   },
   {
     id: 'phnom-penh',
@@ -623,8 +623,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Kota ini berdiri di pertemuan tiga sungai besar.',
       'Pagoda Perak di kompleks istana dihiasi ubin perak di lantai.',
     ],
-    mapX: 74.9,
-    mapY: 50.4,
+    mapX: 76.58,
+    mapY: 47.32,
   },
   {
     id: 'chiang-mai',
@@ -641,8 +641,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Chiang Mai dulu ibu kota kerajaan Lanna di utara Thailand.',
       'Pasar malam Chiang Mai terkenal dengan kerajinan kayu dan kain.',
     ],
-    mapX: 73.8,
-    mapY: 45.8,
+    mapX: 75.35,
+    mapY: 42.81,
   },
   {
     id: 'luang-prabang',
@@ -659,8 +659,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Setiap pagi biksu berjalan menerima sedekah nasi dari warga.',
       'Air terjun Kuang Si airnya berwarna toska karena mineral.',
     ],
-    mapX: 73.4,
-    mapY: 46.6,
+    mapX: 76.0,
+    mapY: 42.13,
   },
   {
     id: 'bagan',
@@ -677,8 +677,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Balon udara sering terbang di atas Bagan saat matahari terbit.',
       'Bagan dulu ibu kota kerajaan yang makmur di sepanjang Sungai Irrawaddy.',
     ],
-    mapX: 72.6,
-    mapY: 46.2,
+    mapX: 74.49,
+    mapY: 41.33,
   },
   {
     id: 'hanoi',
@@ -695,8 +695,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Kawasan kota lama Hanoi punya puluhan jalan kecil yang dulu dibagi menurut jenis kerajinan.',
       'Jembatan The Huc berwarna merah mengarah ke pulau kuil di tengah danau.',
     ],
-    mapX: 76.6,
-    mapY: 45.2,
+    mapX: 76.76,
+    mapY: 41.41,
   },
 ];
 
