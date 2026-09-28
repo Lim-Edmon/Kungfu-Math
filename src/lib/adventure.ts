@@ -41,23 +41,90 @@ export const ADVENTURE_REGIONS: { id: string; labelId: string }[] = [
   { id: 'sea', labelId: 'Asia Tenggara' },
 ];
 
-/** Nama negara lengkap (untuk anak — jangan tampilkan kode tl/bn/ph) */
+/**
+ * Nama negara LENGKAP untuk UI (anak).
+ * JANGAN tampilkan kode ISO (tl, bn, ph, …).
+ * Saat tambah kota/negara baru: WAJIB isi baris di sini dulu.
+ */
 export const COUNTRY_NAMES_ID: Record<string, string> = {
+  // Jalur sekarang (Indonesia + SEA)
   id: 'Indonesia',
+  tl: 'Timor Leste',
+  bn: 'Brunei',
+  ph: 'Filipina',
   my: 'Malaysia',
   sg: 'Singapura',
   th: 'Thailand',
+  vn: 'Vietnam',
   kh: 'Kamboja',
   la: 'Laos',
   mm: 'Myanmar',
-  vn: 'Vietnam',
-  ph: 'Filipina',
-  bn: 'Brunei',
-  tl: 'Timor Leste',
+  // Cadangan region berikutnya
+  cn: 'Tiongkok',
+  jp: 'Jepang',
+  kr: 'Korea Selatan',
+  tw: 'Taiwan',
+  mn: 'Mongolia',
+  in: 'India',
+  np: 'Nepal',
+  bt: 'Bhutan',
+  bd: 'Bangladesh',
+  pk: 'Pakistan',
+  lk: 'Sri Lanka',
+  au: 'Australia',
+  nz: 'Selandia Baru',
+  fj: 'Fiji',
+  pg: 'Papua Nugini',
+  ru: 'Rusia',
+  tr: 'Turki',
+  ae: 'Uni Emirat Arab',
+  sa: 'Arab Saudi',
+  eg: 'Mesir',
+  za: 'Afrika Selatan',
+  ke: 'Kenya',
+  ma: 'Maroko',
+  gr: 'Yunani',
+  it: 'Italia',
+  va: 'Vatikan',
+  es: 'Spanyol',
+  pt: 'Portugal',
+  fr: 'Prancis',
+  de: 'Jerman',
+  nl: 'Belanda',
+  be: 'Belgia',
+  ch: 'Swiss',
+  at: 'Austria',
+  pl: 'Polandia',
+  cz: 'Ceko',
+  hu: 'Hungaria',
+  ro: 'Rumania',
+  ua: 'Ukraina',
+  se: 'Swedia',
+  no: 'Norwegia',
+  dk: 'Denmark',
+  fi: 'Finlandia',
+  is: 'Islandia',
+  gb: 'Inggris',
+  ie: 'Irlandia',
+  us: 'Amerika Serikat',
+  ca: 'Kanada',
+  mx: 'Meksiko',
+  br: 'Brasil',
+  ar: 'Argentina',
+  cl: 'Chili',
+  pe: 'Peru',
+  co: 'Kolombia',
+  ec: 'Ekuador',
+  bo: 'Bolivia',
+  cu: 'Kuba',
+  gl: 'Greenland',
 };
 
 export function getCountryNameId(countryId: string): string {
-  return COUNTRY_NAMES_ID[countryId] ?? countryId;
+  const name = COUNTRY_NAMES_ID[countryId];
+  if (name) return name;
+  // Jangan tampilkan kode mentah ke anak
+  return 'Negara lain';
 }
 
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
