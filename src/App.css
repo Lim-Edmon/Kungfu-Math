@@ -1747,6 +1747,47 @@ a.btn-link-trakteer {
   font-size: 0.75rem;
   color: var(--color-text-muted);
 }
+
+/* Fun fact: di bawah layer selamat, wajib tutup manual */
+.result-funfact-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px 16px calc(16px + var(--bottom-nav-clearance, 72px));
+  pointer-events: auto;
+}
+.result-funfact-modal {
+  width: 100%;
+  max-width: 360px;
+  background: var(--color-card, #fff);
+  border-radius: 18px;
+  padding: 18px 16px 14px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.16);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #c41e3a) 22%, transparent);
+  text-align: left;
+}
+.result-funfact-modal .result-funfact-label {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-primary, #c41e3a);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.result-funfact-modal .result-funfact-text {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+.result-funfact-close {
+  width: 100%;
+  margin: 0;
+}
+
 .result-summary {
   text-align: center;
   padding: 12px 8px 4px;

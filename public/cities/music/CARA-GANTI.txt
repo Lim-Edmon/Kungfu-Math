@@ -1,0 +1,19 @@
+Musik per kota
+==============
+Taruh file di folder ini:
+  {id-kota}.mp3
+
+Contoh:
+  jakarta.mp3
+  bali.mp3
+  singapore.mp3
+
+Aturan:
+- Nama file = id kota, huruf kecil (sama dengan adventure.ts)
+- Format: .mp3 saja
+- Ideal: 8–15 detik, loop (kode memutar loop)
+- Ukuran kecil (mis. < 300 KB) agar PWA tetap ringan
+- Jika file tidak ada / gagal load → otomatis pakai /sounds/bgm.mp3
+
+Prompt contoh (AI music / Suno dll.): lihat kolom "Prompt musik" di file
+kungfu-math-100-kota-petualangan.xlsx

@@ -35,6 +35,8 @@ import {
   pickCityFunFact,
   MVP_REGION_LAST_CITY_ID,
   MVP_REGION_UNLOCK_MSG,
+  MVP_PATH_LAST_CITY_ID,
+  MVP_PATH_COMPLETE_MSG,
 } from './lib/adventure';
 import './styles/theme.css';
 import './App.css';
@@ -99,6 +101,8 @@ function App() {
   const [adventureDiffId, setAdventureDiffId] = useState('normal');
   const [passedCity, setPassedCity] = useState(false);
   const [funFact, setFunFact] = useState<string | null>(null);
+  /** Fun fact: popup manual close (anak sempat baca) */
+  const [funFactOpen, setFunFactOpen] = useState(false);
   const [nextCityId, setNextCityId] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
@@ -127,9 +131,10 @@ function App() {
     }
   }, []);
 
+  // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
   useEffect(() => {
     if (!celebrateOpen) return;
-    const t = setTimeout(() => setCelebrateOpen(false), 1800);
+    const t = setTimeout(() => setCelebrateOpen(false), 1400);
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
@@ -181,6 +186,7 @@ function App() {
     setPassedCity(false);
     setNextCityId(null);
     setFunFact(null);
+    setFunFactOpen(false);
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
@@ -207,7 +213,10 @@ function App() {
       });
       setPassedCity(passed);
       setNextCityId(nextId);
-      setFunFact(passed ? pickCityFunFact(cityId) : null);
+      const fact = passed ? pickCityFunFact(cityId) : null;
+      setFunFact(fact);
+      // Fun fact popup: manual close — biar anak sempat baca
+      setFunFactOpen(!!fact);
     }
 
     const willCelebrate =
@@ -336,6 +345,7 @@ function App() {
             lastGrade === 'A';
           return (
             <div className={`result-screen tone-${headline.tone}`}>
+              {/* Ucapan selamat: layer atas, auto-close singkat */}
               {celebrate && celebrateOpen && (
                 <button
                   type="button"
@@ -354,9 +364,32 @@ function App() {
                     </div>
                     <p className="result-float-title">{headline.title}</p>
                     <p className="result-float-sub">{headline.sub}</p>
-                    <p className="result-celebrate-hint">Ketuk untuk lanjut</p>
                   </div>
                 </button>
+              )}
+
+              {/* Fun fact: layer bawah, HARUS ditutup manual agar anak sempat baca */}
+              {funFact && passedCity && funFactOpen && (
+                <div
+                  className="result-funfact-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="funfact-title"
+                >
+                  <div className="result-funfact-modal">
+                    <p id="funfact-title" className="result-funfact-label">
+                      Tahukah kamu?
+                    </p>
+                    <p className="result-funfact-text">{funFact}</p>
+                    <button
+                      type="button"
+                      className="btn-primary result-funfact-close"
+                      onClick={() => setFunFactOpen(false)}
+                    >
+                      Mengerti
+                    </button>
+                  </div>
+                </div>
               )}
 
               <div className="result-summary">
@@ -387,17 +420,16 @@ function App() {
                     {isNewRecord ? ' · baru!' : ''}
                   </p>
                 )}
-                {funFact && passedCity && (
-                  <div className="result-funfact">
-                    <p className="result-funfact-label">Tahukah kamu?</p>
-                    <p className="result-funfact-text">{funFact}</p>
+                {passedCity && lastCityId === MVP_REGION_LAST_CITY_ID && (
+                  <div className="result-funfact result-region-unlock">
+                    <p className="result-funfact-text">{MVP_REGION_UNLOCK_MSG}</p>
                   </div>
                 )}
                 {passedCity &&
-                  lastCityId === MVP_REGION_LAST_CITY_ID &&
+                  lastCityId === MVP_PATH_LAST_CITY_ID &&
                   !nextCity && (
                   <div className="result-funfact result-region-unlock">
-                    <p className="result-funfact-text">{MVP_REGION_UNLOCK_MSG}</p>
+                    <p className="result-funfact-text">{MVP_PATH_COMPLETE_MSG}</p>
                   </div>
                 )}
               </div>
