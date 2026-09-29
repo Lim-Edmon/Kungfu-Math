@@ -7,13 +7,14 @@
  * Created      : September 2026
  * Project type : Personal educational game (consumer / community)
  *
+ * Copyright (c) 2026 Lim Edmon. All Rights Reserved.
+ * Proprietary — not open source. See LICENSE and README.
+ *
  * Disclaimer:
- * This code is provided as-is for the Kungfu Math learning game. It has
- * not been audited for production-grade security or reliability, and it
- * is NOT intended for handling payments, sensitive personal data, or any
- * safety-critical use. Feel free to use, modify, and learn from it for
- * this project — please keep this author credit if you copy or
- * redistribute any part of it elsewhere.
+ * Provided as-is for education and personal play. Not audited for
+ * production security, payments, or sensitive data. Unauthorized
+ * copying, redistribution, or claiming this work as your own is
+ * prohibited without prior written permission from the author.
  * ---------------------------------------------------------------------
  */
 

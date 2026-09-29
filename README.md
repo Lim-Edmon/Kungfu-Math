@@ -76,8 +76,29 @@ Prompt musik/BG: file Excel `kungfu-math-jalur-musik-kota.xlsx`.
 
 Vite + React + TypeScript · Deploy: Vercel
 
-## Author & disclaimer
+---
 
-**Author:** Lim Edmon (2026)
+## Hak cipta & lisensi (penting)
 
-Built with AI coding assistants as development partners. The product is provided **as-is** for education and personal use — not audited for production security, payments, or sensitive data. Keep author credit if you reuse parts of this project.
+**© 2026 Lim Edmon. All Rights Reserved.**
+
+Kungfu Math (kode, aset gambar, karakter, musik, dokumentasi, merek) adalah
+karya **proprietary** milik Lim Edmon. Lihat file `LICENSE`.
+
+**Tidak diizinkan** tanpa izin tertulis dari pemilik:
+
+- menyalin, menyebar, atau menerbitkan ulang kode/aset ini
+- memakai sebagai dasar produk lain (komersial maupun non-komersial)
+- menghapus atau mengubah credit / copyright
+- mengklaim karya ini (atau turunannya) sebagai milik sendiri
+
+Main di situs resmi untuk belajar/bermain pribadi **boleh**.  
+Itu **bukan** izin untuk memakai source code atau aset di project lain.
+
+Bantuan / izin: [Trakteer lim.edmon](https://trakteer.id/lim.edmon)
+
+### Disclaimer teknis
+
+Produk disediakan **as-is** untuk edukasi dan penggunaan pribadi.  
+Belum diaudit untuk keamanan production, pembayaran, atau data sensitif.  
+Penulis tidak bertanggung jawab atas kerugian dari penggunaan software ini.
