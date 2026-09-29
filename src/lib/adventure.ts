@@ -131,17 +131,15 @@ export function getCountryNameId(countryId: string): string {
 }
 
 /**
- * Tingkat petualangan — NAMA BERBEDA dari Level permainan
+ * Tempo perjalanan — NAMA BERBEDA dari Level permainan
  * (Pemula / Dasar / Menengah / Mahir / Master).
- * 6 opsi → grid 2×3 di home.
+ * 4 opsi → grid 2×2 di home.
  */
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
-  { id: 'santai', labelId: 'Santai', timeBonus: 5, timePenalty: 0, descId: '+5 dtk tiap benar' },
-  { id: 'ringan', labelId: 'Ringan', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar' },
-  { id: 'siaga', labelId: 'Siaga', timeBonus: 2, timePenalty: 0, descId: '+2 dtk tiap benar' },
-  { id: 'ketat', labelId: 'Ketat', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar' },
-  { id: 'tajam', labelId: 'Tajam', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu' },
-  { id: 'berani', labelId: 'Berani', timeBonus: 0, timePenalty: 1, descId: 'Salah −1 dtk' },
+  { id: 'santai', labelId: 'Santai', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar' },
+  { id: 'ringan', labelId: 'Ringan', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar' },
+  { id: 'normal', labelId: 'Normal', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu' },
+  { id: 'berani', labelId: 'Berani', timeBonus: 0, timePenalty: 3, descId: 'Salah −3 dtk (+nyawa)' },
 ];
 
 export function getAdventureDifficulty(id: string): AdventureDifficulty {
