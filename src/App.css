@@ -1770,7 +1770,7 @@ a.btn-link-trakteer {
   color: var(--color-text-muted);
 }
 
-/* Fun fact: di bawah layer selamat (z lebih rendah), selalu di TENGAH layar */
+/* Fun fact: di TENGAH, di atas menu bawah (z-index > bottom-nav) */
 .result-funfact-overlay {
   position: fixed;
   inset: 0;
@@ -1780,7 +1780,7 @@ a.btn-link-trakteer {
   align-items: center;
   justify-content: center;
   padding: max(20px, env(safe-area-inset-top, 0px)) 20px
-    max(20px, env(safe-area-inset-bottom, 0px));
+    max(24px, calc(var(--bottom-nav-clearance, 72px) + env(safe-area-inset-bottom, 0px)));
   pointer-events: auto;
   box-sizing: border-box;
 }

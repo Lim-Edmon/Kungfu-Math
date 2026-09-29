@@ -284,8 +284,8 @@ function App() {
   const navActive: NavTab =
     screen === 'settings' ? 'settings' : screen === 'dojo' ? 'dojo' : 'home';
 
-  // Sembunyikan menu bawah saat main & hasil (hindari tabrakan fun fact / confetti)
-  const showChrome = screen !== 'game' && screen !== 'result';
+  // Sembunyikan menu bawah hanya saat main. Di hasil tetap tampil (fun fact di layer atas).
+  const showChrome = screen !== 'game';
   const levelLabel = getLevelById(selectedLevel).labelId;
 
   return (
