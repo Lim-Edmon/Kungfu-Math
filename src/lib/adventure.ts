@@ -32,7 +32,10 @@ export interface AdventureCity {
 export interface AdventureDifficulty {
   id: string;
   labelId: string;
+  /** Detik ditambah tiap jawaban benar */
   timeBonus: number;
+  /** Detik dikurangi tiap jawaban salah (0 = tidak ada) */
+  timePenalty: number;
   descId: string;
 }
 
@@ -127,12 +130,18 @@ export function getCountryNameId(countryId: string): string {
   return 'Negara lain';
 }
 
+/**
+ * Tingkat petualangan — NAMA BERBEDA dari Level permainan
+ * (Pemula / Dasar / Menengah / Mahir / Master).
+ * 6 opsi → grid 2×3 di home.
+ */
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
-  { id: 'mudah', labelId: 'Mudah', timeBonus: 5, descId: '+5 dtk tiap benar' },
-  { id: 'normal', labelId: 'Normal', timeBonus: 3, descId: '+3 dtk tiap benar' },
-  { id: 'sulit', labelId: 'Sulit', timeBonus: 2, descId: '+2 dtk tiap benar' },
-  { id: 'master', labelId: 'Master', timeBonus: 1, descId: '+1 dtk tiap benar' },
-  { id: 'extreme', labelId: 'Extreme', timeBonus: 0, descId: 'Tanpa bonus waktu' },
+  { id: 'santai', labelId: 'Santai', timeBonus: 5, timePenalty: 0, descId: '+5 dtk tiap benar' },
+  { id: 'ringan', labelId: 'Ringan', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar' },
+  { id: 'siaga', labelId: 'Siaga', timeBonus: 2, timePenalty: 0, descId: '+2 dtk tiap benar' },
+  { id: 'ketat', labelId: 'Ketat', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar' },
+  { id: 'tajam', labelId: 'Tajam', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu' },
+  { id: 'berani', labelId: 'Berani', timeBonus: 0, timePenalty: 1, descId: 'Salah −1 dtk' },
 ];
 
 export function getAdventureDifficulty(id: string): AdventureDifficulty {

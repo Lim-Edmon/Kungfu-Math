@@ -32,6 +32,8 @@ interface GameProps {
   agility?: boolean;
   /** Petualangan: detik ditambah tiap jawaban benar */
   timeBonusSec?: number;
+  /** Petualangan: detik dikurangi tiap jawaban salah */
+  timePenaltySec?: number;
   /** Petualangan: nama kota di HUD */
   cityName?: string;
   cityId?: string;
@@ -191,6 +193,7 @@ export default function Game({
   level,
   agility = false,
   timeBonusSec = 0,
+  timePenaltySec = 0,
   cityName,
   cityId,
   targetScore,
@@ -501,12 +504,46 @@ export default function Game({
           return next;
         }
 
-        // Salah → nyawa −1, bola muncul lagi, SOAL TETAP
+        // Salah → nyawa −1, bola muncul lagi, SOAL TETAP; tempo Berani: −waktu
         sfx.wrong();
-        return loseLife(prev, updatedNumbers, newSelectedIds);
+        let withTime = prev;
+        if (timePenaltySec > 0) {
+          const newTime = Math.max(0, prev.timeLeft - timePenaltySec);
+          if (newTime <= 0) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            clearNextQuestionTimeout();
+            stopAllMusic();
+            playEndSound(prev.score, targetScore);
+            const grade = calcGrade(
+              prev.score,
+              prev.questionsSolved,
+              prev.maxCombo
+            );
+            setTimeout(() => onFinish(prev.score, grade), 100);
+            return {
+              ...prev,
+              timeLeft: 0,
+              status: 'won' as const,
+              numbers: updatedNumbers,
+              selectedIds: [],
+            };
+          }
+          withTime = { ...prev, timeLeft: newTime };
+        }
+        return loseLife(withTime, updatedNumbers, newSelectedIds);
       });
     },
-    [state.status, loseLife, spawnNextQuestion, clearNextQuestionTimeout, onFinish, timeBonusSec, mode]
+    [
+      state.status,
+      loseLife,
+      spawnNextQuestion,
+      clearNextQuestionTimeout,
+      onFinish,
+      timeBonusSec,
+      timePenaltySec,
+      mode,
+      targetScore,
+    ]
   );
 
 
@@ -723,6 +760,7 @@ export default function Game({
             <p className="adventure-target">
               {cityName} · lolos ≥ {targetScore}
               {timeBonusSec > 0 ? ` · benar +${timeBonusSec}s` : ''}
+              {timePenaltySec > 0 ? ` · salah −${timePenaltySec}s` : ''}
             </p>
           )}
         </div>

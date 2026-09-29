@@ -49,10 +49,10 @@ export default function AdventureMap({
     0,
     ADVENTURE_CITIES.findIndex((c) => c.id === activeId)
   );
-  // Debug: tampilkan semua kota. Normal: 1 sebelum + aktif + 2 sesudah
+  // Debug: semua kota. Normal: 2 sebelum + aktif + 2 sesudah
   const winStart = mapDebug.on
     ? 0
-    : Math.max(0, activeIdx - 1);
+    : Math.max(0, activeIdx - 2);
   const winEnd = mapDebug.on
     ? ADVENTURE_CITIES.length - 1
     : Math.min(ADVENTURE_CITIES.length - 1, activeIdx + 2);
@@ -60,14 +60,14 @@ export default function AdventureMap({
 
   const xs = windowCities.map((c) => c.mapX);
   const ys = windowCities.map((c) => c.mapY);
-  // pad/minSpan naik → peta lebih zoom out
-  const pad = mapDebug.on ? 4 * mapDebug.zoom : 1.4;
+  // pad/minSpan lebih kecil → zoom IN (buang sisa samping)
+  const pad = mapDebug.on ? 4 * mapDebug.zoom : 0.85;
   let minX = Math.min(...xs) - pad;
   let maxX = Math.max(...xs) + pad;
   let minY = Math.min(...ys) - pad;
   let maxY = Math.max(...ys) + pad;
 
-  const minSpan = mapDebug.on ? 12 * mapDebug.zoom : 3.2;
+  const minSpan = mapDebug.on ? 12 * mapDebug.zoom : 2.2;
   if (maxX - minX < minSpan) {
     const m = (minX + maxX) / 2;
     minX = m - minSpan / 2;
@@ -272,17 +272,29 @@ export default function AdventureMap({
           const dx = toCity.mapX - fromCity.mapX;
           const dy = toCity.mapY - fromCity.mapY;
           const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
-          const s = Math.min(vbW, vbH) * (mapDebug.on ? 0.05 : 0.09);
+          const s = Math.min(vbW, vbH) * (mapDebug.on ? 0.06 : 0.14);
           return (
-            <image
-              href="/cities/map/plane.png"
-              x={planeX - s / 2}
-              y={planeY - s / 2}
-              width={s}
-              height={s}
-              transform={`rotate(${rot}, ${planeX}, ${planeY})`}
-              style={{ pointerEvents: 'none' }}
-            />
+            <g transform={`rotate(${rot}, ${planeX}, ${planeY})`} style={{ pointerEvents: 'none' }}>
+              {/* Halo agar pesawat lebih kelihatan di peta */}
+              <circle
+                cx={planeX}
+                cy={planeY}
+                r={s * 0.55}
+                fill="rgba(255, 120, 40, 0.45)"
+                stroke="#fff"
+                strokeWidth={s * 0.04}
+              />
+              <image
+                href="/cities/map/plane.png"
+                x={planeX - s / 2}
+                y={planeY - s / 2}
+                width={s}
+                height={s}
+                style={{
+                  filter: 'brightness(1.2) saturate(1.35) drop-shadow(0 1px 2px rgba(0,0,0,0.45))',
+                }}
+              />
+            </g>
           );
         })()}
       </svg>

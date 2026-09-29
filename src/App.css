@@ -1639,6 +1639,21 @@
   padding: 0.55rem 0.4rem;
 }
 
+.wizard-panel-title {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--color-text);
+}
+.wizard-panel-hint {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
 
 .adventure-target {
   margin: 0.35rem 0 0;

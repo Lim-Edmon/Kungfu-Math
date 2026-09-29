@@ -232,6 +232,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       <div className="wizard-body">
         {step === 1 && (
           <section className="wizard-panel">
+            <h2 className="wizard-panel-title">Level permainan</h2>
+            <p className="wizard-panel-hint">Seberapa sulit soal matematikanya</p>
             <div className="level-list compact-levels">
               {LEVELS.map((lv) => (
                 <button
@@ -276,7 +278,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
             {playKind === 'petualangan' && (
               <div className="city-pick">
-                <h3 className="subsection-title">Tingkat petualangan</h3>
+                <h3 className="subsection-title">Tempo perjalanan</h3>
+                <p className="wizard-panel-hint">Atur bonus/penalti waktu — beda dari level soal</p>
                 <div className="mode-buttons adventure-diff-buttons">
                   {ADVENTURE_DIFFICULTIES.map((d) => (
                     <button

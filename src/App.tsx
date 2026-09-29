@@ -100,7 +100,7 @@ function App() {
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
   const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
-  const [adventureDiffId, setAdventureDiffId] = useState('normal');
+  const [adventureDiffId, setAdventureDiffId] = useState('ringan');
   const [passedCity, setPassedCity] = useState(false);
   const [funFact, setFunFact] = useState<string | null>(null);
   /** Fun fact: popup manual close (anak sempat baca) */
@@ -319,6 +319,11 @@ function App() {
             timeBonusSec={
               playKind === 'petualangan'
                 ? getAdventureDifficulty(adventureDiffId).timeBonus
+                : 0
+            }
+            timePenaltySec={
+              playKind === 'petualangan'
+                ? getAdventureDifficulty(adventureDiffId).timePenalty
                 : 0
             }
             cityName={
