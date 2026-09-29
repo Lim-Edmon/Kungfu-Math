@@ -8,6 +8,7 @@ import type {
   PlayerProgress,
 } from './types';
 import { DEFAULT_PROGRESS } from './types';
+import { ADVENTURE_CITIES } from './adventure';
 
 const STORAGE_KEY = 'kungfu-math-progress';
 const CODE_PREFIX = 'KM1.';
@@ -65,20 +66,8 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
 
-  // Kota yang valid di jalur MVP (hindari id lama seperti shanghai)
-  const VALID_CITIES = new Set([
-    'jakarta',
-    'bandung',
-    'yogyakarta',
-    'surabaya',
-    'medan',
-    'makassar',
-    'bali',
-    'malacca',
-    'penang',
-    'kuala-lumpur',
-    'singapore',
-  ]);
+  // Sinkron dengan ADVENTURE_CITIES — jangan hardcode (supaya kota baru tidak terhapus saat load/import)
+  const VALID_CITIES = new Set(ADVENTURE_CITIES.map((c) => c.id));
 
   if (typeof p.adventureCityId === 'string' && VALID_CITIES.has(p.adventureCityId)) {
     next.adventureCityId = p.adventureCityId;
@@ -89,7 +78,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (Array.isArray(p.adventureUnlocked)) {
     next.adventureUnlocked = p.adventureUnlocked
       .filter((x): x is string => typeof x === 'string' && VALID_CITIES.has(x))
-      .slice(0, 20);
+      .slice(0, 80);
   }
   // Jakarta SELALU terbuka dari awal (progress lama / import tanpa jakarta)
   if (!next.adventureUnlocked.includes('jakarta')) {
@@ -101,6 +90,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (p.adventureHighScores && typeof p.adventureHighScores === 'object') {
     const ahs: Record<string, number> = {};
     for (const [k, v] of Object.entries(p.adventureHighScores as Record<string, unknown>)) {
+      if (!VALID_CITIES.has(k)) continue;
       const n = finiteNonNeg(v, MAX_SCORE);
       if (n !== null) ahs[k] = n;
     }

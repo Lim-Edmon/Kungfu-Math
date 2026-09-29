@@ -15,39 +15,66 @@ npm run dev
 ```
 
 Buka di browser: **http://localhost:5173**  
-Bisa juga dari HP di jaringan yang sama (pakai alamat Network yang ditampilkan Vite).
+Bisa juga dari HP di jaringan yang sama (alamat Network dari Vite).
 
-Build production (cek sebelum deploy):
+Build production:
 
 ```bash
 npm run build
 ```
 
+Deploy: push ke GitHub → Vercel otomatis build.
+
 ## Fitur saat ini
 
+### Latihan
 - Mode **Slice** (geser) dan **Tap** (tekan)
 - Arena **Diam** atau **Ketangkasan** (angka bergerak)
 - 6 karakter pendekar + nama pemain opsional
 - Level: Pemula → Dasar → Menengah → Mahir → Master
-- Gameplay: soal matematika, nyawa, timer, skor, combo
-- Navigasi bawah: Latihan · Dojo · Atur
-- Dojo: rekor skor per level
-- Tema tampilan: Siang / Malam / Nyaman Mata
-- Suara: SFX + BGM (bisa mute); file di `public/sounds/`
-- PWA: bisa dipasang ke layar utama HP
-- Progress di **localStorage** + kode pindah antar HP (`KM1.…` di Atur)
-- Responsive: HP, tablet, dan laptop/PC
+- Soal matematika, nyawa, timer 60 dtk, skor, combo
+
+### Petualangan
+- Jalur **Indonesia** (Jakarta → … → Bali) lalu **Asia Tenggara** (Dili → … → Hanoi)
+- Target skor per kota; lolos = buka kota berikutnya
+- Peta + pin; animasi pindah kota
+- Fun fact singkat saat lolos kota (tutup manual)
+- Latar & musik per kota (opsional):
+  - `public/cities/bg/{id}.webp` (atau .png / .jpg)
+  - `public/cities/music/{id}.mp3`
+  - Nama file = id kota (huruf kecil). Tidak ada → fallback default
+
+### Umum
+- Navigasi bawah: **Latihan · Dojo · Atur**
+- Dojo: rekor per level + rekor per kota petualangan
+- Tema: Siang / Malam / Nyaman
+- SFX + BGM (bisa mute)
+- PWA: pasang ke layar utama HP
+- Progress **localStorage** + kode pindah antar HP (tanpa login) di **Atur**
+- Responsive: HP, tablet, laptop/PC
+- Nama negara di UI selalu lengkap (bukan kode ISO)
+
+## Ganti aset
+
+| Aset | Folder |
+|------|--------|
+| Karakter | `public/characters/` + `CARA-GANTI.txt` |
+| SFX / BGM default | `public/sounds/` |
+| Latar kota | `public/cities/bg/{id}.webp` |
+| Musik kota | `public/cities/music/{id}.mp3` (ideal ~12 dtk, loop) |
+| Peta dunia | `public/cities/map/` |
+
+Prompt musik/BG: file Excel `kungfu-math-jalur-musik-kota.xlsx`.
 
 ## Catatan
 
 - Tidak ada backend / akun pengguna
-- Ganti gambar karakter: lihat `public/characters/CARA-GANTI.txt`
-- Ganti suara/musik: lihat `public/sounds/CARA-GANTI.txt`
-- Footer: dukungan Trakteer + © Lim Edmon 2026
+- Footer: Trakteer + © Lim Edmon 2026
+- Debug pin peta (dev): `?mapdebug=1` atau `?mapdebug=1&mapzoom=2`
 
 ## Stack
 
-Vite + React + TypeScript · Deploy: [Vercel](https://kungfu-math.vercel.app/)
+Vite + React + TypeScript · Deploy: Vercel
 
 ## Author & disclaimer
 

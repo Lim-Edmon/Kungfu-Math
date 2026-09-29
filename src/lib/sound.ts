@@ -155,64 +155,131 @@ function startFallbackBgm(): void {
 
 let cityAudio: HTMLAudioElement | null = null;
 let cityMissing: Record<string, boolean> = {};
+/** Generasi putar: batalkan async play lama supaya tidak overlap */
+let musicGen = 0;
 
-/** Musik kota opsional: /cities/music/{id}.mp3 — loop, fallback diam */
-function playDefaultBgmLoop() {
-  if (isMuted()) return;
-  try {
-    stopCityMusic();
-    const a = new Audio('/sounds/bgm.mp3');
-    a.loop = true;
-    a.volume = 0.3;
-    a.preload = 'auto';
-    a.addEventListener('error', () => {
-      cityAudio = null;
-    });
-    cityAudio = a;
-    void a.play().catch(() => {
-      cityAudio = null;
-    });
-  } catch {
-    /* diam */
+function stopToneBgm(): void {
+  bgmOn = false;
+  if (bgmTimer) {
+    clearInterval(bgmTimer);
+    bgmTimer = null;
+  }
+  if (bgmAudio) {
+    try {
+      bgmAudio.pause();
+      bgmAudio.removeAttribute('src');
+      bgmAudio.load();
+    } catch {
+      /* ignore */
+    }
+    bgmAudio = null;
   }
 }
 
-/** Musik kota (mp3 huruf kecil). Gagal / tidak ada → /sounds/bgm.mp3 */
-export function playCityMusic(cityId: string | undefined) {
-  stopCityMusic();
+/** Hentikan SEMUA musik (kota + BGM default + tone) — wajib sebelum ganti lagu */
+export function stopAllMusic(): void {
+  musicGen += 1;
+  if (cityAudio) {
+    try {
+      cityAudio.pause();
+      cityAudio.removeAttribute('src');
+      cityAudio.load();
+    } catch {
+      /* ignore */
+    }
+    cityAudio = null;
+  }
+  stopToneBgm();
+}
+
+export function stopCityMusic(): void {
+  stopAllMusic();
+}
+
+function playBgmFile(volume: number, gen: number): void {
+  if (isMuted()) return;
+  try {
+    const a = new Audio('/sounds/bgm.mp3');
+    a.loop = true;
+    a.volume = volume;
+    a.preload = 'auto';
+    cityAudio = a;
+    void a.play().then(() => {
+      if (gen !== musicGen) {
+        try {
+          a.pause();
+        } catch {
+          /* ignore */
+        }
+      }
+    }).catch(() => {
+      if (gen === musicGen) {
+        cityAudio = null;
+        bgmOn = true;
+        startFallbackBgm();
+      }
+    });
+  } catch {
+    if (gen === musicGen) {
+      bgmOn = true;
+      startFallbackBgm();
+    }
+  }
+}
+
+/** BGM lembut di menu / setelah game (volume lebih rendah) */
+export function playMenuBgm(): void {
+  stopAllMusic();
+  if (isMuted()) return;
+  const gen = musicGen;
+  playBgmFile(0.16, gen);
+}
+
+/** BGM default saat main tanpa musik kota */
+function playDefaultBgmLoop(): void {
+  if (isMuted()) return;
+  const gen = musicGen;
+  playBgmFile(0.28, gen);
+}
+
+/**
+ * Musik kota: /cities/music/{id}.mp3
+ * Selalu matikan lagu lama dulu. Gagal → BGM default (bukan numpuk).
+ */
+export function playCityMusic(cityId: string | undefined): void {
+  stopAllMusic();
   if (isMuted()) return;
   const id = (cityId || '').toLowerCase();
   if (!id || cityMissing[id]) {
     playDefaultBgmLoop();
     return;
   }
+  const gen = musicGen;
   try {
     const a = new Audio(`/cities/music/${id}.mp3`);
     a.loop = true;
-    a.volume = 0.35;
+    a.volume = 0.34;
     a.preload = 'auto';
     const fail = () => {
+      if (gen !== musicGen) return;
       cityMissing[id] = true;
+      if (cityAudio === a) cityAudio = null;
       playDefaultBgmLoop();
     };
-    a.addEventListener('error', fail);
+    a.addEventListener('error', fail, { once: true });
     cityAudio = a;
-    void a.play().catch(fail);
+    void a.play().then(() => {
+      if (gen !== musicGen) {
+        try {
+          a.pause();
+        } catch {
+          /* ignore */
+        }
+      }
+    }).catch(fail);
   } catch {
     cityMissing[id] = true;
     playDefaultBgmLoop();
-  }
-}
-
-export function stopCityMusic() {
-  if (cityAudio) {
-    try {
-      cityAudio.pause();
-      cityAudio.src = '';
-    } catch {
-      /* ignore */
-    }
-    cityAudio = null;
   }
 }
 
@@ -290,85 +357,14 @@ export const sfx = {
     });
   },
 
+  /** BGM saat Latihan (bukan petualangan). Jangan dipanggil bareng playCityMusic. */
   startBgm(): void {
+    stopAllMusic();
     if (isMuted()) return;
-    bgmOn = true;
-
-    // Matikan fallback dulu (biar tidak dobel / nempel nada lama)
-    if (bgmTimer) {
-      clearInterval(bgmTimer);
-      bgmTimer = null;
-    }
-    if (bgmAudio) {
-      try {
-        bgmAudio.pause();
-      } catch {
-        /* ignore */
-      }
-      bgmAudio = null;
-    }
-
-    try {
-      // File harus ada di: public/sounds/bgm.mp3
-      // (di browser jadi URL /sounds/bgm.mp3)
-      const a = new Audio('/sounds/bgm.mp3');
-      a.loop = true;
-      a.volume = 0.35;
-      a.preload = 'auto';
-      bgmAudio = a;
-
-      const tryPlay = () => {
-        if (!bgmOn || isMuted()) return;
-        void a
-          .play()
-          .then(() => {
-            // File berhasil → pastikan fallback mati
-            if (bgmTimer) {
-              clearInterval(bgmTimer);
-              bgmTimer = null;
-            }
-          })
-          .catch(() => {
-            // Autoplay diblokir browser atau file gagal
-            console.warn(
-              '[Kungfu Math] Gagal putar bgm.mp3 — cek file di public/sounds/bgm.mp3'
-            );
-            startFallbackBgm();
-          });
-      };
-
-      a.addEventListener('canplay', tryPlay, { once: true });
-      a.addEventListener(
-        'error',
-        () => {
-          console.warn(
-            '[Kungfu Math] bgm.mp3 tidak ketemu. Path yang benar: public/sounds/bgm.mp3'
-          );
-          bgmAudio = null;
-          startFallbackBgm();
-        },
-        { once: true }
-      );
-      a.load();
-    } catch {
-      startFallbackBgm();
-    }
+    playDefaultBgmLoop();
   },
 
   stopBgm(): void {
-    bgmOn = false;
-    if (bgmAudio) {
-      try {
-        bgmAudio.pause();
-        bgmAudio.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
-      bgmAudio = null;
-    }
-    if (bgmTimer) {
-      clearInterval(bgmTimer);
-      bgmTimer = null;
-    }
+    stopAllMusic();
   },
 };

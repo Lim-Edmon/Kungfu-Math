@@ -15,7 +15,7 @@ import {
   COMBO_BONUS,
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
-import { sfx, playCityMusic, stopCityMusic } from '../lib/sound';
+import { sfx, playCityMusic, stopAllMusic } from '../lib/sound';
 
 function playEndSound(score: number, target?: number) {
   if (target != null && score >= target) sfx.win();
@@ -232,15 +232,11 @@ export default function Game({
     stage: 1,
   }));
 
-  // BGM selama bermain
-  useEffect(() => {
-    sfx.startBgm();
-    return () => sfx.stopBgm();
-  }, []);
-
+  // Satu sumber musik saja: kota (petualangan) ATAU BGM default (latihan)
   useEffect(() => {
     if (cityId) playCityMusic(cityId);
-    return () => stopCityMusic();
+    else sfx.startBgm();
+    return () => stopAllMusic();
   }, [cityId]);
 
   // READY → 3 → 2 → 1 → GO → main
@@ -289,6 +285,7 @@ export default function Game({
         if (prev.timeLeft <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
           clearNextQuestionTimeout();
+          stopAllMusic(); // hentikan lagu kota — jangan restart di confetti
           playEndSound(prev.score, targetScore);
           const grade = calcGrade(
             prev.score,
@@ -362,6 +359,7 @@ export default function Game({
       const newLives = prev.lives - 1;
       if (newLives <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
+        stopAllMusic();
         playEndSound(prev.score, targetScore);
         const grade = calcGrade(
           prev.score,
@@ -427,6 +425,7 @@ export default function Game({
           const newLives = prev.lives - 1;
           if (newLives <= 0) {
             if (timerRef.current) clearInterval(timerRef.current);
+            stopAllMusic();
             playEndSound(prev.score, targetScore);
             const grade = calcGrade(
               prev.score,

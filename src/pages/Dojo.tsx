@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { loadProgress } from '../lib/storage';
 import { LEVELS } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
-import { ADVENTURE_CITIES } from '../lib/adventure';
+import {
+  ADVENTURE_CITIES,
+  getCityById,
+  getCountryNameId,
+} from '../lib/adventure';
 
 type DojoTab = 'level' | 'petualangan';
 
@@ -25,6 +29,22 @@ export default function Dojo() {
   }));
 
   const bestOverall = rows.reduce((m, r) => Math.max(m, r.score), 0);
+
+  const unlockedList = progress.adventureUnlocked?.length
+    ? progress.adventureUnlocked
+    : ['jakarta'];
+  const unlockedCount = unlockedList.length;
+  const currentCity = getCityById(
+    progress.adventureCityId || 'jakarta'
+  );
+  const passedCount = ADVENTURE_CITIES.filter((c) => {
+    const hs = progress.adventureHighScores?.[c.id] ?? 0;
+    return hs >= c.targetScore;
+  }).length;
+  const bestAdventure = ADVENTURE_CITIES.reduce(
+    (m, c) => Math.max(m, progress.adventureHighScores?.[c.id] ?? 0),
+    0
+  );
 
   return (
     <div className="dojo-page">
@@ -50,8 +70,12 @@ export default function Dojo() {
         <div>
           <p className="dojo-hero-name">{displayName}</p>
           <p className="dojo-hero-meta">
-            {progress.totalGamesPlayed} kali main · rekor terbaik{' '}
+            {progress.totalGamesPlayed} kali main · rekor latihan{' '}
             <strong>{bestOverall}</strong>
+          </p>
+          <p className="dojo-hero-meta dojo-hero-adv">
+            Petualangan: {passedCount}/{ADVENTURE_CITIES.length} kota lolos ·
+            posisi <strong>{currentCity.nameId}</strong>
           </p>
         </div>
       </section>
@@ -97,21 +121,32 @@ export default function Dojo() {
 
       {tab === 'petualangan' && (
         <section className="dojo-section">
+          <p className="dojo-adv-summary">
+            Terbuka {unlockedCount} kota · rekor tertinggi petualangan{' '}
+            <strong>{bestAdventure > 0 ? bestAdventure : '—'}</strong>
+          </p>
           <ul className="dojo-score-list">
-            {ADVENTURE_CITIES.map((c) => {
-              const unlocked = (
-                progress.adventureUnlocked || ['jakarta']
-              ).includes(c.id);
+            {ADVENTURE_CITIES.map((c, i) => {
+              const unlocked =
+                c.id === 'jakarta' || unlockedList.includes(c.id);
               const hs = progress.adventureHighScores?.[c.id] ?? 0;
+              const passed = hs >= c.targetScore;
+              const country = getCountryNameId(c.countryId);
+              const isCurrent = c.id === currentCity.id;
               return (
-                <li key={c.id} className="dojo-score-row">
+                <li
+                  key={c.id}
+                  className={`dojo-score-row ${isCurrent ? 'dojo-row-current' : ''}`}
+                >
                   <div>
                     <span className="dojo-score-label">
-                      {unlocked ? '📌' : '🔒'} {c.nameId}
+                      {passed ? '✅' : unlocked ? '📌' : '🔒'} {i + 1}.{' '}
+                      {c.nameId}
+                      {isCurrent ? ' · sekarang' : ''}
                     </span>
                     <span className="dojo-score-desc">
-                      Lolos ≥ {c.targetScore}
-                      {unlocked ? '' : ' · terkunci'}
+                      {country} · target {c.targetScore}
+                      {!unlocked ? ' · terkunci' : passed ? ' · lolos' : ''}
                     </span>
                   </div>
                   <span className="dojo-score-value">
@@ -149,6 +184,10 @@ export default function Dojo() {
             </li>
             <li>
               Hindari bom 💣 — nyawa berkurang; angka yang dipilih kembali.
+            </li>
+            <li>
+              <strong>Petualangan</strong> — capai target skor kota untuk buka
+              kota berikutnya. Bonus waktu tergantung tingkat kesulitan.
             </li>
           </ul>
         )}

@@ -24,6 +24,7 @@ import Settings from './pages/Settings';
 import Dojo from './pages/Dojo';
 import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
+import { playMenuBgm, stopAllMusic } from './lib/sound';
 import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
@@ -130,6 +131,15 @@ function App() {
       setSelectedCharacterId(p.preferredCharacter);
     }
   }, []);
+
+  // Menu / hasil: BGM default volume rendah. Game mengatur musik sendiri.
+  useEffect(() => {
+    if (screen === 'game') return;
+    playMenuBgm();
+    return () => {
+      stopAllMusic();
+    };
+  }, [screen]);
 
   // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
   useEffect(() => {
@@ -274,7 +284,8 @@ function App() {
   const navActive: NavTab =
     screen === 'settings' ? 'settings' : screen === 'dojo' ? 'dojo' : 'home';
 
-  const showChrome = screen !== 'game';
+  // Sembunyikan menu bawah saat main & hasil (hindari tabrakan fun fact / confetti)
+  const showChrome = screen !== 'game' && screen !== 'result';
   const levelLabel = getLevelById(selectedLevel).labelId;
 
   return (
