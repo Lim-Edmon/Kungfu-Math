@@ -186,43 +186,48 @@ export default function AdventureMap({
           let shape;
           const stroke = '#fff';
           const sw = pinR * 0.3;
+          // Semua bentuk dipusatkan di (mapX, mapY) — sama dengan area ketuk
+          const hitR = pinR * 2.4;
 
           if (!open) {
-            const s = pinR * 1.2;
+            const s = pinR * 1.15;
             shape = (
               <polygon
-                points={`${c.mapX},${c.mapY - s} ${c.mapX - s},${c.mapY + s * 0.7} ${c.mapX + s},${c.mapY + s * 0.7}`}
+                points={`${c.mapX},${c.mapY - s} ${c.mapX - s * 0.95},${c.mapY + s * 0.65} ${c.mapX + s * 0.95},${c.mapY + s * 0.65}`}
                 fill="#9e9e9e"
                 stroke={stroke}
                 strokeWidth={sw}
+                style={{ pointerEvents: 'none' }}
               />
             );
           } else if (won && !isActive) {
-            const s = pinR * 1.2;
+            const s = pinR * 1.15;
             shape = (
               <polygon
                 points={`${c.mapX},${c.mapY - s} ${c.mapX + s},${c.mapY} ${c.mapX},${c.mapY + s} ${c.mapX - s},${c.mapY}`}
                 fill="#1565c0"
                 stroke={stroke}
                 strokeWidth={sw}
+                style={{ pointerEvents: 'none' }}
               />
             );
           } else if (isActive) {
-            const r = pinR * 1.1;
+            // Pin lokasi: ujung bawah = (mapX, mapY) = titik kota
+            const r = pinR * 1.15;
             shape = (
-              <g>
+              <g style={{ pointerEvents: 'none' }}>
                 <path
-                  d={`M ${c.mapX} ${c.mapY + r * 1.55}
-                     C ${c.mapX + r * 1.15} ${c.mapY + r * 0.15}, ${c.mapX + r} ${c.mapY - r * 0.25}, ${c.mapX} ${c.mapY - r}
-                     C ${c.mapX - r} ${c.mapY - r * 0.25}, ${c.mapX - r * 1.15} ${c.mapY + r * 0.15}, ${c.mapX} ${c.mapY + r * 1.55} Z`}
+                  d={`M ${c.mapX} ${c.mapY}
+                     C ${c.mapX + r * 1.2} ${c.mapY - r * 1.35}, ${c.mapX + r * 0.95} ${c.mapY - r * 2.15}, ${c.mapX} ${c.mapY - r * 2.35}
+                     C ${c.mapX - r * 0.95} ${c.mapY - r * 2.15}, ${c.mapX - r * 1.2} ${c.mapY - r * 1.35}, ${c.mapX} ${c.mapY} Z`}
                   fill="#2e7d32"
                   stroke={stroke}
                   strokeWidth={sw}
                 />
                 <circle
                   cx={c.mapX}
-                  cy={c.mapY - r * 0.12}
-                  r={r * 0.32}
+                  cy={c.mapY - r * 1.45}
+                  r={r * 0.34}
                   fill="#fff"
                 />
               </g>
@@ -236,6 +241,7 @@ export default function AdventureMap({
                 fill="#66bb6a"
                 stroke={stroke}
                 strokeWidth={sw}
+                style={{ pointerEvents: 'none' }}
               />
             );
           }
@@ -248,10 +254,18 @@ export default function AdventureMap({
               }}
               style={{ cursor: open ? 'pointer' : 'default' }}
             >
+              {/* Area ketuk: pusat = mapX/mapY (sama titik pin), radius lebih lebar */}
+              <circle
+                cx={c.mapX}
+                cy={c.mapY}
+                r={hitR}
+                fill="transparent"
+                pointerEvents={open ? 'all' : 'none'}
+              />
               {shape}
               <text
                 x={c.mapX}
-                y={c.mapY - pinR * 2.0}
+                y={c.mapY - pinR * (isActive ? 3.2 : 2.0)}
                 textAnchor="middle"
                 fontSize={fontSize}
                 fill="#1b5e20"
@@ -259,6 +273,7 @@ export default function AdventureMap({
                 stroke="#fff"
                 strokeWidth={fontSize * 0.1}
                 paintOrder="stroke"
+                style={{ pointerEvents: 'none' }}
               >
                 {short}
               </text>
