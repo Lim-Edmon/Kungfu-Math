@@ -369,77 +369,146 @@
 
 .game-hud {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 8px 4px;
-  gap: 8px;
+  padding: 4px 2px 2px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
-.hud-left,
+.hud-left {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 46%;
+}
+
+.hud-center {
+  flex: 0 0 auto;
+  padding-top: 2px;
+}
+
 .hud-right {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 70px;
-}
-
-.hud-right {
   align-items: flex-end;
+  gap: 4px;
+  min-width: 72px;
 }
 
-.hud-lives {
-  font-size: 1rem;
-  letter-spacing: 1px;
+.hud-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
-.hud-char {
-  font-size: 0.75rem;
+.hud-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  object-fit: cover;
+  object-position: center top;
+  background: var(--color-card);
+  flex-shrink: 0;
+}
+
+.hud-avatar-emoji {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.hud-identity-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.hud-name {
+  font-size: 0.88rem;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-meta {
+  font-size: 0.68rem;
   color: var(--color-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90px;
+}
+
+.hud-lives-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hud-lives {
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.hud-context {
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
 }
 
 .hud-timer {
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: var(--color-primary);
+  line-height: 1.1;
+}
+
+.hud-right-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .hud-score {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .hud-combo {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-accent);
   font-weight: 700;
 }
 
-
 .btn-mute-hud {
   border: none;
   background: color-mix(in srgb, var(--color-card) 80%, transparent);
-  font-size: 1.15rem;
+  font-size: 1rem;
   line-height: 1;
-  padding: 6px 8px;
-  border-radius: 10px;
+  padding: 4px 6px;
+  border-radius: 8px;
   cursor: pointer;
-  min-width: 40px;
-  min-height: 36px;
+  min-width: 32px;
+  min-height: 28px;
 }
 .btn-mute-hud.is-muted {
   opacity: 0.7;
   outline: 2px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
 }
 .btn-exit-top {
-  margin-top: 4px;
-  padding: 4px 12px;
-  font-size: 0.75rem;
-  min-height: 28px;
+  margin-top: 0;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  min-height: 26px;
   border-radius: 999px;
   border: 2px solid var(--color-border);
   background: var(--color-card);
@@ -450,14 +519,14 @@
 
 .game-question {
   text-align: center;
-  padding: 14px 18px 12px;
-  margin: 6px 6px 8px;
+  padding: 8px 12px 6px;
+  margin: 2px 4px 4px;
   flex-shrink: 0;
   background: var(--color-card);
-  border: 3px solid var(--color-primary);
-  border-radius: calc(var(--radius) + 4px);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  min-height: 3.4rem;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -465,18 +534,20 @@
 }
 
 .question-text {
-  font-size: clamp(1.75rem, 6.5vw, 2.35rem);
+  font-size: clamp(1.45rem, 5.5vw, 2rem);
   font-weight: 900;
   color: var(--color-text);
-  letter-spacing: 0.06em;
-  line-height: 1.2;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
   font-variant-numeric: tabular-nums;
+  margin: 0;
 }
 
 .question-hint {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: var(--color-text-muted);
-  margin-top: 6px;
+  margin-top: 2px;
+  margin-bottom: 0;
   font-weight: 600;
 }
 
@@ -938,9 +1009,9 @@
 .install-hint {
   position: relative;
   z-index: 1;
-  margin-top: 16px;
-  margin-bottom: 8px;
-  padding: 14px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  padding: 10px 12px;
   border-radius: var(--radius);
   border: 2px solid var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card));
@@ -1107,6 +1178,9 @@
     max-width: 360px;
     font-size: 1.15rem;
     min-height: 52px;
+  }
+  .wizard-nav .btn-start {
+    max-width: none;
   }
 }
 
@@ -1490,11 +1564,7 @@
 
 /* Karakter saat main */
 .game-char-banner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  padding: 4px 6px 8px;
+  display: none !important; /* digabung ke HUD */
 }
 
 .game-char-img {
@@ -2155,8 +2225,12 @@ a.btn-link-trakteer {
   z-index: 1;
 }
 .wizard-nav .btn-primary,
-.wizard-nav .btn-ghost {
-  flex: 1;
+.wizard-nav .btn-ghost,
+.wizard-nav .btn-start {
+  flex: 1 1 0;
+  width: auto;
+  max-width: none;
+  min-width: 0;
 }
 .compact-levels .level-btn {
   padding: 10px 12px;
@@ -2419,4 +2493,28 @@ a.btn-link-trakteer:hover,
 .btn-trakteer:hover {
   border-color: #5dade2 !important;
   background: #c5e1f5 !important;
+}
+
+/* HUD kompak di HP sempit */
+@media (max-width: 400px) {
+  .hud-avatar {
+    width: 34px;
+    height: 34px;
+  }
+  .hud-name {
+    font-size: 0.8rem;
+  }
+  .hud-meta,
+  .hud-context {
+    font-size: 0.62rem;
+  }
+  .hud-timer {
+    font-size: 1.25rem;
+  }
+  .hud-left {
+    max-width: 50%;
+  }
+  .hud-context {
+    max-width: 110px;
+  }
 }

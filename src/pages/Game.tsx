@@ -741,34 +741,68 @@ export default function Game({
   return (
     <div className="game-screen">
       <div className="game-inner">
+        {/* HUD kompak 1 baris: avatar+info kiri | timer tengah | skor+keluar kanan */}
         <div className="game-hud">
           <div className="hud-left">
-            <span className="hud-lives">{hearts.join('')}</span>
-            <span className="hud-char">
-              {character?.emoji ?? '🥋'} {displayName}
-              {cityName ? ` · ${cityName}` : ` · ${levelLabel}`}
-            </span>
+            <div className="hud-identity">
+              {character?.imageCloseSrc || character?.imageSrc ? (
+                <img
+                  src={character.imageCloseSrc || character.imageSrc}
+                  alt=""
+                  className="hud-avatar"
+                  width={40}
+                  height={40}
+                />
+              ) : (
+                <span className="hud-avatar-emoji" aria-hidden>
+                  {character?.emoji ?? '🥋'}
+                </span>
+              )}
+              <div className="hud-identity-text">
+                <strong className="hud-name">{displayName}</strong>
+                <span className="hud-meta">
+                  {character?.nicknameId ?? ''}
+                  {mode === 'slice' ? ' · Slice' : ' · Tap'}
+                  {agility ? ' · Bergerak' : ''}
+                </span>
+                <span className="hud-lives-row">
+                  <span className="hud-lives">{hearts.join('')}</span>
+                  <span className="hud-context">
+                    {cityName ? cityName : levelLabel}
+                    {cityName && typeof targetScore === 'number'
+                      ? ` · ≥${targetScore}`
+                      : ''}
+                    {timePenaltySec > 0 ? ` · salah −${timePenaltySec}s` : ''}
+                    {timeBonusSec > 0 ? ` · +${timeBonusSec}s` : ''}
+                  </span>
+                </span>
+              </div>
+            </div>
           </div>
           <div className="hud-center">
             <span className="hud-timer">{state.timeLeft}s</span>
           </div>
           <div className="hud-right">
-            <span className="hud-score">{state.score}</span>
-            {state.combo > 1 && (
-              <span className="hud-combo">x{state.combo}</span>
-            )}
-            <button
-              type="button"
-              className={`btn-mute-hud ${soundMuted ? 'is-muted' : ''}`}
-              onClick={toggleMute}
-              aria-label={soundMuted ? 'Nyalakan suara' : 'Matikan suara'}
-              title={soundMuted ? 'Suara mati — ketuk untuk nyala' : 'Suara nyala'}
-            >
-              {soundMuted ? '🔇' : '🔊'}
-            </button>
             <button type="button" className="btn-exit-top" onClick={onExit}>
               Keluar
             </button>
+            <div className="hud-right-row">
+              <span className="hud-score">{state.score}</span>
+              {state.combo > 1 && (
+                <span className="hud-combo">x{state.combo}</span>
+              )}
+              <button
+                type="button"
+                className={`btn-mute-hud ${soundMuted ? 'is-muted' : ''}`}
+                onClick={toggleMute}
+                aria-label={soundMuted ? 'Nyalakan suara' : 'Matikan suara'}
+                title={
+                  soundMuted ? 'Suara mati — ketuk untuk nyala' : 'Suara nyala'
+                }
+              >
+                {soundMuted ? '🔇' : '🔊'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -777,39 +811,8 @@ export default function Game({
           <p className="question-hint">
             {mode === 'tap'
               ? 'Ketuk angka yang benar'
-              : 'Tahan lalu geser melewati angka (mouse atau jari)'}
+              : 'Geser melewati angka'}
           </p>
-          {cityName && typeof targetScore === 'number' && (
-            <p className="adventure-target">
-              {cityName} · lolos ≥ {targetScore}
-              {timeBonusSec > 0 ? ` · benar +${timeBonusSec}s` : ''}
-              {timePenaltySec > 0 ? ` · salah −${timePenaltySec}s` : ''}
-            </p>
-          )}
-        </div>
-
-        <div className="game-char-banner">
-          {character?.imageCloseSrc || character?.imageSrc ? (
-            <img
-              src={character.imageCloseSrc || character.imageSrc}
-              alt={character.name}
-              className="game-char-img"
-              width={56}
-              height={56}
-            />
-          ) : (
-            <span className="game-char-emoji" aria-hidden>
-              {character?.emoji ?? '🥋'}
-            </span>
-          )}
-          <div className="game-char-text">
-            <strong>{displayName}</strong>
-            <span>
-              {character?.nicknameId ?? ''}
-              {mode === 'slice' ? ' · Slice' : ' · Tap'}
-              {agility ? ' · Bergerak' : ''}
-            </span>
-          </div>
         </div>
 
         <div
