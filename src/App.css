@@ -1753,14 +1753,21 @@
   overflow: hidden;
   border: 2px solid var(--color-border);
   background: #e0f7fa;
+  /* Pastikan event pointer ke SVG, bukan elemen di luar */
+  touch-action: manipulation;
 }
 .adventure-map {
   display: block;
   width: 100%;
   height: auto;
+  /* aspect-ratio mengikuti viewBox (sudah dipaksa MAP_ASPECT di TS) */
   aspect-ratio: 2800 / 1527;
   max-height: 340px;
   background: #81d4fa;
+  /* SVG hit-testing lebih stabil tanpa layout aneh */
+  max-width: 100%;
+  vertical-align: top;
+  touch-action: manipulation;
 }
 .adventure-map-legend {
   margin: 0;

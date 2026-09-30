@@ -186,8 +186,12 @@ export default function AdventureMap({
           let shape;
           const stroke = '#fff';
           const sw = pinR * 0.3;
-          // Semua bentuk dipusatkan di (mapX, mapY) — sama dengan area ketuk
-          const hitR = pinR * 2.4;
+          /**
+           * Pusat visual + area ketuk = (mapX, mapY) titik kota.
+           * Catatan: fill="transparent" di beberapa browser TIDAK menerima pointer —
+           * pakai fillOpacity sangat kecil.
+           */
+          const hitR = pinR * 3.2;
 
           if (!open) {
             const s = pinR * 1.15;
@@ -197,7 +201,7 @@ export default function AdventureMap({
                 fill="#9e9e9e"
                 stroke={stroke}
                 strokeWidth={sw}
-                style={{ pointerEvents: 'none' }}
+                pointerEvents="none"
               />
             );
           } else if (won && !isActive) {
@@ -208,26 +212,35 @@ export default function AdventureMap({
                 fill="#1565c0"
                 stroke={stroke}
                 strokeWidth={sw}
-                style={{ pointerEvents: 'none' }}
+                pointerEvents="none"
               />
             );
           } else if (isActive) {
-            // Pin lokasi: ujung bawah = (mapX, mapY) = titik kota
-            const r = pinR * 1.15;
+            // Lingkaran aktif dipusatkan di (mapX, mapY) — sama area ketuk
+            const r = pinR * 1.25;
             shape = (
-              <g style={{ pointerEvents: 'none' }}>
-                <path
-                  d={`M ${c.mapX} ${c.mapY}
-                     C ${c.mapX + r * 1.2} ${c.mapY - r * 1.35}, ${c.mapX + r * 0.95} ${c.mapY - r * 2.15}, ${c.mapX} ${c.mapY - r * 2.35}
-                     C ${c.mapX - r * 0.95} ${c.mapY - r * 2.15}, ${c.mapX - r * 1.2} ${c.mapY - r * 1.35}, ${c.mapX} ${c.mapY} Z`}
+              <g pointerEvents="none">
+                <circle
+                  cx={c.mapX}
+                  cy={c.mapY}
+                  r={r * 1.35}
+                  fill="none"
+                  stroke="#2e7d32"
+                  strokeWidth={r * 0.22}
+                  opacity={0.45}
+                />
+                <circle
+                  cx={c.mapX}
+                  cy={c.mapY}
+                  r={r}
                   fill="#2e7d32"
                   stroke={stroke}
                   strokeWidth={sw}
                 />
                 <circle
                   cx={c.mapX}
-                  cy={c.mapY - r * 1.45}
-                  r={r * 0.34}
+                  cy={c.mapY}
+                  r={r * 0.32}
                   fill="#fff"
                 />
               </g>
@@ -241,31 +254,36 @@ export default function AdventureMap({
                 fill="#66bb6a"
                 stroke={stroke}
                 strokeWidth={sw}
-                style={{ pointerEvents: 'none' }}
+                pointerEvents="none"
               />
             );
           }
 
+          const handlePick = () => {
+            if (open && onSelect) onSelect(c.id);
+          };
+
           return (
-            <g
-              key={c.id}
-              onClick={() => {
-                if (open && onSelect) onSelect(c.id);
-              }}
-              style={{ cursor: open ? 'pointer' : 'default' }}
-            >
-              {/* Area ketuk: pusat = mapX/mapY (sama titik pin), radius lebih lebar */}
+            <g key={c.id} style={{ cursor: open ? 'pointer' : 'default' }}>
+              {/* Area ketuk: WAJIB fill tidak fully-transparent agar pointer jalan */}
               <circle
                 cx={c.mapX}
                 cy={c.mapY}
                 r={hitR}
-                fill="transparent"
+                fill="#000"
+                fillOpacity={0.001}
+                stroke="none"
                 pointerEvents={open ? 'all' : 'none'}
+                onClick={handlePick}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handlePick();
+                }}
               />
               {shape}
               <text
                 x={c.mapX}
-                y={c.mapY - pinR * (isActive ? 3.2 : 2.0)}
+                y={c.mapY - pinR * 2.15}
                 textAnchor="middle"
                 fontSize={fontSize}
                 fill="#1b5e20"
@@ -273,7 +291,7 @@ export default function AdventureMap({
                 stroke="#fff"
                 strokeWidth={fontSize * 0.1}
                 paintOrder="stroke"
-                style={{ pointerEvents: 'none' }}
+                pointerEvents="none"
               >
                 {short}
               </text>
