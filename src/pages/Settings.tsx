@@ -13,7 +13,7 @@ interface SettingsProps {
   onBack: () => void;
 }
 
-export default function Settings({ onBack }: SettingsProps) {
+export default function Settings({ onBack: _onBack }: SettingsProps) {
   const [soundMuted, setSoundMuted] = useState(false);
   const [exportCode, setExportCode] = useState('');
   const [importCode, setImportCode] = useState('');
@@ -120,9 +120,6 @@ export default function Settings({ onBack }: SettingsProps) {
   return (
     <div className="settings-page">
       <header className="settings-header">
-        <button type="button" className="btn-back" onClick={onBack}>
-          ← Kembali
-        </button>
         <h1>Pengaturan</h1>
       </header>
 
@@ -222,7 +219,7 @@ export default function Settings({ onBack }: SettingsProps) {
           href={TRAKTEER_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="btn-primary btn-link-trakteer"
+          className="btn-trakteer"
         >
           ☕ Buka Trakteer
         </a>

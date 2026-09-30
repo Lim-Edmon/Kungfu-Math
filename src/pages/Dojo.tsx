@@ -46,7 +46,12 @@ function formatRecordMeta(rec: ScoreRecord | undefined, kind: 'level' | 'adv'): 
 
 export default function Dojo() {
   const progress = loadProgress();
-  const character = getCharacterById(progress.preferredCharacter);
+  // Belum main / belum pilih: tampilkan Yu Jin (bukan Hong Yi warisan data lama)
+  const preferredId =
+    progress.totalGamesPlayed > 0 && progress.preferredCharacter
+      ? progress.preferredCharacter
+      : 'yu-jin';
+  const character = getCharacterById(preferredId);
   const displayName =
     progress.playerName?.trim() || character?.name || 'Pendekar';
 

@@ -2139,7 +2139,7 @@ a.btn-link-trakteer {
   flex-shrink: 0;
 }
 .wizard-body {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   position: relative;
   z-index: 1;
@@ -2256,7 +2256,7 @@ a.btn-link-trakteer {
   /* width/max-width: aturan di atas + media query */
 }
 .home-wizard .wizard-body {
-  flex: 1 1 auto;
+  flex: 0 0 auto; /* jangan membesar — hindari tombol Lanjut “melayang” di tengah */
 }
 .home-wizard .wizard-footer-bar {
   margin-top: 16px;
@@ -2385,4 +2385,55 @@ a.btn-link-trakteer {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.4;
+}
+
+
+/* Force: tombol Lanjut/Kembali selalu di alur normal, tidak mengambang */
+.wizard-footer-bar,
+.home-wizard .wizard-footer-bar,
+.wizard-nav {
+  position: relative !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+  margin-top: 20px !important;
+  z-index: 1 !important;
+  background: transparent !important;
+}
+.wizard-panel {
+  padding-bottom: 8px;
+}
+.dojo-note {
+  margin-bottom: 28px !important;
+  padding-bottom: 8px;
+}
+.settings-page {
+  padding-bottom: 32px !important;
+}
+.settings-section:last-of-type {
+  margin-bottom: 24px;
+}
+a.btn-link-trakteer,
+.btn-trakteer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  margin-top: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  /* mirip secondary, bukan highlight merah penuh */
+  background: var(--color-card) !important;
+  color: var(--color-text) !important;
+  border: 2px solid var(--color-border) !important;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+}
+a.btn-link-trakteer:hover,
+.btn-trakteer:hover {
+  border-color: var(--color-primary) !important;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card)) !important;
 }
