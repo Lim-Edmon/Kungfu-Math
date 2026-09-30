@@ -248,9 +248,21 @@ export type RecordMeta = {
   tempoId?: string;
 };
 
+const CHAR_DISPLAY_NAMES: Record<string, string> = {
+  'yu-jin': 'Yu Jin',
+  'hong-yi': 'Hong Yi',
+  'ming-zhe': 'Ming Zhe',
+  'an-ning': 'An Ning',
+  'zhi-xing': 'Zhi Xing',
+  'yo-rin': 'Yo Rin',
+};
+
+/** Nama di rekor: nama pemain (jika diisi) → nama pendekar → Pemain */
 function displayNameFrom(progress: PlayerProgress, override?: string): string {
   const n = (override ?? progress.playerName ?? '').trim();
-  return n || 'Pendekar';
+  if (n) return n;
+  const charName = CHAR_DISPLAY_NAMES[progress.preferredCharacter || ''];
+  return charName || 'Pemain';
 }
 
 export function recordGameResult(

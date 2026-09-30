@@ -25,10 +25,17 @@ function tempoLabel(tempoId: string | undefined): string {
   return d?.labelId ?? tempoId;
 }
 
-function formatRecordMeta(rec: ScoreRecord | undefined, kind: 'level' | 'adv'): string {
+function formatRecordMeta(
+  rec: ScoreRecord | undefined,
+  kind: 'level' | 'adv',
+  fallbackName: string
+): string {
   if (!rec || rec.score <= 0) return '';
   const parts: string[] = [];
-  if (rec.by) parts.push(rec.by);
+  const by = (rec.by || '').trim();
+  // Data lama "Pendekar" diganti nama aktual
+  if (by && by !== 'Pendekar') parts.push(by);
+  else if (fallbackName) parts.push(fallbackName);
   const tgl = formatRecordDate(rec.at);
   if (tgl) parts.push(tgl);
   parts.push(inputModeLabel(rec.inputMode));
@@ -53,7 +60,7 @@ export default function Dojo() {
       : 'yu-jin';
   const character = getCharacterById(preferredId);
   const displayName =
-    progress.playerName?.trim() || character?.name || 'Pendekar';
+    progress.playerName?.trim() || character?.name || 'Pemain';
 
   const [tab, setTab] = useState<DojoTab>('level');
   const [tipsOpen, setTipsOpen] = useState(false);
@@ -66,7 +73,7 @@ export default function Dojo() {
       label: lv.labelId,
       desc: lv.descId,
       score,
-      meta: formatRecordMeta(rec, 'level'),
+      meta: formatRecordMeta(rec, 'level', displayName),
     };
   });
 
@@ -183,7 +190,7 @@ export default function Dojo() {
               const passed = hs >= c.targetScore;
               const country = getCountryNameId(c.countryId);
               const isCurrent = c.id === currentCity.id;
-              const meta = formatRecordMeta(rec, 'adv');
+              const meta = formatRecordMeta(rec, 'adv', displayName);
               return (
                 <li
                   key={c.id}
