@@ -139,7 +139,7 @@ export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
   { id: 'santai', labelId: 'Santai', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar' },
   { id: 'ringan', labelId: 'Ringan', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar' },
   { id: 'normal', labelId: 'Normal', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu' },
-  { id: 'berani', labelId: 'Berani', timeBonus: 0, timePenalty: 3, descId: 'Salah −3 dtk (+nyawa)' },
+  { id: 'berani', labelId: 'Berani', timeBonus: 0, timePenalty: 3, descId: 'Salah −3 dtk' },
 ];
 
 export function getAdventureDifficulty(id: string): AdventureDifficulty {
@@ -167,8 +167,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     blurbId: 'Landmark nasional',
     landmarkId: 'Monas',
     funFacts: [
-      'Monas tingginya 132 m — setara gedung ~44 lantai.',
-      'Api puncak Monas dari perunggu berlapis emas.',
+      'Monas di Jakarta tingginya 132 m — setara gedung sekitar 44 lantai.',
+      'Api di puncak Monas Jakarta terbuat dari perunggu berlapis emas.',
       'Kota Tua di Sunda Kelapa masih punya gudang abad ke-17.',
     ],
     mapX: 76.9,
@@ -185,7 +185,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     blurbId: 'Arsitektur & dataran tinggi',
     landmarkId: 'Gedung Sate',
     funFacts: [
-      'Menara Gedung Sate meniru bentuk tusuk sate.',
+      'Menara Gedung Sate di Bandung bentuknya meniru tusuk sate.',
       'Bandung tuan rumah Konferensi Asia-Afrika 1955.',
       'Kawah Putih berwarna putih kehijauan karena belerang.',
     ],
@@ -204,7 +204,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Lawang Sewu',
     funFacts: [
       'Lawang Sewu berarti seribu pintu karena sangat banyak jendela.',
-      'Dulu kantor pusat kereta api Hindia Belanda.',
+      'Semarang dulu merupakan kantor pusat kereta api Hindia Belanda.',
       'Kota Lama Semarang dilestarikan sebagai kawasan bersejarah.',
     ],
     mapX: 77.7,
@@ -222,7 +222,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Tugu Yogya',
     funFacts: [
       'Borobudur (dekat Yogya) punya >2.600 panel relief batu.',
-      'Tugu Yogya titik nol kilometer resmi kota.',
+      'Tugu Yogyakarta adalah titik nol kilometer resmi kota ini.',
       'Keraton masih menjalankan upacara adat Kesultanan.',
     ],
     mapX: 77.7,
@@ -240,7 +240,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Keraton Solo',
     funFacts: [
       'Solo punya dua istana: Kasunanan dan Mangkunegaran.',
-      'Motif batik parang dan kawung khas Solo.',
+      'Motif batik parang dan kawung adalah ciri khas Solo.',
       'Pasar Klewer termasuk pasar batik terbesar di Indonesia.',
     ],
     mapX: 77.8,
@@ -258,8 +258,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Tugu Pahlawan',
     funFacts: [
       'Nama Surabaya dari legenda hiu (sura) dan buaya (baya).',
-      '10 November 1945 jadi Hari Pahlawan nasional.',
-      'Jembatan Suramadu menghubungkan Surabaya–Madura.',
+      'Pertempuran Surabaya 10 November 1945 jadi Hari Pahlawan nasional.',
+      'Jembatan Suramadu menghubungkan Surabaya dengan Pulau Madura.',
     ],
     mapX: 78.2,
     mapY: 59.03,
@@ -296,7 +296,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Laguna',
     funFacts: [
       'Danau Kakaban dihuni ubur-ubur yang tidak menyengat.',
-      'Penyu hijau bertelur di pantai Derawan.',
+      'Di pantai Derawan, penyu hijau sering bertelur.',
       'Masuk segitiga terumbu karang dunia (Coral Triangle).',
     ],
     mapX: 79.34,
@@ -316,7 +316,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     funFacts: [
       'Pinisi Bugis-Makassar diakui UNESCO warisan budaya bahari.',
       'Fort Rotterdam di atas bekas benteng kerajaan Gowa.',
-      'Losari jalur rekreasi panjang menghadap selat.',
+      'Pantai Losari di Makassar adalah jalur rekreasi panjang menghadap selat.',
     ],
     mapX: 79.58,
     mapY: 57.72,
@@ -334,7 +334,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     funFacts: [
       'Bunaken punya dinding terumbu curam ratusan meter.',
       'Satu titik selam bisa memuat puluhan spesies ikan tropis.',
-      'Taman Nasional Bunaken dilindungi sejak 1991.',
+      'Taman Nasional Bunaken di Manado dilindungi sejak tahun 1991.',
     ],
     mapX: 80.71,
     mapY: 53.59,
@@ -352,7 +352,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Wayag',
     funFacts: [
       'Keanekaragaman ikan karang di Raja Ampat termasuk tertinggi di dunia.',
-      'Karst Wayag seperti gundukan hijau di laut toska.',
+      'Karst Wayag di Raja Ampat tampak seperti gundukan hijau di laut toska.',
       'Nama Ampat dari empat pulau utama: Waigeo, Batanta, Salawati, Misool.',
     ],
     mapX: 81.95,
@@ -428,9 +428,9 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     blurbId: 'Ibukota Timor-Leste',
     landmarkId: 'Cristo Rei',
     funFacts: [
-      'Patung Cristo Rei di bukit menghadap Teluk Dili.',
+      'Patung Cristo Rei di Dili berdiri di bukit menghadap teluk.',
       'Timor-Leste merdeka sebagai negara pada tahun 2002.',
-      'Bahasa resmi termasuk Tetum dan Portugis.',
+      'Bahasa resmi Timor-Leste termasuk Tetum dan Portugis.',
     ],
     mapX: 80.85,
     mapY: 59.85,
@@ -519,7 +519,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Petronas',
     funFacts: [
       'Skybridge menghubungkan lantai 41 dan 42 Menara Petronas.',
-      'Tiap menara tingginya 452 meter dengan 88 lantai.',
+      'Tiap menara Petronas di Kuala Lumpur tingginya 452 meter dengan 88 lantai.',
       'Desain denah menara terinspirasi motif bintang segi delapan.',
     ],
     mapX: 75.91,
@@ -627,7 +627,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Istana Kerajaan',
     funFacts: [
       'Istana Kerajaan Phnom Penh masih dipakai keluarga kerajaan Kamboja.',
-      'Kota ini berdiri di pertemuan tiga sungai besar.',
+      'Phnom Penh berdiri di pertemuan tiga sungai besar.',
       'Pagoda Perak di kompleks istana dihiasi ubin perak di lantai.',
     ],
     mapX: 76.58,

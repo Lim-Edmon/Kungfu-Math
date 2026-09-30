@@ -202,15 +202,6 @@ export default function Settings({ onBack }: SettingsProps) {
             {inviteCopied ? 'Tersalin ✓' : 'Salin pesan ajakan'}
           </button>
         </div>
-        <p className="settings-note settings-share-preview-label">Isi pesan (bisa disalin):</p>
-        <textarea
-          className="code-area share-invite-preview"
-          readOnly
-          rows={6}
-          value={buildInviteText()}
-          onFocus={(e) => e.target.select()}
-          aria-label="Pratinjau pesan ajakan"
-        />
       </section>
 
       <section className="settings-section">

@@ -323,9 +323,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     />
                   );
                 })()}
-                <p className="character-hint">
-                  Ketuk pin atau chip · nomor = urutan jalur
-                </p>
                 <div className="city-region-stack">
                   {ADVENTURE_REGIONS.map((reg) => {
                     const cities = ADVENTURE_CITIES.filter(
@@ -427,7 +424,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               >
                 <span className="mode-icon">⚔️</span>
                 <span className="mode-name">Slice</span>
-                <span className="mode-desc">Geser / tebas</span>
+                <span className="mode-desc">Geser/tebas bola</span>
               </button>
               <button
                 type="button"

@@ -16,13 +16,12 @@ import {
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
 import { sfx, playCityMusic, stopAllMusic } from '../lib/sound';
+import { loadProgress, updateProgress } from '../lib/storage';
 
 function playEndSound(score: number, target?: number) {
   if (target != null && score >= target) sfx.win();
   else sfx.finish();
 }
-
-import { loadProgress } from '../lib/storage';
 
 interface GameProps {
   mode: InputMode;
@@ -219,6 +218,21 @@ export default function Game({
   }, []);
 
   const [countdownLabel, setCountdownLabel] = useState('READY');
+  const [soundMuted, setSoundMuted] = useState(
+    () => loadProgress().soundMuted === true
+  );
+  const toggleMute = () => {
+    const next = !soundMuted;
+    setSoundMuted(next);
+    updateProgress({ soundMuted: next });
+    if (next) {
+      stopAllMusic();
+    } else if (cityId) {
+      playCityMusic(cityId);
+    } else {
+      sfx.startBgm();
+    }
+  };
   const [state, setState] = useState<GameState>(() => ({
     status: 'countdown',
     mode,
@@ -743,6 +757,15 @@ export default function Game({
             {state.combo > 1 && (
               <span className="hud-combo">x{state.combo}</span>
             )}
+            <button
+              type="button"
+              className={`btn-mute-hud ${soundMuted ? 'is-muted' : ''}`}
+              onClick={toggleMute}
+              aria-label={soundMuted ? 'Nyalakan suara' : 'Matikan suara'}
+              title={soundMuted ? 'Suara mati — ketuk untuk nyala' : 'Suara nyala'}
+            >
+              {soundMuted ? '🔇' : '🔊'}
+            </button>
             <button type="button" className="btn-exit-top" onClick={onExit}>
               Keluar
             </button>

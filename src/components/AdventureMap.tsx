@@ -333,7 +333,7 @@ export default function AdventureMap({
             <code>mapzoom=0.6</code> (in)
           </>
         ) : (
-          <>Ketuk pin di peta · 📍 aktif · ◆ menang · ▲ terkunci</>
+          <>Ketuk pin · ● hijau aktif · ◆ biru menang · ▲ abu terkunci</>
         )}
       </p>
     </div>

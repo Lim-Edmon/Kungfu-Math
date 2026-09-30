@@ -418,6 +418,22 @@
   font-weight: 700;
 }
 
+
+.btn-mute-hud {
+  border: none;
+  background: color-mix(in srgb, var(--color-card) 80%, transparent);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  min-width: 40px;
+  min-height: 36px;
+}
+.btn-mute-hud.is-muted {
+  opacity: 0.7;
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
 .btn-exit-top {
   margin-top: 4px;
   padding: 4px 12px;
