@@ -61,10 +61,10 @@
 
 /* Home Page */
 .home-page {
-  padding: 16px 16px 32px;
+  padding: 16px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   /* Bisa scroll di laptop jika konten panjang — tidak kepotong */
   overflow-y: auto;
   max-height: none;
@@ -277,7 +277,7 @@
 .app-footer {
   flex-shrink: 0;
   text-align: center;
-  padding: 16px 12px 20px;
+  padding: 6px 12px 8px;
   border-top: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
 }
@@ -286,9 +286,9 @@
   display: inline-block;
   color: var(--color-primary);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .footer-support:hover {
@@ -296,9 +296,10 @@
 }
 
 .footer-copy {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--color-text-muted);
   margin: 0;
+  padding-bottom: 0;
 }
 
 /* Placeholder Game Screen */
@@ -2252,10 +2253,11 @@ a.btn-link-trakteer {
   /* width/max-width: aturan di atas + media query */
 }
 .home-wizard .wizard-body {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
 }
 .home-wizard .wizard-footer-bar {
-  margin-top: auto;
+  /* ~30% dari gap lama (auto penuh layar) — cukup napas, tidak kosong besar */
+  margin-top: 18px;
 }
 .display-chip,
 .display-chip.header-display,
@@ -2402,17 +2404,19 @@ a.btn-link-trakteer,
   justify-content: center;
   text-decoration: none;
   margin-top: 0.5rem;
-  width: 100%;
+  width: auto;
+  min-width: 30%;
+  max-width: 42%;
   box-sizing: border-box;
-  background: var(--color-card) !important;
-  color: var(--color-text) !important;
-  border: 2px solid var(--color-border) !important;
+  background: #d6eaf8 !important;
+  color: #1a5276 !important;
+  border: 2px solid #aed6f1 !important;
   font-weight: 600;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: var(--radius);
 }
 a.btn-link-trakteer:hover,
 .btn-trakteer:hover {
-  border-color: var(--color-primary) !important;
-  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card)) !important;
+  border-color: #5dade2 !important;
+  background: #c5e1f5 !important;
 }

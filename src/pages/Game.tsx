@@ -813,17 +813,13 @@ export default function Game({
         </div>
 
         <div
-          className={`game-arena ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
-          data-city={cityId || undefined}
-          style={
-            cityId
-              ? {
-                  backgroundImage: `linear-gradient(color-mix(in srgb, var(--color-bg) 45%, transparent), color-mix(in srgb, var(--color-bg) 55%, transparent)), url(${cityBgCandidates(cityId)[0]})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center bottom',
-                }
-              : undefined
-          }
+          className={`game-arena city-bg ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
+          data-city={cityId || 'default'}
+          style={{
+            backgroundImage: `linear-gradient(color-mix(in srgb, var(--color-bg) 45%, transparent), color-mix(in srgb, var(--color-bg) 55%, transparent)), url(${cityBgCandidates(cityId || 'default')[0]})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center bottom',
+          }}
           ref={arenaRef}
           onPointerDown={onArenaPointerDown}
           onPointerMove={onArenaPointerMove}

@@ -91,7 +91,7 @@ export default function Dojo() {
   return (
     <div className="dojo-page">
       <header className="dojo-header">
-        <h1>Dojo</h1>
+        <h1>Progres</h1>
         <p className="dojo-sub">Rekor & progress kamu</p>
       </header>
 

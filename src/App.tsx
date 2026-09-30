@@ -500,7 +500,7 @@ function App() {
                   className="btn-ghost"
                   onClick={() => setScreen('dojo')}
                 >
-                  Lihat Dojo
+                  Lihat Progres
                 </button>
               </div>
             </div>

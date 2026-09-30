@@ -28,7 +28,7 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
         <span className="bottom-nav-icon" aria-hidden>
           🏯
         </span>
-        <span className="bottom-nav-label">Dojo</span>
+        <span className="bottom-nav-label">Progres</span>
       </button>
       <button
         type="button"
