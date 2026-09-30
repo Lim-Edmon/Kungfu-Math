@@ -386,6 +386,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
         {step === 3 && (
           <section className="wizard-panel">
+            <h2 className="wizard-panel-title">Mode permainan</h2>
+            <p className="wizard-panel-hint">Bola diam atau bergerak di arena</p>
             <div className="mode-buttons">
               <button
                 type="button"

@@ -29,7 +29,12 @@ import { playMenuBgm, stopAllMusic } from './lib/sound';
 import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
-import { loadProgress, recordGameResult, updateProgress } from './lib/storage';
+import {
+  loadProgress,
+  recordGameResult,
+  recordAdventureScore,
+  updateProgress,
+} from './lib/storage';
 import {
   getCityById,
   getNextCityId,
@@ -186,9 +191,17 @@ function App() {
   };
 
   const handleFinishGame = (score: number, grade: string) => {
+    const prog0 = loadProgress();
+    const meta = {
+      playerName: prog0.playerName,
+      inputMode: selectedMode,
+      arena: selectedArena,
+      tempoId: playKind === 'petualangan' ? adventureDiffId : undefined,
+    };
     const { highScore, isNewRecord: neu } = recordGameResult(
       selectedLevel,
-      score
+      score,
+      meta
     );
     setLastScore(score);
     setLastGrade(grade);
@@ -204,9 +217,7 @@ function App() {
       const cityId = prog.adventureCityId || 'jakarta';
       setLastCityId(cityId);
       const city = getCityById(cityId);
-      const prevHs = prog.adventureHighScores?.[cityId] ?? 0;
-      const best = Math.max(prevHs, score);
-      const ahs = { ...(prog.adventureHighScores || {}), [cityId]: best };
+      recordAdventureScore(cityId, score, meta);
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
       let nextId: string | null = null;
@@ -218,10 +229,7 @@ function App() {
           unlocked = [...unlocked, nextId];
         }
       }
-      updateProgress({
-        adventureHighScores: ahs,
-        adventureUnlocked: unlocked,
-      });
+      updateProgress({ adventureUnlocked: unlocked });
       setPassedCity(passed);
       setNextCityId(nextId);
       const fact = passed ? pickCityFunFact(cityId) : null;

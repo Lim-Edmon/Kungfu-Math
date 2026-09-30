@@ -874,6 +874,22 @@
   min-width: 120px;
 }
 
+.settings-share-actions {
+  margin: 10px 0 6px;
+}
+
+.settings-share-preview-label {
+  margin-top: 12px !important;
+  margin-bottom: 4px !important;
+  font-weight: 600;
+}
+
+.share-invite-preview {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
 .settings-message {
   padding: 10px;
   border-radius: 12px;
@@ -1320,6 +1336,22 @@
   font-size: 0.75rem;
   color: var(--color-text-muted);
   margin-top: 2px;
+}
+
+.dojo-score-meta {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.dojo-record-note {
+  margin: 10px 4px 0;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
 }
 
 .dojo-score-value {

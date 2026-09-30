@@ -7,7 +7,7 @@ import {
   exportProgress,
   importProgress,
 } from '../lib/storage';
-import { TRAKTEER_URL } from '../lib/constants';
+import { TRAKTEER_URL, APP_URL, buildInviteText } from '../lib/constants';
 
 interface SettingsProps {
   onBack: () => void;
@@ -19,6 +19,7 @@ export default function Settings({ onBack }: SettingsProps) {
   const [importCode, setImportCode] = useState('');
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   useEffect(() => {
     const p = loadProgress();
@@ -72,6 +73,47 @@ export default function Settings({ onBack }: SettingsProps) {
       setImportCode('');
     } else {
       setMessage('Kode tidak valid. Pastikan salin utuh dari HP lain (mulai KM1.).');
+    }
+  };
+
+  const handleShareInvite = async () => {
+    const text = buildInviteText();
+    // Web Share API (HP modern) — buka sheet WA / Telegram / dll
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({
+          title: 'Kungfu Math',
+          text,
+          url: APP_URL,
+        });
+        setMessage('Siap dibagikan!');
+        return;
+      } catch (err) {
+        // User batal share → jangan error keras; fallback di bawah
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          setMessage('Bagikan dibatalkan');
+          return;
+        }
+      }
+    }
+    // Fallback: WhatsApp Web/App
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+    setMessage('Membuka WhatsApp dengan pesan ajakan…');
+  };
+
+  const handleCopyInvite = async () => {
+    const text = buildInviteText();
+    try {
+      await navigator.clipboard.writeText(text);
+      setInviteCopied(true);
+      setMessage('Pesan ajakan disalin — tempel di WA / chat keluarga');
+      setTimeout(() => setInviteCopied(false), 2000);
+    } catch {
+      setMessage('Gagal menyalin. Coba Bagikan lewat WhatsApp.');
     }
   };
 
@@ -144,6 +186,31 @@ export default function Settings({ onBack }: SettingsProps) {
         <button type="button" className="btn-primary" onClick={handleImport}>
           Masukkan Kode
         </button>
+      </section>
+
+      <section className="settings-section">
+        <h2>Ajak keluarga coba</h2>
+        <p className="settings-note">
+          Kirim ajakan ke orang tua / ponakan / sepupu supaya anak belajar
+          hitung lewat game sederhana ini.
+        </p>
+        <div className="export-actions settings-share-actions">
+          <button type="button" className="btn-primary" onClick={handleShareInvite}>
+            📤 Bagikan (WA / lain)
+          </button>
+          <button type="button" className="btn-secondary" onClick={handleCopyInvite}>
+            {inviteCopied ? 'Tersalin ✓' : 'Salin pesan ajakan'}
+          </button>
+        </div>
+        <p className="settings-note settings-share-preview-label">Isi pesan (bisa disalin):</p>
+        <textarea
+          className="code-area share-invite-preview"
+          readOnly
+          rows={6}
+          value={buildInviteText()}
+          onFocus={(e) => e.target.select()}
+          aria-label="Pratinjau pesan ajakan"
+        />
       </section>
 
       <section className="settings-section">

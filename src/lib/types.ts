@@ -38,8 +38,27 @@ export interface Character {
   imageCloseSrc: string;
 }
 
+/** Detail rekor (siapa, kapan, kondisi main) */
+export interface ScoreRecord {
+  score: number;
+  /** Nama pemain saat rekor tercipta */
+  by: string;
+  /** ISO date string */
+  at: string;
+  /** Slice / Tap */
+  inputMode: InputMode;
+  /** Diam / Ketangkasan */
+  arena: ArenaStyle;
+  /** Level soal (latihan) */
+  levelId?: string;
+  /** Tempo petualangan (santai/ringan/normal/berani) */
+  tempoId?: string;
+}
+
 export interface PlayerProgress {
   highScores: Record<string, number>;
+  /** Detail rekor latihan per level — sumber kebenaran untuk Dojo */
+  highScoreRecords: Record<string, ScoreRecord>;
   unlockedStages: number[];
   preferredMode: InputMode;
   preferredArena: ArenaStyle;
@@ -56,12 +75,15 @@ export interface PlayerProgress {
   adventureCityId: string;
   /** Kota yang sudah terbuka */
   adventureUnlocked: string[];
-  /** Skor terbaik per kota */
+  /** Skor terbaik per kota (angka) */
   adventureHighScores: Record<string, number>;
+  /** Detail rekor petualangan per kota */
+  adventureScoreRecords: Record<string, ScoreRecord>;
 }
 
 export const DEFAULT_PROGRESS: PlayerProgress = {
   highScores: {},
+  highScoreRecords: {},
   unlockedStages: [1, 2, 3, 4, 5],
   preferredMode: 'slice',
   preferredArena: 'static',
@@ -76,4 +98,5 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   adventureCityId: 'jakarta',
   adventureUnlocked: ['jakarta'],
   adventureHighScores: {},
+  adventureScoreRecords: {},
 };

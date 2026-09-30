@@ -1,16 +1,48 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
 import { useState } from 'react';
-import { loadProgress } from '../lib/storage';
-import { LEVELS } from '../lib/levels';
+import {
+  loadProgress,
+  formatRecordDate,
+  arenaLabel,
+  inputModeLabel,
+} from '../lib/storage';
+import { LEVELS, getLevelById } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
 import {
   ADVENTURE_CITIES,
+  ADVENTURE_DIFFICULTIES,
   getCityById,
   getCountryNameId,
 } from '../lib/adventure';
+import type { ScoreRecord } from '../lib/types';
 
 type DojoTab = 'level' | 'petualangan';
+
+function tempoLabel(tempoId: string | undefined): string {
+  if (!tempoId) return '';
+  const d = ADVENTURE_DIFFICULTIES.find((x) => x.id === tempoId);
+  return d?.labelId ?? tempoId;
+}
+
+function formatRecordMeta(rec: ScoreRecord | undefined, kind: 'level' | 'adv'): string {
+  if (!rec || rec.score <= 0) return '';
+  const parts: string[] = [];
+  if (rec.by) parts.push(rec.by);
+  const tgl = formatRecordDate(rec.at);
+  if (tgl) parts.push(tgl);
+  parts.push(inputModeLabel(rec.inputMode));
+  parts.push(arenaLabel(rec.arena));
+  if (kind === 'level' && rec.levelId) {
+    const lv = getLevelById(rec.levelId as import('../lib/levels').DifficultyLevel);
+    if (lv?.labelId) parts.push(`Lv ${lv.labelId}`);
+  }
+  if (kind === 'adv' && rec.tempoId) {
+    const tp = tempoLabel(rec.tempoId);
+    if (tp) parts.push(`Tempo ${tp}`);
+  }
+  return parts.join(' · ');
+}
 
 export default function Dojo() {
   const progress = loadProgress();
@@ -21,12 +53,17 @@ export default function Dojo() {
   const [tab, setTab] = useState<DojoTab>('level');
   const [tipsOpen, setTipsOpen] = useState(false);
 
-  const rows = LEVELS.map((lv) => ({
-    id: lv.id,
-    label: lv.labelId,
-    desc: lv.descId,
-    score: progress.highScores[lv.id] ?? 0,
-  }));
+  const rows = LEVELS.map((lv) => {
+    const rec = progress.highScoreRecords?.[lv.id];
+    const score = rec?.score ?? progress.highScores[lv.id] ?? 0;
+    return {
+      id: lv.id,
+      label: lv.labelId,
+      desc: lv.descId,
+      score,
+      meta: formatRecordMeta(rec, 'level'),
+    };
+  });
 
   const bestOverall = rows.reduce((m, r) => Math.max(m, r.score), 0);
 
@@ -109,6 +146,9 @@ export default function Dojo() {
                 <div>
                   <span className="dojo-score-label">{r.label}</span>
                   <span className="dojo-score-desc">{r.desc}</span>
+                  {r.meta ? (
+                    <span className="dojo-score-meta">{r.meta}</span>
+                  ) : null}
                 </div>
                 <span className="dojo-score-value">
                   {r.score > 0 ? r.score : '—'}
@@ -116,6 +156,9 @@ export default function Dojo() {
               </li>
             ))}
           </ul>
+          <p className="dojo-record-note">
+            Detail rekor: nama · tanggal · Slice/Tap · Diam/Ketangkasan
+          </p>
         </section>
       )}
 
@@ -129,10 +172,13 @@ export default function Dojo() {
             {ADVENTURE_CITIES.map((c, i) => {
               const unlocked =
                 c.id === 'jakarta' || unlockedList.includes(c.id);
-              const hs = progress.adventureHighScores?.[c.id] ?? 0;
+              const rec = progress.adventureScoreRecords?.[c.id];
+              const hs =
+                rec?.score ?? progress.adventureHighScores?.[c.id] ?? 0;
               const passed = hs >= c.targetScore;
               const country = getCountryNameId(c.countryId);
               const isCurrent = c.id === currentCity.id;
+              const meta = formatRecordMeta(rec, 'adv');
               return (
                 <li
                   key={c.id}
@@ -148,6 +194,9 @@ export default function Dojo() {
                       {country} · target {c.targetScore}
                       {!unlocked ? ' · terkunci' : passed ? ' · lolos' : ''}
                     </span>
+                    {meta ? (
+                      <span className="dojo-score-meta">{meta}</span>
+                    ) : null}
                   </div>
                   <span className="dojo-score-value">
                     {hs > 0 ? hs : '—'}
@@ -156,6 +205,9 @@ export default function Dojo() {
               );
             })}
           </ul>
+          <p className="dojo-record-note">
+            Detail rekor: nama · tanggal · Slice/Tap · Diam/Ketangkasan · tempo
+          </p>
         </section>
       )}
 
@@ -187,7 +239,7 @@ export default function Dojo() {
             </li>
             <li>
               <strong>Petualangan</strong> — capai target skor kota untuk buka
-              kota berikutnya. Bonus waktu tergantung tingkat kesulitan.
+              kota berikutnya. Bonus waktu tergantung tempo perjalanan.
             </li>
           </ul>
         )}

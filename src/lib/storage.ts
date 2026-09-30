@@ -6,6 +6,7 @@ import type {
   DisplayMode,
   InputMode,
   PlayerProgress,
+  ScoreRecord,
 } from './types';
 import { DEFAULT_PROGRESS } from './types';
 import { ADVENTURE_CITIES } from './adventure';
@@ -35,8 +36,39 @@ function finiteNonNeg(n: unknown, max: number): number | null {
 }
 
 /** Normalisasi + whitelist — untrusted JSON (import / localStorage rusak) */
+function parseScoreRecord(v: unknown): ScoreRecord | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  const score = finiteNonNeg(o.score, MAX_SCORE);
+  if (score === null) return null;
+  const by = typeof o.by === 'string' ? o.by.slice(0, 24) : '';
+  const at = typeof o.at === 'string' ? o.at.slice(0, 40) : '';
+  const inputMode =
+    typeof o.inputMode === 'string' && MODES.has(o.inputMode as InputMode)
+      ? (o.inputMode as InputMode)
+      : 'slice';
+  const arena =
+    typeof o.arena === 'string' && ARENAS.has(o.arena as ArenaStyle)
+      ? (o.arena as ArenaStyle)
+      : 'static';
+  const rec: ScoreRecord = { score, by, at, inputMode, arena };
+  if (typeof o.levelId === 'string' && LEVEL_IDS.has(o.levelId)) {
+    rec.levelId = o.levelId;
+  }
+  if (typeof o.tempoId === 'string' && o.tempoId.length < 24) {
+    rec.tempoId = o.tempoId;
+  }
+  return rec;
+}
+
 export function normalizeProgress(raw: unknown): PlayerProgress {
-  const base = { ...DEFAULT_PROGRESS, highScores: { ...DEFAULT_PROGRESS.highScores } };
+  const base: PlayerProgress = {
+    ...DEFAULT_PROGRESS,
+    highScores: { ...DEFAULT_PROGRESS.highScores },
+    highScoreRecords: {},
+    adventureHighScores: {},
+    adventureScoreRecords: {},
+  };
   if (!raw || typeof raw !== 'object') return base;
 
   const p = raw as Record<string, unknown>;
@@ -97,6 +129,24 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     next.adventureHighScores = ahs;
   }
 
+  if (p.adventureScoreRecords && typeof p.adventureScoreRecords === 'object') {
+    const asr: Record<string, ScoreRecord> = {};
+    for (const [k, v] of Object.entries(
+      p.adventureScoreRecords as Record<string, unknown>
+    )) {
+      if (!VALID_CITIES.has(k)) continue;
+      const rec = parseScoreRecord(v);
+      if (rec) {
+        asr[k] = rec;
+        // sinkron angka jika belum / lebih rendah
+        if ((next.adventureHighScores[k] ?? 0) < rec.score) {
+          next.adventureHighScores[k] = rec.score;
+        }
+      }
+    }
+    next.adventureScoreRecords = asr;
+  }
+
   // isSubscribed: fase test — terima boolean, JANGAN dipakai sebagai kontrol bayar
   if (typeof p.isSubscribed === 'boolean') next.isSubscribed = p.isSubscribed;
 
@@ -111,6 +161,23 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
       if (s !== null) hs[k] = s;
     }
     next.highScores = hs;
+  }
+
+  if (p.highScoreRecords && typeof p.highScoreRecords === 'object') {
+    const hsr: Record<string, ScoreRecord> = {};
+    for (const [k, v] of Object.entries(
+      p.highScoreRecords as Record<string, unknown>
+    )) {
+      if (!LEVEL_IDS.has(k)) continue;
+      const rec = parseScoreRecord(v);
+      if (rec) {
+        hsr[k] = { ...rec, levelId: k };
+        if ((next.highScores[k] ?? 0) < rec.score) {
+          next.highScores[k] = rec.score;
+        }
+      }
+    }
+    next.highScoreRecords = hsr;
   }
 
   if (Array.isArray(p.unlockedStages)) {
@@ -174,9 +241,22 @@ export function importProgress(encoded: string): boolean {
   }
 }
 
+export type RecordMeta = {
+  playerName?: string;
+  inputMode?: InputMode;
+  arena?: ArenaStyle;
+  tempoId?: string;
+};
+
+function displayNameFrom(progress: PlayerProgress, override?: string): string {
+  const n = (override ?? progress.playerName ?? '').trim();
+  return n || 'Pendekar';
+}
+
 export function recordGameResult(
   levelId: string,
-  score: number
+  score: number,
+  meta?: RecordMeta
 ): { highScore: number; isNewRecord: boolean } {
   const safeScore = finiteNonNeg(score, MAX_SCORE) ?? 0;
   const progress = loadProgress();
@@ -184,7 +264,7 @@ export function recordGameResult(
   const isNewRecord = safeScore > prev;
   const highScore = Math.max(prev, safeScore);
 
-  updateProgress({
+  const patch: Partial<PlayerProgress> = {
     highScores: {
       ...progress.highScores,
       [levelId]: highScore,
@@ -193,7 +273,85 @@ export function recordGameResult(
       (progress.totalGamesPlayed ?? 0) + 1,
       MAX_GAMES
     ),
-  });
+  };
 
+  if (isNewRecord) {
+    const rec: ScoreRecord = {
+      score: highScore,
+      by: displayNameFrom(progress, meta?.playerName),
+      at: new Date().toISOString(),
+      inputMode: meta?.inputMode ?? progress.preferredMode ?? 'slice',
+      arena: meta?.arena ?? progress.preferredArena ?? 'static',
+      levelId,
+    };
+    patch.highScoreRecords = {
+      ...(progress.highScoreRecords || {}),
+      [levelId]: rec,
+    };
+  }
+
+  updateProgress(patch);
   return { highScore, isNewRecord };
+}
+
+/** Update rekor petualangan per kota + detail (hanya jika skor lebih tinggi) */
+export function recordAdventureScore(
+  cityId: string,
+  score: number,
+  meta?: RecordMeta
+): { highScore: number; isNewRecord: boolean } {
+  const safeScore = finiteNonNeg(score, MAX_SCORE) ?? 0;
+  const progress = loadProgress();
+  const prev = progress.adventureHighScores?.[cityId] ?? 0;
+  const isNewRecord = safeScore > prev;
+  const highScore = Math.max(prev, safeScore);
+
+  const patch: Partial<PlayerProgress> = {
+    adventureHighScores: {
+      ...(progress.adventureHighScores || {}),
+      [cityId]: highScore,
+    },
+  };
+
+  if (isNewRecord) {
+    const rec: ScoreRecord = {
+      score: highScore,
+      by: displayNameFrom(progress, meta?.playerName),
+      at: new Date().toISOString(),
+      inputMode: meta?.inputMode ?? progress.preferredMode ?? 'slice',
+      arena: meta?.arena ?? progress.preferredArena ?? 'static',
+      tempoId: meta?.tempoId,
+    };
+    patch.adventureScoreRecords = {
+      ...(progress.adventureScoreRecords || {}),
+      [cityId]: rec,
+    };
+  }
+
+  updateProgress(patch);
+  return { highScore, isNewRecord };
+}
+
+/** Format tanggal singkat untuk Dojo (lokal ID) */
+export function formatRecordDate(iso: string | undefined): string {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return '';
+  }
+}
+
+export function arenaLabel(arena: ArenaStyle | undefined): string {
+  return arena === 'agility' ? 'Ketangkasan' : 'Diam';
+}
+
+export function inputModeLabel(mode: InputMode | undefined): string {
+  return mode === 'tap' ? 'Tap' : 'Slice';
 }
