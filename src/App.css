@@ -15,7 +15,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  align-items: center; /* konten di tengah di laptop/PC */
+  align-items: stretch;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -46,17 +46,17 @@
   padding: 24px;
 }
 
-/* Kolom konten — di tengah di laptop/PC (width min, bukan 100% + max) */
+/* Kolom konten — full width (mobile-first; laptop sementara rata kiri) */
 .home-page,
 .settings-page,
 .dojo-page,
 .result-screen {
-  width: min(100%, 480px);
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
   box-sizing: border-box;
-  align-self: center;
+  align-self: stretch;
 }
 
 /* Home Page */
@@ -350,7 +350,7 @@
 
 /* Kolom game di TENGAH layar (laptop/PC) */
 .game-inner {
-  width: min(100%, 480px);
+  width: 100%;
   margin-left: auto;
   margin-right: auto;
   height: 100%;
@@ -1066,8 +1066,8 @@
   .dojo-page,
   .result-screen,
   .game-screen {
-    width: min(100%, 560px);
-    max-width: 560px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .home-page {
@@ -1115,8 +1115,8 @@
   .settings-page,
   .dojo-page,
   .result-screen {
-    width: min(100%, 640px);
-    max-width: 640px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .floating-number {
@@ -1137,8 +1137,8 @@
   .settings-page,
   .dojo-page,
   .result-screen {
-    width: min(100%, 720px);
-    max-width: 720px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .floating-number {
@@ -2052,13 +2052,12 @@ a.btn-link-trakteer {
   gap: 0; /* spacing diatur per section, hindari overlap flex */
 }
 .wizard-sticky {
-  position: relative; /* jangan sticky — biar tidak menimpa konten di laptop */
-  top: auto;
-  z-index: 1;
+  position: sticky;
+  top: 0;
+  z-index: 20;
   background: var(--color-bg, #fff8e1);
   padding-bottom: 4px;
   border-bottom: 1px solid color-mix(in srgb, var(--color-border, #e0d5c0) 70%, transparent);
-  flex-shrink: 0;
 }
 .wizard-header-row {
   margin-bottom: 4px;
@@ -2139,10 +2138,8 @@ a.btn-link-trakteer {
   flex-shrink: 0;
 }
 .wizard-body {
-  flex: 0 0 auto;
+  flex: 1;
   min-height: 0;
-  position: relative;
-  z-index: 1;
 }
 .wizard-panel {
   padding: 4px 0 12px;
@@ -2198,12 +2195,11 @@ a.btn-link-trakteer {
   display: none;
 }
 .wizard-footer-bar {
-  position: relative;
-  z-index: 1;
-  margin-top: 12px;
-  padding: 12px 0 8px;
-  background: transparent;
-  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 15;
+  padding: 8px 0 6px;
+  background: linear-gradient(transparent, var(--color-bg, #fff8e1) 28%);
 }
 .wizard-progress {
   display: flex;
@@ -2256,10 +2252,10 @@ a.btn-link-trakteer {
   /* width/max-width: aturan di atas + media query */
 }
 .home-wizard .wizard-body {
-  flex: 0 0 auto; /* jangan membesar — hindari tombol Lanjut “melayang” di tengah */
+  flex: 1 1 auto;
 }
 .home-wizard .wizard-footer-bar {
-  margin-top: 16px;
+  margin-top: auto;
 }
 .display-chip,
 .display-chip.header-display,
@@ -2388,23 +2384,7 @@ a.btn-link-trakteer {
 }
 
 
-/* Force: tombol Lanjut/Kembali selalu di alur normal, tidak mengambang */
-.wizard-footer-bar,
-.home-wizard .wizard-footer-bar,
-.wizard-nav {
-  position: relative !important;
-  top: auto !important;
-  bottom: auto !important;
-  left: auto !important;
-  right: auto !important;
-  transform: none !important;
-  margin-top: 20px !important;
-  z-index: 1 !important;
-  background: transparent !important;
-}
-.wizard-panel {
-  padding-bottom: 8px;
-}
+/* Spacing & Trakteer (tetap) */
 .dojo-note {
   margin-bottom: 28px !important;
   padding-bottom: 8px;
@@ -2424,7 +2404,6 @@ a.btn-link-trakteer,
   margin-top: 0.5rem;
   width: 100%;
   box-sizing: border-box;
-  /* mirip secondary, bukan highlight merah penuh */
   background: var(--color-card) !important;
   color: var(--color-text) !important;
   border: 2px solid var(--color-border) !important;
