@@ -477,7 +477,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                         </div>
                         <div className="character-info">
                           <strong>{char.name}</strong>
-                          <span>{char.nicknameId}</span>
+                          <span>{char.mode === 'slice' ? 'Slice' : 'Tap'}</span>
                         </div>
                         {isSelected && <span className="check-mark">✓</span>}
                       </button>

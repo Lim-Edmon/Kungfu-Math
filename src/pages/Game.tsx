@@ -761,9 +761,8 @@ export default function Game({
               <div className="hud-identity-text">
                 <strong className="hud-name">{displayName}</strong>
                 <span className="hud-meta">
-                  {character?.nicknameId ?? ''}
-                  {mode === 'slice' ? ' · Slice' : ' · Tap'}
-                  {agility ? ' · Bergerak' : ''}
+                  {mode === 'slice' ? 'Slice' : 'Tap'}
+                  {agility ? ' · Bergerak' : ' · Diam'}
                 </span>
                 <span className="hud-lives-row">
                   <span className="hud-lives">{hearts.join('')}</span>

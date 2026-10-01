@@ -385,7 +385,8 @@
 .hud-left {
   flex: 1 1 0;
   min-width: 0;
-  max-width: 42%;
+  max-width: 38%;
+  padding-right: 8px;
 }
 
 .hud-center {
