@@ -1,24 +1,58 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ADVENTURE_CITIES } from '../lib/adventure';
 
 /**
- * Dev peta:
- *   ?mapdebug=1          → semua kota + zoom longgar
- *   ?mapdebug=1&mapzoom=2 → lebih zoom out (angka lebih besar = lebih jauh)
- *   ?mapdebug=1&mapzoom=0.6 → lebih zoom in
+ * Dev peta — buka di browser (dev / production):
+ *
+ *   ?mapdebug=1
+ *     → semua kota, zoom longgar, klik peta = dapat mapX/mapY
+ *
+ *   ?mapdebug=1&mapzoom=2
+ *     → lebih zoom OUT (angka besar = lebih jauh)
+ *
+ *   ?mapdebug=1&mapzoom=0.5
+ *     → lebih zoom IN
+ *
+ *   ?mapdebug=1&mapfocus=derawan
+ *     → center zoom ke kota itu (id kecil, contoh: jakarta, derawan)
+ *
+ *   ?mapdebug=1&mapcenter=79.34,53.09&mapzoom=0.6
+ *     → center ke koordinat manual + zoom
+ *
+ * Cara rapikan titik (contoh Derawan / Kalimantan):
+ *   1. Buka URL: .../?mapdebug=1&mapfocus=derawan&mapzoom=0.45
+ *   2. Klik di peta tepat di pulau/kota yang benar
+ *   3. Salin mapX / mapY yang muncul di panel debug
+ *   4. Tempel ke adventure.ts (field mapX, mapY kota itu)
+ *   5. Refresh — pin harus tepat di titik klik
  */
-function useMapDebug(): { on: boolean; zoom: number } {
+
+type MapDebug = {
+  on: boolean;
+  zoom: number;
+  focusId: string | null;
+  center: { x: number; y: number } | null;
+};
+
+function useMapDebug(): MapDebug {
   return useMemo(() => {
     try {
       const q = new URLSearchParams(window.location.search);
       const on = q.get('mapdebug') === '1';
       const z = parseFloat(q.get('mapzoom') || '1');
-      const zoom = Number.isFinite(z) && z > 0.2 && z < 20 ? z : 1;
-      return { on, zoom };
+      const zoom = Number.isFinite(z) && z > 0.15 && z < 30 ? z : 1;
+      const focusId = (q.get('mapfocus') || '').toLowerCase().trim() || null;
+      let center: { x: number; y: number } | null = null;
+      const mc = q.get('mapcenter');
+      if (mc) {
+        const [a, b] = mc.split(',').map((s) => parseFloat(s.trim()));
+        if (Number.isFinite(a) && Number.isFinite(b)) center = { x: a, y: b };
+      }
+      return { on, zoom, focusId, center };
     } catch {
-      return { on: false, zoom: 1 };
+      return { on: false, zoom: 1, focusId: null, center: null };
     }
   }, []);
 }
@@ -45,35 +79,100 @@ export default function AdventureMap({
   onTravelDone,
 }: AdventureMapProps) {
   const mapDebug = useMapDebug();
+  const frameRef = useRef<HTMLDivElement>(null);
+  const [clickCoord, setClickCoord] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+
   const activeIdx = Math.max(
     0,
     ADVENTURE_CITIES.findIndex((c) => c.id === activeId)
   );
-  // Debug: semua kota. Normal: 2 sebelum + aktif + 2 sesudah
-  const winStart = mapDebug.on ? 0 : Math.max(0, activeIdx - 2);
-  const winEnd = mapDebug.on
-    ? ADVENTURE_CITIES.length - 1
-    : Math.min(ADVENTURE_CITIES.length - 1, activeIdx + 2);
-  const windowCities = ADVENTURE_CITIES.slice(winStart, winEnd + 1);
 
-  const xs = windowCities.map((c) => c.mapX);
-  const ys = windowCities.map((c) => c.mapY);
-  const pad = mapDebug.on ? 4 * mapDebug.zoom : 0.85;
-  let minX = Math.min(...xs) - pad;
-  let maxX = Math.max(...xs) + pad;
-  let minY = Math.min(...ys) - pad;
-  let maxY = Math.max(...ys) + pad;
+  /** Index kota terbuka paling jauh di jalur */
+  const lastUnlockedIdx = useMemo(() => {
+    let max = 0;
+    ADVENTURE_CITIES.forEach((c, i) => {
+      if (unlockedIds.includes(c.id) || c.id === 'jakarta') {
+        if (i > max) max = i;
+      }
+    });
+    return max;
+  }, [unlockedIds]);
 
-  const minSpan = mapDebug.on ? 12 * mapDebug.zoom : 2.2;
-  if (maxX - minX < minSpan) {
-    const m = (minX + maxX) / 2;
-    minX = m - minSpan / 2;
-    maxX = m + minSpan / 2;
+  /**
+   * Kota terkunci yang BOLEH tampil pin:
+   * hanya 2 kota berikutnya setelah kota terbuka terakhir.
+   */
+  const lockedPreviewIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (let i = 1; i <= 2; i++) {
+      const c = ADVENTURE_CITIES[lastUnlockedIdx + i];
+      if (c) ids.add(c.id);
+    }
+    return ids;
+  }, [lastUnlockedIdx]);
+
+  // —— Zoom window ——
+  // Normal: aktif ± 2 kota (urutan jalur)
+  // Debug + mapfocus/mapcenter: zoom ke titik itu
+  let zoomCities = ADVENTURE_CITIES.slice(
+    Math.max(0, activeIdx - 2),
+    Math.min(ADVENTURE_CITIES.length, activeIdx + 3)
+  );
+
+  if (mapDebug.on) {
+    if (mapDebug.focusId) {
+      const fc = ADVENTURE_CITIES.find((c) => c.id === mapDebug.focusId);
+      if (fc) zoomCities = [fc];
+      else zoomCities = ADVENTURE_CITIES;
+    } else if (mapDebug.center) {
+      zoomCities = []; // pakai center manual di bawah
+    } else {
+      zoomCities = ADVENTURE_CITIES;
+    }
   }
-  if (maxY - minY < minSpan) {
-    const m = (minY + maxY) / 2;
-    minY = m - minSpan / 2;
-    maxY = m + minSpan / 2;
+
+  let minX: number;
+  let maxX: number;
+  let minY: number;
+  let maxY: number;
+
+  if (mapDebug.on && mapDebug.center && zoomCities.length === 0) {
+    const span = 8 * mapDebug.zoom;
+    minX = mapDebug.center.x - span / 2;
+    maxX = mapDebug.center.x + span / 2;
+    minY = mapDebug.center.y - span / 2;
+    maxY = mapDebug.center.y + span / 2;
+  } else if (mapDebug.on && mapDebug.focusId && zoomCities.length === 1) {
+    const c = zoomCities[0];
+    const span = 6 * mapDebug.zoom;
+    minX = c.mapX - span / 2;
+    maxX = c.mapX + span / 2;
+    minY = c.mapY - span / 2;
+    maxY = c.mapY + span / 2;
+  } else {
+    const xs = zoomCities.map((c) => c.mapX);
+    const ys = zoomCities.map((c) => c.mapY);
+    const pad = mapDebug.on ? 3 * mapDebug.zoom : 0.85;
+    minX = Math.min(...xs) - pad;
+    maxX = Math.max(...xs) + pad;
+    minY = Math.min(...ys) - pad;
+    maxY = Math.max(...ys) + pad;
+
+    const minSpan = mapDebug.on ? 10 * mapDebug.zoom : 2.2;
+    if (maxX - minX < minSpan) {
+      const m = (minX + maxX) / 2;
+      minX = m - minSpan / 2;
+      maxX = m + minSpan / 2;
+    }
+    if (maxY - minY < minSpan) {
+      const m = (minY + maxY) / 2;
+      minY = m - minSpan / 2;
+      maxY = m + minSpan / 2;
+    }
   }
 
   let vbW = maxX - minX;
@@ -92,8 +191,13 @@ export default function AdventureMap({
     vbW = needW;
   }
 
-  const pinR = Math.min(vbW, vbH) * (mapDebug.on ? 0.018 : 0.028);
-  const fontSize = Math.min(vbW, vbH) * (mapDebug.on ? 0.028 : 0.055);
+  const viewCenter = {
+    x: (minX + maxX) / 2,
+    y: (minY + maxY) / 2,
+  };
+
+  const pinR = Math.min(vbW, vbH) * (mapDebug.on ? 0.016 : 0.028);
+  const fontSize = Math.min(vbW, vbH) * (mapDebug.on ? 0.022 : 0.055);
 
   const fromCity = travelFromId
     ? ADVENTURE_CITIES.find((c) => c.id === travelFromId)
@@ -133,19 +237,77 @@ export default function AdventureMap({
       ? fromCity.mapY + (toCity.mapY - fromCity.mapY) * t
       : 0;
 
-  const renderStart = Math.max(0, winStart - 1);
-  const renderEnd = Math.min(ADVENTURE_CITIES.length - 1, winEnd + 1);
-  const renderCities = ADVENTURE_CITIES.slice(renderStart, renderEnd + 1);
+  /** Apakah koordinat kota masuk viewBox (sedikit margin) */
+  const inView = (mapX: number, mapY: number) => {
+    const m = Math.min(vbW, vbH) * 0.05;
+    return (
+      mapX >= minX - m &&
+      mapX <= maxX + m &&
+      mapY >= minY - m &&
+      mapY <= maxY + m
+    );
+  };
 
-  /** Posisi % di frame peta (viewBox → kotak HTML, aspect sama = tanpa letterbox) */
+  /**
+   * Pin yang ditampilkan:
+   * - Debug: semua kota
+   * - Normal:
+   *   • kota terbuka / menang → jika dalam zoom
+   *   • kota terkunci → HANYA 2 berikutnya setelah terbuka terakhir
+   *     (meski secara geografis masuk zoom, kota ke-3+ tidak tampil)
+   */
+  const renderCities = mapDebug.on
+    ? ADVENTURE_CITIES
+    : ADVENTURE_CITIES.filter((c) => {
+        const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
+        const won = wonIds.includes(c.id);
+        if (open || won) {
+          return inView(c.mapX, c.mapY);
+        }
+        // terkunci: hanya 2 preview
+        return lockedPreviewIds.has(c.id);
+      });
+
   const pct = (mapX: number, mapY: number) => ({
     left: `${((mapX - minX) / vbW) * 100}%`,
     top: `${((mapY - minY) / vbH) * 100}%`,
   });
 
+  /** Klik peta (debug) → koordinat absolut 0–100 */
+  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!mapDebug.on || !frameRef.current) return;
+    // jangan ambil klik dari tombol pin
+    if ((e.target as HTMLElement).closest('.adventure-map-hit')) return;
+    const rect = frameRef.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    const mapX = minX + px * vbW;
+    const mapY = minY + py * vbH;
+    setClickCoord({
+      x: Math.round(mapX * 100) / 100,
+      y: Math.round(mapY * 100) / 100,
+    });
+    setCopied(false);
+  };
+
+  const copyCoord = async () => {
+    if (!clickCoord) return;
+    const text = `mapX: ${clickCoord.x},\n    mapY: ${clickCoord.y},`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      /* ignore */
+    }
+  };
+
   return (
     <div className="adventure-map-wrap" aria-label="Peta jalur petualangan">
-      <div className="adventure-map-frame">
+      <div
+        className={`adventure-map-frame${mapDebug.on ? ' is-debug' : ''}`}
+        ref={frameRef}
+        onClick={handleMapClick}
+      >
         <svg
           className="adventure-map"
           viewBox={`${minX} ${minY} ${vbW} ${vbH}`}
@@ -266,11 +428,45 @@ export default function AdventureMap({
                   strokeWidth={fontSize * 0.1}
                   paintOrder="stroke"
                 >
-                  {short}
+                  {mapDebug.on ? `${c.nameId}` : short}
                 </text>
+                {mapDebug.on && (
+                  <text
+                    x={c.mapX}
+                    y={c.mapY + pinR * 2.4}
+                    textAnchor="middle"
+                    fontSize={fontSize * 0.85}
+                    fill="#333"
+                    stroke="#fff"
+                    strokeWidth={fontSize * 0.08}
+                    paintOrder="stroke"
+                  >
+                    {c.mapX.toFixed(1)},{c.mapY.toFixed(1)}
+                  </text>
+                )}
               </g>
             );
           })}
+
+          {/* Tanda klik debug */}
+          {mapDebug.on && clickCoord && (
+            <g>
+              <circle
+                cx={clickCoord.x}
+                cy={clickCoord.y}
+                r={pinR * 0.9}
+                fill="none"
+                stroke="#e65100"
+                strokeWidth={pinR * 0.25}
+              />
+              <circle
+                cx={clickCoord.x}
+                cy={clickCoord.y}
+                r={pinR * 0.25}
+                fill="#e65100"
+              />
+            </g>
+          )}
 
           {traveling && fromCity && toCity && (() => {
             const dx = toCity.mapX - fromCity.mapX;
@@ -306,7 +502,7 @@ export default function AdventureMap({
           })()}
         </svg>
 
-        {/* Area ketuk HTML — pusat = pin kota (mapX/mapY), bukan hit-test SVG */}
+        {/* Area ketuk HTML — pusat = pin kota */}
         {renderCities.map((c) => {
           const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
           if (!open || !onSelect) return null;
@@ -319,19 +515,50 @@ export default function AdventureMap({
               className={`adventure-map-hit${isActive ? ' is-active' : ''}${mapDebug.on ? ' is-debug' : ''}`}
               style={{ left: pos.left, top: pos.top }}
               aria-label={`Pilih ${c.nameId}`}
-              onClick={() => onSelect(c.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(c.id);
+              }}
             />
           );
         })}
       </div>
 
+      {mapDebug.on && (
+        <div className="map-debug-panel">
+          <p>
+            <strong>Mode debug peta</strong>
+          </p>
+          <p>
+            Center view: <code>{viewCenter.x.toFixed(2)}, {viewCenter.y.toFixed(2)}</code>
+            {' · '}
+            span ≈ {vbW.toFixed(1)} × {vbH.toFixed(1)}
+          </p>
+          {clickCoord ? (
+            <p>
+              Klik: <code>mapX: {clickCoord.x}, mapY: {clickCoord.y}</code>{' '}
+              <button type="button" className="btn-ghost map-debug-copy" onClick={copyCoord}>
+                {copied ? 'Tersalin ✓' : 'Salin'}
+              </button>
+            </p>
+          ) : (
+            <p>Klik di peta untuk ambil mapX/mapY titik itu.</p>
+          )}
+          <p className="map-debug-hint">
+            Fokus kota:{' '}
+            <code>?mapdebug=1&amp;mapfocus=derawan&amp;mapzoom=0.45</code>
+            <br />
+            Fokus koordinat:{' '}
+            <code>?mapdebug=1&amp;mapcenter=79.34,53.09&amp;mapzoom=0.5</code>
+            <br />
+            Zoom out: <code>mapzoom=2</code> · Zoom in: <code>mapzoom=0.4</code>
+          </p>
+        </div>
+      )}
+
       <p className="adventure-map-legend">
         {mapDebug.on ? (
-          <>
-            Debug pin · zoom={mapDebug.zoom} · edit mapX/mapY di adventure.ts ·{' '}
-            <code>?mapdebug=1&amp;mapzoom=2</code> (out) /{' '}
-            <code>mapzoom=0.6</code> (in)
-          </>
+          <>Debug · klik peta = koordinat · edit di adventure.ts</>
         ) : (
           <>Ketuk pin · ● hijau aktif · ◆ biru menang · ▲ abu terkunci</>
         )}
