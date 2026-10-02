@@ -6,6 +6,7 @@ import {
   updateProgress,
   exportProgress,
   importProgress,
+  clearAllGameData,
 } from '../lib/storage';
 import { TRAKTEER_URL, APP_URL, buildInviteText } from '../lib/constants';
 import { t, getLang, setLang, type Lang } from '../lib/i18n';
@@ -26,6 +27,23 @@ export default function Settings({
   const [message, setMessage] = useState('');
   const [copied, setCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [clearConfirm, setClearConfirm] = useState(false);
+
+  const handleClearAll = () => {
+    if (!clearConfirm) {
+      setClearConfirm(true);
+      setMessage(t('clearDataWarn'));
+      return;
+    }
+    clearAllGameData(true);
+    setClearConfirm(false);
+    setExportCode('');
+    setImportCode('');
+    setMessage(t('clearDataDone'));
+    onLangChange?.();
+    // Paksa refresh agar Home/Progres ikut reset total
+    window.setTimeout(() => window.location.reload(), 400);
+  };
 
   useEffect(() => {
     const p = loadProgress();
@@ -227,6 +245,34 @@ ${t('waProgressSuffix')}`
             {inviteCopied ? t('btnCopied') : t('btnCopyInvite')}
           </button>
         </div>
+      </section>
+
+      <section className="settings-section">
+        <h2>{t('clearDataTitle')}</h2>
+        <p className="settings-note">{t('clearDataNote')}</p>
+        {!clearConfirm && (
+          <button type="button" className="btn-ghost" onClick={handleClearAll}>
+            {t('clearDataBtn')}
+          </button>
+        )}
+        {clearConfirm && (
+          <div className="export-actions" style={{ marginTop: 8 }}>
+            <button type="button" className="btn-primary" onClick={handleClearAll}
+              style={{ background: '#c62828', borderColor: '#c62828' }}>
+              {t('clearDataConfirm')}
+            </button>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => {
+                setClearConfirm(false);
+                setMessage('');
+              }}
+            >
+              {t('btnCancel')}
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="settings-section">

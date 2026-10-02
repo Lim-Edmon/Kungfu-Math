@@ -143,6 +143,14 @@ const STRINGS = {
     lvPrefix: 'Lv',
     btnGotIt: 'Mengerti',
     playerDefault: 'Pemain',
+
+    clearDataTitle: 'Hapus semua data game',
+    clearDataNote: 'Progress, rekor, dan kota terbuka akan kembali ke awal. Bahasa & suara tetap.',
+    clearDataBtn: 'Clear all game data',
+    clearDataWarn: 'Yakin hapus SEMUA data game di HP ini? Rekor, progress, dan kota terbuka akan hilang. Tidak bisa dibatalkan.',
+    clearDataDone: 'Semua data game dihapus. Mulai dari awal.',
+    clearDataConfirm: 'Ya, hapus semua',
+    btnCancel: 'Batal',
     inviteText:
       'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak belajar berhitung sambil main. Gratis, tanpa login.\n\n',
   },
@@ -286,6 +294,14 @@ const STRINGS = {
     lvPrefix: 'Lv',
     btnGotIt: 'Got it',
     playerDefault: 'Player',
+
+    clearDataTitle: 'Clear all game data',
+    clearDataNote: 'Progress, records, and unlocked cities reset to the start. Language & sound stay.',
+    clearDataBtn: 'Clear all game data',
+    clearDataWarn: 'Delete ALL game data on this phone? Records, progress, and unlocked cities will be gone. This cannot be undone.',
+    clearDataDone: 'All game data cleared. Starting fresh.',
+    clearDataConfirm: 'Yes, clear all',
+    btnCancel: 'Cancel',
     inviteText:
       'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids learning arithmetic while playing. Free, no login.\n\n',
   },

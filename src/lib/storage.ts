@@ -215,6 +215,34 @@ export function saveProgress(progress: PlayerProgress): void {
   }
 }
 
+
+/** Hapus semua progress di perangkat ini — mulai dari nol (simpan preferensi bahasa jika diminta). */
+export function clearAllGameData(keepLanguage = true): PlayerProgress {
+  const prev = loadProgress();
+  const next: PlayerProgress = {
+    ...DEFAULT_PROGRESS,
+    highScores: {},
+    highScoreRecords: {},
+    unlockedStages: [...DEFAULT_PROGRESS.unlockedStages],
+    adventureUnlocked: ['jakarta'],
+    adventureHighScores: {},
+    adventureScoreRecords: {},
+    adventureCityId: 'jakarta',
+    preferredCharacter: 'yu-jin',
+    preferredLevel: 'pemula',
+    preferredMode: 'slice',
+    preferredArena: 'static',
+    playerName: '',
+    totalGamesPlayed: 0,
+    language: keepLanguage ? (prev.language || 'id') : 'id',
+    languageChosen: keepLanguage ? !!prev.languageChosen : false,
+    soundMuted: prev.soundMuted ?? false,
+    displayMode: prev.displayMode || 'siang',
+  };
+  saveProgress(next);
+  return next;
+}
+
 export function updateProgress(partial: Partial<PlayerProgress>): PlayerProgress {
   const next = normalizeProgress({ ...loadProgress(), ...partial });
   saveProgress(next);

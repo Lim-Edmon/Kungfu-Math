@@ -56,16 +56,44 @@
         pointer-events: none;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-Dsy1a0Xx.js"></script>
+    <script type="module" crossorigin src="/assets/index-BSii-1F3.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-ogoRvhNv.css">
   </head>
   <body>
     <div id="boot-splash" aria-live="polite">
       <img src="/logo.png" alt="Kungfu Math" width="96" height="96" />
       <p class="boot-title">Kungfu Math</p>
-      <p class="boot-sub">Latih hitung ala pendekar</p>
+      <p class="boot-sub" id="boot-sub">Latih hitung ala pendekar</p>
       <p class="boot-copy">© Lim Edmon 2026</p>
     </div>
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('kungfu-math-progress');
+          var lang = 'id';
+          if (raw) {
+            var p = JSON.parse(raw);
+            if (p && p.language === 'en') lang = 'en';
+            else if (p && !p.languageChosen) {
+              var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+              if (tz && tz.indexOf('Jakarta') < 0 && tz.indexOf('Makassar') < 0 && tz.indexOf('Jayapura') < 0) {
+                lang = 'en';
+              }
+            }
+          } else {
+            var tz2 = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+            if (tz2 && tz2.indexOf('Jakarta') < 0 && tz2.indexOf('Makassar') < 0 && tz2.indexOf('Jayapura') < 0) {
+              lang = 'en';
+            }
+          }
+          if (lang === 'en') {
+            var el = document.getElementById('boot-sub');
+            if (el) el.textContent = 'Math like a hero';
+            document.documentElement.lang = 'en';
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
   </body>
 </html>

@@ -227,12 +227,14 @@ export function generateQuestion(
   const distractors = makeDistractors(correctNumbers, distractorCount, maxVal);
   const allNumbers = shuffle([...correctNumbers, ...distractors]);
 
-  // Bom: 0–2, bukan angka jawaban
+  // Bom: mode termudah (pemula / sedikit bola) max 0–1 biar tidak "pasti benar"
   const bombIndexes: number[] = [];
   const possibleBombIndexes = allNumbers
     .map((_, i) => i)
     .filter((i) => !correctNumbers.includes(allNumbers[i]));
-  const bombCount = Math.min(randomInt(0, 2), possibleBombIndexes.length);
+  const maxBombs =
+    level === 'pemula' || totalBalls <= 5 ? 1 : 2;
+  const bombCount = Math.min(randomInt(0, maxBombs), possibleBombIndexes.length);
   const shuffledBombs = shuffle(possibleBombIndexes);
   for (let i = 0; i < bombCount; i++) {
     bombIndexes.push(shuffledBombs[i]);
