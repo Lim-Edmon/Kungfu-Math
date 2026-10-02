@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ADVENTURE_CITIES } from '../lib/adventure';
+import { t as i18n } from '../lib/i18n';
 
 /**
  * Dev peta — buka di browser (dev / production):
@@ -215,9 +216,17 @@ export default function AdventureMap({
       return;
     }
     setT(0);
+    if (!fromCity || !toCity) return;
+    // Kecepatan konstan (unit peta / detik) — bukan durasi tetap
+    // jarak dekat → singkat; jarak jauh → lebih lama (bukan "flash")
+    const dist = Math.hypot(
+      toCity.mapX - fromCity.mapX,
+      toCity.mapY - fromCity.mapY
+    );
+    const SPEED = 4.2; // map units per second (stabil)
+    const dur = Math.max(700, Math.min(8000, (dist / SPEED) * 1000));
     let raf = 0;
     const start = performance.now();
-    const dur = 1000;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / dur);
       setT(p);
@@ -226,7 +235,7 @@ export default function AdventureMap({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [travelFromId, travelToId, traveling, onTravelDone]);
+  }, [travelFromId, travelToId, traveling, onTravelDone, fromCity, toCity]);
 
   const planeX =
     traveling && fromCity && toCity
@@ -560,7 +569,7 @@ export default function AdventureMap({
         {mapDebug.on ? (
           <>Debug · klik peta = koordinat · edit di adventure.ts</>
         ) : (
-          <>Ketuk pin · ● hijau aktif · ◆ biru menang · ▲ abu terkunci</>
+          <>{i18n('mapLegend')}</>
         )}
       </p>
     </div>

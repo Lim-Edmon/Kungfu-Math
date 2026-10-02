@@ -45,13 +45,13 @@ export default function Settings({
     setLang(next);
     updateProgress({ language: next, languageChosen: true });
     onLangChange?.();
-    setMessage(next === 'en' ? 'Language: English' : 'Bahasa: Indonesia');
+    setMessage(next === 'en' ? t('msgLangEn') : t('msgLangId'));
   };
 
   const handleExport = () => {
     const code = exportProgress();
     setExportCode(code);
-    setMessage('Kode siap — salin atau kirim WhatsApp ke HP lain');
+    setMessage(t('msgExportReady'));
   };
 
   const handleCopy = async () => {
@@ -59,10 +59,10 @@ export default function Settings({
     try {
       await navigator.clipboard.writeText(exportCode);
       setCopied(true);
-      setMessage('Kode disalin! Tempel di Settings HP lain.');
+      setMessage(t('msgCopied'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setMessage('Gagal menyalin otomatis. Pilih teks di bawah lalu salin manual.');
+      setMessage(t('msgCopyFail'));
     }
   };
 
@@ -72,22 +72,26 @@ export default function Settings({
       return;
     }
     const text = encodeURIComponent(
-      `Kode progress Kungfu Math saya:\n\n${exportCode}\n\nBuka game → ⚙️ Pengaturan → Masukkan Kode Progress`
+      `${t('waProgressPrefix')}
+
+${exportCode}
+
+${t('waProgressSuffix')}`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleImport = () => {
     if (!importCode.trim()) {
-      setMessage('Tempel kode progress dulu');
+      setMessage(t('msgNeedCode'));
       return;
     }
     const ok = importProgress(importCode);
     if (ok) {
-      setMessage('Progress berhasil dimasukkan! Kembali ke Home untuk melihat.');
+      setMessage(t('msgImportOk'));
       setImportCode('');
     } else {
-      setMessage('Kode tidak valid. Pastikan salin utuh dari HP lain (mulai KM1.).');
+      setMessage(t('msgImportFail'));
     }
   };
 
@@ -101,12 +105,12 @@ export default function Settings({
           text,
           url: APP_URL,
         });
-        setMessage('Siap dibagikan!');
+        setMessage(t('msgShareOk'));
         return;
       } catch (err) {
         // User batal share → jangan error keras; fallback di bawah
         if (err instanceof DOMException && err.name === 'AbortError') {
-          setMessage('Bagikan dibatalkan');
+          setMessage(t('msgShareCancel'));
           return;
         }
       }
@@ -117,7 +121,7 @@ export default function Settings({
       '_blank',
       'noopener,noreferrer'
     );
-    setMessage('Membuka WhatsApp dengan pesan ajakan…');
+    setMessage(t('msgShareWa'));
   };
 
   const handleCopyInvite = async () => {
@@ -125,10 +129,10 @@ export default function Settings({
     try {
       await navigator.clipboard.writeText(text);
       setInviteCopied(true);
-      setMessage('Pesan ajakan disalin — tempel di WA / chat keluarga');
+      setMessage(t('msgInviteCopied'));
       setTimeout(() => setInviteCopied(false), 2000);
     } catch {
-      setMessage('Gagal menyalin. Coba Bagikan lewat WhatsApp.');
+      setMessage(t('msgCopyFail'));
     }
   };
 
@@ -168,18 +172,13 @@ export default function Settings({
             {t('langEn')}
           </button>
         </div>
-        <p className="settings-note">{t('langNote')}</p>
-      </section>
+              </section>
 
       <section className="settings-section">
         <h2>{t('settingsProgress')}</h2>
-        <p className="settings-note">
-          Tanpa login / akun. Buat kode di HP ini → kirim ke HP lain → tempel
-          kode di Settings HP tujuan. Progress (skor, nama, preferensi) ikut
-          pindah.
-        </p>
+        <p className="settings-note">{t('settingsProgressNote')}</p>
         <button type="button" className="btn-primary" onClick={handleExport}>
-          Buat Kode Progress
+          {t('btnExport')}
         </button>
         {exportCode && (
           <div className="export-box">
@@ -192,10 +191,10 @@ export default function Settings({
             />
             <div className="export-actions">
               <button type="button" className="btn-secondary" onClick={handleCopy}>
-                {copied ? 'Tersalin ✓' : 'Salin Kode'}
+                {copied ? t('btnCopied') : t('btnCopy')}
               </button>
               <button type="button" className="btn-primary" onClick={handleWhatsApp}>
-                Kirim WhatsApp
+                {t('btnWhatsApp')}
               </button>
             </div>
           </div>
@@ -203,10 +202,8 @@ export default function Settings({
       </section>
 
       <section className="settings-section">
-        <h2>Masukkan Kode Progress</h2>
-        <p className="settings-note">
-          Tempel kode yang dimulai dengan <strong>KM1.</strong> dari HP lain.
-        </p>
+        <h2>{t('settingsImport')}</h2>
+        <p className="settings-note">{t('settingsImportNote')}</p>
         <textarea
           className="code-area"
           placeholder="KM1.eyJ..."
@@ -215,47 +212,38 @@ export default function Settings({
           rows={4}
         />
         <button type="button" className="btn-primary" onClick={handleImport}>
-          Masukkan Kode
+          {t('btnImport')}
         </button>
       </section>
 
       <section className="settings-section">
-        <h2>Ajak keluarga coba</h2>
-        <p className="settings-note">
-          Kirim ajakan ke orang tua / ponakan / sepupu supaya anak belajar
-          hitung lewat game sederhana ini.
-        </p>
+        <h2>{t('settingsInvite')}</h2>
+        <p className="settings-note">{t('settingsInviteNote')}</p>
         <div className="export-actions settings-share-actions">
           <button type="button" className="btn-primary" onClick={handleShareInvite}>
-            📤 Bagikan (WA / lain)
+            {t('btnShare')}
           </button>
           <button type="button" className="btn-secondary" onClick={handleCopyInvite}>
-            {inviteCopied ? 'Tersalin ✓' : 'Salin pesan ajakan'}
+            {inviteCopied ? t('btnCopied') : t('btnCopyInvite')}
           </button>
         </div>
       </section>
 
       <section className="settings-section">
-        <h2>Privasi</h2>
-        <p className="settings-note">
-          Progress disimpan di HP ini saja (localStorage). Tidak ada login,
-          tidak ada kirim data ke server.
-        </p>
+        <h2>{t('settingsPrivacy')}</h2>
+        <p className="settings-note">{t('settingsPrivacyNote')}</p>
       </section>
 
       <section className="settings-section">
-        <h2>Saran & Dukung</h2>
-        <p className="settings-note">
-          Suka mainnya atau punya saran? Bisa dukung lewat Trakteer.
-          Tulis pesan di kolom Trakteer (saran & feedback boleh).
-        </p>
+        <h2>{t('settingsSupport')}</h2>
+        <p className="settings-note">{t('settingsSupportNote')}</p>
         <a
           href={TRAKTEER_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="btn-trakteer"
         >
-          ☕ Buka Trakteer
+          {t('btnTrakteer')}
         </a>
       </section>
 

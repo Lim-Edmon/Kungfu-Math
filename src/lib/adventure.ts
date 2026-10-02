@@ -32,11 +32,13 @@ export interface AdventureCity {
 export interface AdventureDifficulty {
   id: string;
   labelId: string;
+  labelEn: string;
   /** Detik ditambah tiap jawaban benar */
   timeBonus: number;
   /** Detik dikurangi tiap jawaban salah (0 = tidak ada) */
   timePenalty: number;
   descId: string;
+  descEn: string;
 }
 
 export const ADVENTURE_REGIONS: { id: string; labelId: string }[] = [
@@ -126,9 +128,29 @@ export const COUNTRY_NAMES_ID: Record<string, string> = {
 export function getCountryNameId(countryId: string): string {
   const name = COUNTRY_NAMES_ID[countryId];
   if (name) return name;
-  // Jangan tampilkan kode mentah ke anak
   return 'Negara lain';
 }
+
+/** English country names for UI */
+export const COUNTRY_NAMES_EN: Record<string, string> = {
+  id: 'Indonesia', tl: 'Timor-Leste', bn: 'Brunei', ph: 'Philippines', my: 'Malaysia',
+  sg: 'Singapore', th: 'Thailand', vn: 'Vietnam', kh: 'Cambodia', la: 'Laos', mm: 'Myanmar',
+  cn: 'China', jp: 'Japan', kr: 'South Korea', tw: 'Taiwan', mn: 'Mongolia', in: 'India',
+  np: 'Nepal', bt: 'Bhutan', bd: 'Bangladesh', pk: 'Pakistan', lk: 'Sri Lanka',
+  au: 'Australia', nz: 'New Zealand', fj: 'Fiji', pg: 'Papua New Guinea', ru: 'Russia',
+  tr: 'Turkey', ae: 'United Arab Emirates', sa: 'Saudi Arabia', eg: 'Egypt', za: 'South Africa',
+  ke: 'Kenya', ma: 'Morocco', gr: 'Greece', it: 'Italy', va: 'Vatican City', es: 'Spain',
+  pt: 'Portugal', fr: 'France', de: 'Germany', nl: 'Netherlands', be: 'Belgium', ch: 'Switzerland',
+  at: 'Austria', pl: 'Poland', cz: 'Czechia', hu: 'Hungary', ro: 'Romania', ua: 'Ukraine',
+  se: 'Sweden', no: 'Norway', dk: 'Denmark', fi: 'Finland', is: 'Iceland', gb: 'United Kingdom',
+  ie: 'Ireland', us: 'United States', ca: 'Canada', mx: 'Mexico', br: 'Brazil', ar: 'Argentina',
+  cl: 'Chile', pe: 'Peru', co: 'Colombia', ec: 'Ecuador', bo: 'Bolivia', cu: 'Cuba', gl: 'Greenland',
+};
+
+export function getCountryNameEn(countryId: string): string {
+  return COUNTRY_NAMES_EN[countryId] || 'Another country';
+}
+
 
 /**
  * Tempo perjalanan — NAMA BERBEDA dari Level permainan
@@ -136,10 +158,10 @@ export function getCountryNameId(countryId: string): string {
  * 4 opsi → grid 2×2 di home.
  */
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
-  { id: 'santai', labelId: 'Santai', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar' },
-  { id: 'ringan', labelId: 'Ringan', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar' },
-  { id: 'normal', labelId: 'Normal', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu' },
-  { id: 'berani', labelId: 'Berani', timeBonus: 0, timePenalty: 3, descId: 'Salah −3 dtk' },
+  { id: 'santai', labelId: 'Santai', labelEn: 'Easygoing', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar', descEn: '+3s per correct' },
+  { id: 'ringan', labelId: 'Ringan', labelEn: 'Light', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar', descEn: '+1s per correct' },
+  { id: 'normal', labelId: 'Normal', labelEn: 'Normal', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu', descEn: 'No time bonus' },
+  { id: 'berani', labelId: 'Berani', labelEn: 'Bold', timeBonus: 0, timePenalty: 3, descId: 'Salah −3 dtk', descEn: 'Wrong −3s' },
 ];
 
 export function getAdventureDifficulty(id: string): AdventureDifficulty {

@@ -16,6 +16,7 @@ import {
   getCountryNameId,
 } from '../lib/adventure';
 import type { ScoreRecord } from '../lib/types';
+import { t, getLang } from '../lib/i18n';
 
 type DojoTab = 'level' | 'petualangan';
 
@@ -70,8 +71,8 @@ export default function Dojo() {
     const score = rec?.score ?? progress.highScores[lv.id] ?? 0;
     return {
       id: lv.id,
-      label: lv.labelId,
-      desc: lv.descId,
+      label: getLang() === 'en' ? lv.labelEn : lv.labelId,
+      desc: getLang() === 'en' ? lv.descEn : lv.descId,
       score,
       meta: formatRecordMeta(rec, 'level', displayName),
     };
@@ -98,8 +99,8 @@ export default function Dojo() {
   return (
     <div className="dojo-page">
       <header className="dojo-header">
-        <h1>Progres</h1>
-        <p className="dojo-sub">Rekor & progress kamu</p>
+        <h1>{t('dojoTitle')}</h1>
+        <p className="dojo-sub">{t('dojoSub')}</p>
       </header>
 
       <section className="dojo-card dojo-hero">
@@ -119,12 +120,12 @@ export default function Dojo() {
         <div>
           <p className="dojo-hero-name">{displayName}</p>
           <p className="dojo-hero-meta">
-            {progress.totalGamesPlayed} kali main · rekor latihan{' '}
+            {progress.totalGamesPlayed} {t('gamesPlayed')} · {t('practiceRecord')}{' '}
             <strong>{bestOverall}</strong>
           </p>
           <p className="dojo-hero-meta dojo-hero-adv">
-            Petualangan: {passedCount}/{ADVENTURE_CITIES.length} kota lolos ·
-            posisi <strong>{currentCity.nameId}</strong>
+            {t('adventureProgress')}: {passedCount}/{ADVENTURE_CITIES.length} {t('citiesCleared')} ·
+            {t('position')} <strong>{getLang() === 'en' ? currentCity.nameEn : currentCity.nameId}</strong>
           </p>
         </div>
       </section>
@@ -230,7 +231,7 @@ export default function Dojo() {
           onClick={() => setTipsOpen((o) => !o)}
           aria-expanded={tipsOpen}
         >
-          <span>Tips singkat</span>
+          <span>{t('tipsTitle')}</span>
           <span className="dojo-tips-chevron" aria-hidden>
             {tipsOpen ? '▾' : '▸'}
           </span>
@@ -250,17 +251,14 @@ export default function Dojo() {
               Hindari bom 💣 — nyawa berkurang; angka yang dipilih kembali.
             </li>
             <li>
-              <strong>Petualangan</strong> — capai target skor kota untuk buka
+              <strong>{t('tabAdventure')}</strong> — capai target skor kota untuk buka
               kota berikutnya. Bonus waktu tergantung tempo perjalanan.
             </li>
           </ul>
         )}
       </section>
 
-      <p className="dojo-note">
-        Progress tersimpan di HP ini — bisa dipindah lewat kode di{' '}
-        <strong>Pengaturan</strong>.
-      </p>
+      <p className="dojo-note">{t('dojoNote')}</p>
     </div>
   );
 }

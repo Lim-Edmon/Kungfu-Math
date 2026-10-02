@@ -12,6 +12,7 @@ import {
   ADVENTURE_DIFFICULTIES,
   ADVENTURE_REGIONS,
   getCountryNameId,
+  getCountryNameEn,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS } from '../lib/levels';
@@ -23,6 +24,7 @@ import {
 } from '../lib/characters';
 import InstallHint from '../components/InstallHint';
 import AdventureMap from '../components/AdventureMap';
+import { t, getLang } from '../lib/i18n';
 import { sfx } from '../lib/sound';
 
 export type PlayKind = 'latihan' | 'petualangan';
@@ -197,7 +199,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           />
           <div className="wizard-header-text">
             <h1 className="home-title">Kungfu Math</h1>
-            <p className="home-tagline">Latih hitung ala pendekar</p>
+            <p className="home-tagline">{t('tagline')}</p>
           </div>
           <button
             type="button"
@@ -232,8 +234,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       <div className="wizard-body">
         {step === 1 && (
           <section className="wizard-panel">
-            <h2 className="wizard-panel-title">Level permainan</h2>
-            <p className="wizard-panel-hint">Seberapa sulit soal matematikanya</p>
+            <h2 className="wizard-panel-title">{t('levelTitle')}</h2>
+            <p className="wizard-panel-hint">{t('levelHint')}</p>
             <div className="level-list compact-levels">
               {LEVELS.map((lv) => (
                 <button
@@ -245,8 +247,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     updateProgress({ preferredLevel: lv.id });
                   }}
                 >
-                  <strong>{lv.labelId}</strong>
-                  <span>{lv.descId}</span>
+                  <strong>{getLang() === 'en' ? lv.labelEn : lv.labelId}</strong>
+                  <span>{getLang() === 'en' ? lv.descEn : lv.descId}</span>
                 </button>
               ))}
             </div>
@@ -262,8 +264,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 onClick={() => setPlayKind('latihan')}
               >
                 <span className="mode-icon">📚</span>
-                <span className="mode-name">Latihan</span>
-                <span className="mode-desc">Waktu tetap 60 detik</span>
+                <span className="mode-name">{t('playLatihan')}</span>
+                <span className="mode-desc">{t('playLatihanDesc')}</span>
               </button>
               <button
                 type="button"
@@ -271,15 +273,15 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 onClick={() => setPlayKind('petualangan')}
               >
                 <span className="mode-icon">🌏</span>
-                <span className="mode-name">Petualangan</span>
-                <span className="mode-desc">Jelajah kota · bonus waktu</span>
+                <span className="mode-name">{t('playPetualangan')}</span>
+                <span className="mode-desc">{t('playPetualanganDesc')}</span>
               </button>
             </div>
 
             {playKind === 'petualangan' && (
               <div className="city-pick">
-                <h3 className="subsection-title">Tempo perjalanan</h3>
-                <p className="wizard-panel-hint">Atur bonus/penalti waktu — beda dari level soal</p>
+                <h3 className="subsection-title">{t('tempoTitle')}</h3>
+                <p className="wizard-panel-hint">{t('tempoHint')}</p>
                 <div className="mode-buttons adventure-diff-buttons">
                   {ADVENTURE_DIFFICULTIES.map((d) => (
                     <button
@@ -288,13 +290,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       className={`mode-btn ${adventureDiffId === d.id ? 'active' : ''}`}
                       onClick={() => setAdventureDiffId(d.id)}
                     >
-                      <span className="mode-name">{d.labelId}</span>
-                      <span className="mode-desc">{d.descId}</span>
+                      <span className="mode-name">{getLang() === 'en' ? d.labelEn : d.labelId}</span>
+                      <span className="mode-desc">{getLang() === 'en' ? d.descEn : d.descId}</span>
                     </button>
                   ))}
                 </div>
 
-                <h3 className="subsection-title">Pilih kota</h3>
+                <h3 className="subsection-title">{t('pickCity')}</h3>
                 {(() => {
                   const prog = loadProgress();
                   const unlocked = prog.adventureUnlocked || ['jakarta'];
@@ -341,7 +343,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                             const unlocked =
                               c.id === 'jakarta' ||
                               unlockedList.includes(c.id);
-                            const country = getCountryNameId(c.countryId);
+                            const country = getLang() === 'en' ? getCountryNameEn(c.countryId) : getCountryNameId(c.countryId);
                             const order =
                               ADVENTURE_CITIES.findIndex((x) => x.id === c.id) +
                               1;
@@ -363,7 +365,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                 }}
                               >
                                 <span className="city-chip-name">
-                                  {order}. {c.nameId}
+                                  {order}. {getLang() === 'en' ? c.nameEn : c.nameId}
                                 </span>
                                 <span className="city-chip-country">
                                   {country}
@@ -383,8 +385,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
         {step === 3 && (
           <section className="wizard-panel">
-            <h2 className="wizard-panel-title">Mode permainan</h2>
-            <p className="wizard-panel-hint">Bola diam atau bergerak di arena</p>
+            <h2 className="wizard-panel-title">{t('modeTitle')}</h2>
+            <p className="wizard-panel-hint">{t('modeHint')}</p>
             <div className="mode-buttons">
               <button
                 type="button"
@@ -395,8 +397,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 }}
               >
                 <span className="mode-icon">🎯</span>
-                <span className="mode-name">Diam</span>
-                <span className="mode-desc">Bola diam di tempat</span>
+                <span className="mode-name">{t('modeStatic')}</span>
+                <span className="mode-desc">{t('modeStaticDesc')}</span>
               </button>
               <button
                 type="button"
@@ -407,8 +409,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 }}
               >
                 <span className="mode-icon">⚡</span>
-                <span className="mode-name">Ketangkasan</span>
-                <span className="mode-desc">Bola bergerak</span>
+                <span className="mode-name">{t('modeAgility')}</span>
+                <span className="mode-desc">{t('modeAgilityDesc')}</span>
               </button>
             </div>
           </section>
@@ -423,8 +425,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 onClick={() => handleSelectMode('slice')}
               >
                 <span className="mode-icon">⚔️</span>
-                <span className="mode-name">Slice</span>
-                <span className="mode-desc">Geser/tebas bola</span>
+                <span className="mode-name">{t('inputSlice')}</span>
+                <span className="mode-desc">{t('inputSliceDesc')}</span>
               </button>
               <button
                 type="button"
@@ -432,8 +434,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 onClick={() => handleSelectMode('tap')}
               >
                 <span className="mode-icon">👊</span>
-                <span className="mode-name">Tap</span>
-                <span className="mode-desc">Tekan bola</span>
+                <span className="mode-name">{t('inputTap')}</span>
+                <span className="mode-desc">{t('inputTapDesc')}</span>
               </button>
             </div>
 
@@ -486,12 +488,12 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 </div>
 
                 <label className="player-name-field name-after-char">
-                  <span>Nama (opsional)</span>
+                  <span>{t('nameOptional')}</span>
                   <input
                     type="text"
                     value={playerName}
                     onChange={(e) => handlePlayerNameChange(e.target.value)}
-                    placeholder="Namamu"
+                    placeholder={t('namePlaceholder')}
                     maxLength={16}
                     autoComplete="nickname"
                   />
@@ -510,7 +512,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               className="btn-ghost"
               onClick={() => setStep((s) => (s - 1) as WizardStep)}
             >
-              Kembali
+              {t('back')}
             </button>
           )}
           {step < 4 ? (
@@ -523,7 +525,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 setStep((s) => (s + 1) as WizardStep);
               }}
             >
-              Lanjut
+              {t('next')}
             </button>
           ) : (
             <button
@@ -551,7 +553,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 );
               }}
             >
-              Mulai Bermain
+              {t('startPlay')}
             </button>
           )}
         </div>

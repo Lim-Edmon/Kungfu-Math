@@ -19,6 +19,7 @@ export interface LevelConfig {
   labelEn: string;
   /** Deskripsi singkat untuk orang tua */
   descId: string;
+  descEn: string;
   /** Angka 1–5 untuk generator */
   difficulty: number;
   /** Operasi yang diizinkan */
@@ -31,6 +32,7 @@ export const LEVELS: LevelConfig[] = [
     labelId: 'Pemula',
     labelEn: 'Beginner',
     descId: 'Penjumlahan kecil (setara TK–SD 1)',
+    descEn: 'Small addition (preschool–grade 1)',
     difficulty: 1,
     operations: ['add'],
   },
@@ -39,6 +41,7 @@ export const LEVELS: LevelConfig[] = [
     labelId: 'Dasar',
     labelEn: 'Basic',
     descId: 'Penjumlahan & pengurangan (SD 1–2)',
+    descEn: 'Addition & subtraction (grades 1–2)',
     difficulty: 2,
     operations: ['add', 'sub'],
   },
@@ -47,6 +50,7 @@ export const LEVELS: LevelConfig[] = [
     labelId: 'Menengah',
     labelEn: 'Intermediate',
     descId: 'Perkalian & pembagian dasar (SD 3–4)',
+    descEn: 'Basic multiply & divide (grades 3–4)',
     difficulty: 3,
     operations: ['add', 'sub', 'mul', 'div'],
   },
@@ -55,6 +59,7 @@ export const LEVELS: LevelConfig[] = [
     labelId: 'Mahir',
     labelEn: 'Advanced',
     descId: 'Campuran & angka lebih besar (SD 5–6)',
+    descEn: 'Mixed ops & bigger numbers (grades 5–6)',
     difficulty: 4,
     operations: ['add', 'sub', 'mul', 'div'],
   },
@@ -63,6 +68,7 @@ export const LEVELS: LevelConfig[] = [
     labelId: 'Master',
     labelEn: 'Master',
     descId: 'Tantangan cepat (SMP & dewasa)',
+    descEn: 'Fast challenge (middle school & adults)',
     difficulty: 5,
     operations: ['add', 'sub', 'mul', 'div'],
   },

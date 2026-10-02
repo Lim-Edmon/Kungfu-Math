@@ -1,8 +1,8 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
 import { TRAKTEER_URL } from '../lib/constants';
+import { t } from '../lib/i18n';
 
-/** Footer yang selalu muncul di setiap halaman */
 export default function Footer() {
   return (
     <footer className="app-footer">
@@ -12,9 +12,9 @@ export default function Footer() {
         rel="noopener noreferrer"
         className="footer-support"
       >
-        ☕ Dukung project ini
+        {t('footerSupport')}
       </a>
-      <p className="footer-copy">© Lim Edmon 2026</p>
+      <p className="footer-copy">{t('footerCopy')}</p>
     </footer>
   );
 }

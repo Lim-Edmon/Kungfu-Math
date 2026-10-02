@@ -45,7 +45,7 @@ import {
   MVP_PATH_LAST_CITY_ID,
   MVP_PATH_COMPLETE_MSG,
 } from './lib/adventure';
-import { setLang, detectLangFromDevice } from './lib/i18n';
+import { setLang, detectLangFromDevice, t, getLang } from './lib/i18n';
 import './styles/theme.css';
 import './App.css';
 
@@ -59,14 +59,14 @@ function resultHeadline(
 ): { title: string; sub: string; tone: string } {
   if (isNewRecord) {
     return {
-      title: 'Rekor baru!',
-      sub: 'Kamu pecahkan rekor sendiri. Hebat!',
+      title: t('newRecord'),
+      sub: t('newRecordSub'),
       tone: 'record',
     };
   }
   if (opts?.passedCity) {
     return {
-      title: 'Kota berhasil!',
+      title: t('cityCleared'),
       sub: opts.cityName
         ? `Target ${opts.cityName} tercapai. Kamu bisa lanjut ke kota berikut!`
         : 'Target kota tercapai. Kamu bisa lanjut ke kota berikut!',
@@ -89,14 +89,14 @@ function resultHeadline(
   }
   if (score <= 0) {
     return {
-      title: 'Waktu habis!',
+      title: t('timeUp'),
       sub: 'Tidak apa-apa. Yuk coba lagi!',
       tone: 'try',
     };
   }
   return {
     title: 'Sudah berusaha!',
-    sub: 'Tetap semangat. Latihan lagi, pasti naik!',
+    sub: t('timeUpSub'),
     tone: 'try',
   };
 }
@@ -308,7 +308,8 @@ function App() {
 
   // Sembunyikan menu bawah hanya saat main. Di hasil tetap tampil (fun fact di layer atas).
   const showChrome = screen !== 'game';
-  const levelLabel = getLevelById(selectedLevel).labelId;
+  const _lv = getLevelById(selectedLevel);
+  const levelLabel = getLang() === 'en' ? _lv.labelEn : _lv.labelId;
 
   return (
     <div
@@ -319,16 +320,17 @@ function App() {
       <main className="app-main">
         {screen === 'home' && (
           <Home
-            key={homeKey}
+            key={`${homeKey}-${langTick}`}
             onStartGame={handleStartGame}
             initialPlayKind={homePlayKind}
           />
         )}
 
-        {screen === 'dojo' && <Dojo />}
+        {screen === 'dojo' && <Dojo key={langTick} />}
 
         {screen === 'settings' && (
           <Settings
+            key={langTick}
             onBack={() => setScreen('home')}
             onLangChange={() => setLangTick((n) => n + 1)}
           />
@@ -352,7 +354,7 @@ function App() {
             }
             cityName={
               playKind === 'petualangan'
-                ? getCityById(loadProgress().adventureCityId || 'jakarta').nameId
+                ? (getLang()==='en' ? getCityById(loadProgress().adventureCityId || 'jakarta').nameEn : getCityById(loadProgress().adventureCityId || 'jakarta').nameId)
                 : undefined
             }
             cityId={
@@ -377,7 +379,7 @@ function App() {
           const nextCity = nextCityId ? getCityById(nextCityId) : null;
           const headline = resultHeadline(lastGrade, isNewRecord, lastScore, {
             passedCity: playKind === 'petualangan' && passedCity,
-            cityName: city?.nameId,
+            cityName: getLang()==='en' ? city?.nameEn : city?.nameId,
           });
           const celebrate =
             isNewRecord ||
@@ -419,7 +421,7 @@ function App() {
                 >
                   <div className="result-funfact-modal">
                     <p id="funfact-title" className="result-funfact-label">
-                      Tahukah kamu?
+                      {t('knowTitle')}
                     </p>
                     <p className="result-funfact-text">{funFact}</p>
                     <button
@@ -436,29 +438,41 @@ function App() {
               <div className="result-summary">
                 <p className="result-level">
                   {playKind === 'petualangan' && city
-                    ? `Petualangan · ${city.nameId}`
-                    : `Level: ${levelLabel}`}
+                    ? `${t('playPetualangan')} · ${getLang()==='en' ? city.nameEn : city.nameId}`
+                    : `${t('levelTitle')}: ${levelLabel}`}
                 </p>
                 <p className="result-score-line">
-                  <strong>Skor {lastScore}</strong>
-                  <span> · Nilai {lastGrade}</span>
+                  <strong>{t('score')} {lastScore}</strong>
+                  <span> · {lastGrade}</span>
                 </p>
                 {playKind === 'petualangan' && city && (
                   <p className="result-high">
                     {passedCity
-                      ? `Target ${city.targetScore} poin ${city.nameId} tercapai${
-                          nextCity
-                            ? ', kamu bisa lanjut ke kota berikut.'
-                            : '.'
-                        }`
-                      : `Target ${city.targetScore} poin · belum tercapai. Coba lagi ya!`}
-                    {isNewRecord ? ' Rekor baru!' : ''}
+                      ? getLang() === 'en'
+                        ? `Target ${city.targetScore} points in ${city.nameEn} reached${
+                            nextCity ? '. You can continue to the next city.' : '.'
+                          }`
+                        : `Target ${city.targetScore} poin ${city.nameId} tercapai${
+                            nextCity ? ', kamu bisa lanjut ke kota berikut.' : '.'
+                          }`
+                      : getLang() === 'en'
+                        ? `Target ${city.targetScore} · not reached yet. Try again!`
+                        : `Target ${city.targetScore} poin · belum tercapai. Coba lagi ya!`}
+                    {isNewRecord
+                      ? getLang() === 'en'
+                        ? ' New record!'
+                        : ' Rekor baru!'
+                      : ''}
                   </p>
                 )}
                 {playKind !== 'petualangan' && (
                   <p className="result-high">
-                    Rekor: {lastHighScore}
-                    {isNewRecord ? ' · baru!' : ''}
+                    {t('highScore')}: {lastHighScore}
+                    {isNewRecord
+                      ? getLang() === 'en'
+                        ? ' · new!'
+                        : ' · baru!'
+                      : ''}
                   </p>
                 )}
                 {passedCity && lastCityId === MVP_REGION_LAST_CITY_ID && (
@@ -482,7 +496,7 @@ function App() {
                     className="btn-primary"
                     onClick={handleContinueNextCity}
                   >
-                    Lanjut ke {nextCity.nameId}
+                    {t('continueCity')} {getLang() === 'en' ? nextCity.nameEn : nextCity.nameId}
                   </button>
                 )}
                 <button
@@ -491,8 +505,8 @@ function App() {
                   onClick={handlePlayAgain}
                 >
                   {playKind === 'petualangan' && city
-                    ? `Main lagi di ${city.nameId}`
-                    : 'Main lagi'}
+                    ? (getLang()==='en' ? `${t('playAgain')} in ${city.nameEn}` : `${t('playAgain')} di ${city.nameId}`)
+                    : t('playAgain')}
                 </button>
                 {playKind === 'petualangan' ? (
                   <button
@@ -500,7 +514,7 @@ function App() {
                     className="btn-ghost"
                     onClick={handleBackToAdventureMap}
                   >
-                    Kembali ke peta
+                    {getLang()==='en' ? 'Back to map' : 'Kembali ke peta'}
                   </button>
                 ) : (
                   <button
@@ -508,7 +522,7 @@ function App() {
                     className="btn-ghost"
                     onClick={handleExitGame}
                   >
-                    Kembali ke Latihan
+                    {t('backToPractice')}
                   </button>
                 )}
                 <button
@@ -516,7 +530,7 @@ function App() {
                   className="btn-ghost"
                   onClick={() => setScreen('dojo')}
                 >
-                  Lihat Progres
+                  {t('seeProgress')}
                 </button>
               </div>
             </div>

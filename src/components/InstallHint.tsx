@@ -1,12 +1,8 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
 import { useEffect, useState } from 'react';
+import { t } from '../lib/i18n';
 
-/**
- * Banner PWA: pasang ke layar utama.
- * - Chrome Android: tombol Pasang (beforeinstallprompt)
- * - Lainnya: petunjuk singkat manual
- */
 export default function InstallHint() {
   const [deferred, setDeferred] = useState<{
     prompt: () => Promise<void>;
@@ -24,7 +20,8 @@ export default function InstallHint() {
     try {
       const sw =
         window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+        (window.navigator as Navigator & { standalone?: boolean }).standalone ===
+          true;
       setStandalone(!!sw);
     } catch {
       /* ignore */
@@ -68,30 +65,23 @@ export default function InstallHint() {
 
   return (
     <div className="install-hint">
-      <p>Pasang Kungfu Math di HP biar lebih mudah dibuka</p>
+      <p>{t('installTitle')}</p>
       <div className="install-hint-actions">
         {deferred ? (
           <button type="button" className="btn-primary" onClick={() => deferred.prompt()}>
-            Pasang
+            {t('installBtn')}
           </button>
         ) : (
           <button
             type="button"
             className="btn-primary"
-            onClick={() => {
-              alert(
-                'Cara pasang:\n\n' +
-                  '• Chrome Android: menu ⋮ → “Tambahkan ke layar utama” / “Install app”\n' +
-                  '• Safari iPhone: tombol Bagikan → “Ke Layar Utama”\n' +
-                  '• Laptop Chrome: ikon install di kanan address bar (jika ada)'
-              );
-            }}
+            onClick={() => alert(t('installAlert'))}
           >
-            Cara pasang
+            {t('installHow')}
           </button>
         )}
         <button type="button" className="btn-ghost" onClick={dismiss}>
-          Nanti
+          {t('installLater')}
         </button>
       </div>
     </div>

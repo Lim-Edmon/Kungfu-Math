@@ -15,6 +15,7 @@ import {
   COMBO_BONUS,
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
+import { t } from '../lib/i18n';
 import { sfx, playCityMusic, stopAllMusic } from '../lib/sound';
 import { loadProgress, updateProgress } from '../lib/storage';
 
@@ -44,7 +45,7 @@ interface GameProps {
 
 /**
  * Posisikan angka di area aman (tidak kepotong atas/bawah).
- * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol Keluar.
+ * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol {t('exit')}.
  */
 function createNumbersFromQuestion(
   question: MathQuestion,
@@ -761,8 +762,8 @@ export default function Game({
               <div className="hud-identity-text">
                 <strong className="hud-name">{displayName}</strong>
                 <span className="hud-meta">
-                  {mode === 'slice' ? 'Slice' : 'Tap'}
-                  {agility ? ' · Bergerak' : ' · Diam'}
+                  {mode === 'slice' ? t('modeSlice') : t('modeTap')}
+                  {agility ? ` · ${t('modeMoving')}` : ` · ${t('modeStill')}`}
                 </span>
                 <span className="hud-lives-row">
                   <span className="hud-lives">{hearts.join('')}</span>
@@ -783,7 +784,7 @@ export default function Game({
           </div>
           <div className="hud-right">
             <button type="button" className="btn-exit-top" onClick={onExit}>
-              Keluar
+              {t('exit')}
             </button>
             <div className="hud-right-row">
               <span className="hud-score">{state.score}</span>
@@ -794,10 +795,8 @@ export default function Game({
                 type="button"
                 className={`btn-mute-hud ${soundMuted ? 'is-muted' : ''}`}
                 onClick={toggleMute}
-                aria-label={soundMuted ? 'Nyalakan suara' : 'Matikan suara'}
-                title={
-                  soundMuted ? 'Suara mati — ketuk untuk nyala' : 'Suara nyala'
-                }
+                aria-label={soundMuted ? t('muteOn') : t('muteOff')}
+                title={soundMuted ? t('muteTitleOff') : t('muteTitleOn')}
               >
                 {soundMuted ? '🔇' : '🔊'}
               </button>
@@ -809,8 +808,8 @@ export default function Game({
           <p className="question-text">{displayText}</p>
           <p className="question-hint">
             {mode === 'tap'
-              ? 'Ketuk angka yang benar'
-              : 'Geser melewati angka'}
+              ? t('hintTap')
+              : t('hintSlice')}
           </p>
         </div>
 
