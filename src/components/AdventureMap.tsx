@@ -70,6 +70,87 @@ interface AdventureMapProps {
 
 const MAP_ASPECT = 2800 / 1527; // world.webp aspect
 
+type ViewBox = { minX: number; minY: number; vbW: number; vbH: number };
+
+/** Hitung viewBox dari daftar titik (mapX/mapY), jaga aspect peta */
+function viewBoxFromPoints(
+  points: { mapX: number; mapY: number }[],
+  pad = 0.85,
+  minSpan = 2.2
+): ViewBox {
+  if (!points.length) {
+    return { minX: 0, minY: 0, vbW: 100, vbH: 100 };
+  }
+  let minX = Math.min(...points.map((p) => p.mapX)) - pad;
+  let maxX = Math.max(...points.map((p) => p.mapX)) + pad;
+  let minY = Math.min(...points.map((p) => p.mapY)) - pad;
+  let maxY = Math.max(...points.map((p) => p.mapY)) + pad;
+  if (maxX - minX < minSpan) {
+    const m = (minX + maxX) / 2;
+    minX = m - minSpan / 2;
+    maxX = m + minSpan / 2;
+  }
+  if (maxY - minY < minSpan) {
+    const m = (minY + maxY) / 2;
+    minY = m - minSpan / 2;
+    maxY = m + minSpan / 2;
+  }
+  let vbW = maxX - minX;
+  let vbH = maxY - minY;
+  if (vbW / vbH > MAP_ASPECT) {
+    const needH = vbW / MAP_ASPECT;
+    const extra = needH - vbH;
+    minY -= extra / 2;
+    maxY += extra / 2;
+    vbH = needH;
+  } else {
+    const needW = vbH * MAP_ASPECT;
+    const extra = needW - vbW;
+    minX -= extra / 2;
+    maxX += extra / 2;
+    vbW = needW;
+  }
+  return { minX, minY, vbW, vbH };
+}
+
+function viewBoxForCityIndex(idx: number): ViewBox {
+  const cities = ADVENTURE_CITIES.slice(
+    Math.max(0, idx - 2),
+    Math.min(ADVENTURE_CITIES.length, idx + 3)
+  );
+  return viewBoxFromPoints(cities);
+}
+
+function spanOf(vb: ViewBox): number {
+  return Math.max(vb.vbW, vb.vbH);
+}
+
+function animateViewBox(
+  from: ViewBox,
+  to: ViewBox,
+  duration: number,
+  onFrame: (vb: ViewBox) => void,
+  onDone?: () => void
+): () => void {
+  const t0 = performance.now();
+  let raf = 0;
+  const ease = (x: number) => 1 - Math.pow(1 - x, 3);
+  const tick = (now: number) => {
+    const p = Math.min(1, (now - t0) / duration);
+    const e = ease(p);
+    onFrame({
+      minX: from.minX + (to.minX - from.minX) * e,
+      minY: from.minY + (to.minY - from.minY) * e,
+      vbW: from.vbW + (to.vbW - from.vbW) * e,
+      vbH: from.vbH + (to.vbH - from.vbH) * e,
+    });
+    if (p < 1) raf = requestAnimationFrame(tick);
+    else onDone?.();
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
+
 export default function AdventureMap({
   unlockedIds,
   wonIds,
@@ -210,50 +291,37 @@ export default function AdventureMap({
   const [t, setT] = useState(0);
 
   /**
-   * Zoom intro world → target hanya SEKALI per mount (masuk petualangan).
-   * Ganti kota dalam sesi yang sama: snap ke target (pesawat tetap terlihat).
-   * Keluar game lalu masuk lagi → component remount → zoom lagi.
+   * Zoom intro world → target hanya SEKALI per mount.
+   * Saat traveling, efek di bawah yang atur urutan zoom ↔ pesawat.
    */
-  const [zoomVB, setZoomVB] = useState({
+  const [zoomVB, setZoomVB] = useState<ViewBox>({
     minX: 0,
     minY: 0,
     vbW: 100,
     vbH: 100,
   });
   const didIntroZoomRef = useRef(false);
+  const zoomVBRef = useRef(zoomVB);
+  zoomVBRef.current = zoomVB;
+  /** true = travel effect sedang mengontrol zoom (jangan di-override) */
+  const travelOwnsZoomRef = useRef(false);
 
   useEffect(() => {
     if (mapDebug.on) {
       setZoomVB({ minX, minY, vbW, vbH });
       return;
     }
-    const end = { minX, minY, vbW, vbH };
-    // Sudah zoom di sesi ini → cukup pindah view, tanpa animasi dari dunia
+    if (traveling || travelOwnsZoomRef.current) return;
+    const end: ViewBox = { minX, minY, vbW, vbH };
     if (didIntroZoomRef.current) {
       setZoomVB(end);
       return;
     }
     didIntroZoomRef.current = true;
-    const start = { minX: 0, minY: 0, vbW: 100, vbH: 100 };
+    const start: ViewBox = { minX: 0, minY: 0, vbW: 100, vbH: 100 };
     setZoomVB(start);
-    const dur = 2000;
-    const t0 = performance.now();
-    let raf = 0;
-    const ease = (x: number) => 1 - Math.pow(1 - x, 3);
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - t0) / dur);
-      const e = ease(p);
-      setZoomVB({
-        minX: start.minX + (end.minX - start.minX) * e,
-        minY: start.minY + (end.minY - start.minY) * e,
-        vbW: start.vbW + (end.vbW - start.vbW) * e,
-        vbH: start.vbH + (end.vbH - start.vbH) * e,
-      });
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [activeId, minX, minY, vbW, vbH, mapDebug.on]);
+    return animateViewBox(start, end, 2000, setZoomVB);
+  }, [activeId, minX, minY, vbW, vbH, mapDebug.on, traveling]);
 
   // Nilai view yang dipakai render (hasil animasi zoom)
   const drawMinX = zoomVB.minX;
@@ -265,32 +333,164 @@ export default function AdventureMap({
   const pinR = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.016 : 0.028);
   const fontSize = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.022 : 0.055);
 
+  /**
+   * Urutan pindah kota:
+   * - Perlu zoom OUT (view lebih luas) → zoom dulu, baru pesawat terbang
+   * - Perlu zoom IN (view lebih dekat) → pesawat dulu, baru zoom in
+   */
   useEffect(() => {
-    if (!traveling) {
+    if (!traveling || !fromCity || !toCity) {
       setT(0);
+      travelOwnsZoomRef.current = false;
       return;
     }
+
+    travelOwnsZoomRef.current = true;
     setT(0);
-    if (!fromCity || !toCity) return;
-    // Kecepatan konstan (unit peta / detik) — bukan durasi tetap
-    // jarak dekat → singkat; jarak jauh → lebih lama (bukan "flash")
+
+    const toIdx = ADVENTURE_CITIES.findIndex((c) => c.id === toCity.id);
+    const targetVB =
+      toIdx >= 0 ? viewBoxForCityIndex(toIdx) : { minX, minY, vbW, vbH };
+    // View selama terbang: selalu tampilkan kota asal + tujuan
+    const flightVB = viewBoxFromPoints(
+      [
+        { mapX: fromCity.mapX, mapY: fromCity.mapY },
+        { mapX: toCity.mapX, mapY: toCity.mapY },
+      ],
+      1.2,
+      3.0
+    );
+
+    const current = { ...zoomVBRef.current };
+    const curSpan = spanOf(current);
+    const tgtSpan = spanOf(targetVB);
+    const flightSpan = spanOf(flightVB);
+
     const dist = Math.hypot(
       toCity.mapX - fromCity.mapX,
       toCity.mapY - fromCity.mapY
     );
-    const SPEED = 4.2; // map units per second (stabil)
-    const dur = Math.max(700, Math.min(8000, (dist / SPEED) * 1000));
-    let raf = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / dur);
-      setT(p);
-      if (p < 1) raf = requestAnimationFrame(tick);
-      else onTravelDone?.();
+    const SPEED = 4.2;
+    const flightDur = Math.max(700, Math.min(8000, (dist / SPEED) * 1000));
+
+    let cancelZoom: (() => void) | null = null;
+    let cancelFlight: (() => void) | null = null;
+    let cancelled = false;
+
+    const runFlight = (after: () => void) => {
+      const t0 = performance.now();
+      let raf = 0;
+      const tick = (now: number) => {
+        if (cancelled) return;
+        const p = Math.min(1, (now - t0) / flightDur);
+        setT(p);
+        if (p < 1) {
+          raf = requestAnimationFrame(tick);
+        } else {
+          after();
+        }
+      };
+      raf = requestAnimationFrame(tick);
+      cancelFlight = () => cancelAnimationFrame(raf);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [travelFromId, travelToId, traveling, onTravelDone, fromCity, toCity]);
+
+    const finish = () => {
+      if (cancelled) return;
+      travelOwnsZoomRef.current = false;
+      onTravelDone?.();
+    };
+
+    const settleToTarget = (from: ViewBox) => {
+      // Sudah dekat dengan target → selesai
+      if (Math.abs(spanOf(from) - tgtSpan) < 0.15) {
+        setZoomVB(targetVB);
+        finish();
+        return;
+      }
+      cancelZoom = animateViewBox(from, targetVB, 700, setZoomVB, finish);
+    };
+
+    // —— Zoom OUT: view tujuan lebih luas → zoom dulu, lalu terbang ——
+    if (tgtSpan > curSpan * 1.08 || flightSpan > curSpan * 1.08) {
+      const pre =
+        flightSpan >= tgtSpan * 0.95 ? flightVB : targetVB;
+      cancelZoom = animateViewBox(current, pre, 650, setZoomVB, () => {
+        if (cancelled) return;
+        runFlight(() => settleToTarget(zoomVBRef.current));
+      });
+    }
+    // —— Zoom IN: view tujuan lebih dekat → terbang dulu, baru zoom in ——
+    else if (tgtSpan < curSpan * 0.92) {
+      // Pastikan kedua kota kelihatan selama terbang
+      const bothVisible =
+        fromCity.mapX >= current.minX &&
+        fromCity.mapX <= current.minX + current.vbW &&
+        fromCity.mapY >= current.minY &&
+        fromCity.mapY <= current.minY + current.vbH &&
+        toCity.mapX >= current.minX &&
+        toCity.mapX <= current.minX + current.vbW &&
+        toCity.mapY >= current.minY &&
+        toCity.mapY <= current.minY + current.vbH;
+
+      const startFlight = () => {
+        runFlight(() => {
+          cancelZoom = animateViewBox(
+            zoomVBRef.current,
+            targetVB,
+            750,
+            setZoomVB,
+            finish
+          );
+        });
+      };
+
+      if (!bothVisible) {
+        cancelZoom = animateViewBox(current, flightVB, 500, setZoomVB, () => {
+          if (cancelled) return;
+          startFlight();
+        });
+      } else {
+        startFlight();
+      }
+    }
+    // —— Skala mirip: pastikan rute kelihatan, terbang, settle ——
+    else {
+      const needFlightView =
+        flightSpan > curSpan * 1.05 ||
+        !(
+          toCity.mapX >= current.minX &&
+          toCity.mapX <= current.minX + current.vbW &&
+          toCity.mapY >= current.minY &&
+          toCity.mapY <= current.minY + current.vbH
+        );
+      if (needFlightView) {
+        cancelZoom = animateViewBox(current, flightVB, 500, setZoomVB, () => {
+          if (cancelled) return;
+          runFlight(() => settleToTarget(zoomVBRef.current));
+        });
+      } else {
+        runFlight(() => settleToTarget(zoomVBRef.current));
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      cancelZoom?.();
+      cancelFlight?.();
+      travelOwnsZoomRef.current = false;
+    };
+  }, [
+    travelFromId,
+    travelToId,
+    traveling,
+    onTravelDone,
+    fromCity,
+    toCity,
+    minX,
+    minY,
+    vbW,
+    vbH,
+  ]);
 
   const planeX =
     traveling && fromCity && toCity
