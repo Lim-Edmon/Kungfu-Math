@@ -1952,9 +1952,11 @@
 .adventure-map-frame {
   position: relative;
   width: 100%;
-  max-width: 100%;
+  /* Jaga aspect: jika max-height membatasi, lebar ikut menyusut (hindari letterbox) */
+  max-width: min(100%, calc(340px * 2800 / 1527));
   aspect-ratio: 2800 / 1527;
   max-height: 340px;
+  height: auto;
   margin: 0 auto;
   background: #81d4fa;
   overflow: hidden;
@@ -1983,11 +1985,18 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  /* Jangan tampilkan outline/focus ring — pin SVG sudah jadi penanda */
+  outline: none;
+  box-shadow: none;
+  appearance: none;
 }
-
+.adventure-map-hit:focus,
+.adventure-map-hit:focus-visible,
 .adventure-map-hit.is-active {
-  /* ring halus opsional — tidak menggeser pusat */
-  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.25);
+  outline: none;
+  box-shadow: none;
+  border: none;
+  background: transparent;
 }
 
 /* Debug: tampilkan area ketuk */

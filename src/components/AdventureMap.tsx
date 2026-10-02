@@ -532,10 +532,41 @@ export default function AdventureMap({
         return lockedPreviewIds.has(c.id);
       });
 
-  const pct = (mapX: number, mapY: number) => ({
-    left: `${((mapX - drawMinX) / drawVbW) * 100}%`,
-    top: `${((mapY - drawMinY) / drawVbH) * 100}%`,
-  });
+  /**
+   * Posisi HTML overlay harus cocok dengan SVG (preserveAspectRatio meet).
+   * Di laptop, max-height frame bisa beda aspect → letterbox → % sederhana meleset.
+   */
+  const pct = (mapX: number, mapY: number) => {
+    const nx = (mapX - drawMinX) / drawVbW;
+    const ny = (mapY - drawMinY) / drawVbH;
+    const frame = frameRef.current;
+    if (!frame || drawVbW <= 0 || drawVbH <= 0) {
+      return { left: `${nx * 100}%`, top: `${ny * 100}%` };
+    }
+    const fw = frame.clientWidth;
+    const fh = frame.clientHeight;
+    if (fw <= 0 || fh <= 0) {
+      return { left: `${nx * 100}%`, top: `${ny * 100}%` };
+    }
+    const vbAspect = drawVbW / drawVbH;
+    const elAspect = fw / fh;
+    if (elAspect > vbAspect) {
+      // letterbox kiri–kanan
+      const contentW = fh * vbAspect;
+      const offsetX = (fw - contentW) / 2;
+      return {
+        left: `${((offsetX + nx * contentW) / fw) * 100}%`,
+        top: `${ny * 100}%`,
+      };
+    }
+    // letterbox atas–bawah
+    const contentH = fw / vbAspect;
+    const offsetY = (fh - contentH) / 2;
+    return {
+      left: `${nx * 100}%`,
+      top: `${((offsetY + ny * contentH) / fh) * 100}%`,
+    };
+  };
 
   /** Klik peta (debug) → koordinat absolut 0–100 */
   const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
