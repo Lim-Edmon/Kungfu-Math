@@ -219,6 +219,9 @@ export default function Game({
   }, []);
 
   const [countdownLabel, setCountdownLabel] = useState('READY');
+  /** Layer jejak slice — DOM langsung (bukan React setState tiap move) */
+  const trailLayerRef = useRef<HTMLDivElement | null>(null);
+  const lastTrailTsRef = useRef(0);
   const [soundMuted, setSoundMuted] = useState(
     () => loadProgress().soundMuted === true
   );
@@ -256,6 +259,13 @@ export default function Game({
     else sfx.startBgm();
     return () => stopAllMusic();
   }, [cityId]);
+
+  // Selesai / keluar → musik kota wajib diam (soft-lock anti tabrakan)
+  useEffect(() => {
+    if (state.status === 'won' || state.status === 'lost') {
+      stopAllMusic();
+    }
+  }, [state.status]);
 
   // READY → 3 → 2 → 1 → GO → main
   useEffect(() => {
@@ -727,6 +737,28 @@ export default function Game({
   const onArenaPointerMove = (e: React.PointerEvent) => {
     if (mode !== 'slice' || !isSlicingRef.current) return;
     handleSliceMove(e.clientX, e.clientY);
+    // Throttle ~60fps + tulis DOM langsung (hindari re-render React)
+    const now = performance.now();
+    if (now - lastTrailTsRef.current < 16) return;
+    lastTrailTsRef.current = now;
+    const arena = arenaRef.current;
+    const layer = trailLayerRef.current;
+    if (!arena || !layer) return;
+    const r = arena.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    const dot = document.createElement('span');
+    dot.className = 'slice-trail-dot';
+    dot.style.left = `${x}%`;
+    dot.style.top = `${y}%`;
+    layer.appendChild(dot);
+    // Batasi jumlah node
+    while (layer.childElementCount > 16) {
+      layer.removeChild(layer.firstElementChild as Node);
+    }
+    window.setTimeout(() => {
+      if (dot.parentNode === layer) layer.removeChild(dot);
+    }, 360);
   };
 
   const onArenaPointerUp = (e: React.PointerEvent) => {
@@ -839,6 +871,11 @@ export default function Game({
               </span>
             </div>
           )}
+          <div
+            ref={trailLayerRef}
+            className="slice-trail-layer"
+            aria-hidden
+          />
           {state.numbers.map((num, index) => {
             const hitClass = num.sliced
               ? mode === 'slice'

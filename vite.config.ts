@@ -11,6 +11,9 @@ export default defineConfig({
   },
   build: {
     target: 'es2020',
+    // Jangan kirim source map ke production — lebih sulit di-trace dari browser
     sourcemap: false,
+    minify: 'esbuild',
+    cssMinify: true,
   },
 });

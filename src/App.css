@@ -693,30 +693,55 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
   border-radius: 50%;
-  border: 4px solid var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 40%, transparent);
-  animation: tapRipple 0.45s ease-out forwards;
+  border: 5px solid var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  animation: tapRipple 0.5s ease-out forwards;
   pointer-events: none;
   z-index: 21;
+}
+.floating-number.hit-tap::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.85;
+  animation: tapFlash 0.35s ease-out forwards;
+  pointer-events: none;
+  z-index: 22;
 }
 
 @keyframes tapRipple {
   0% {
-    transform: scale(0.5);
+    transform: scale(0.4);
     opacity: 1;
   }
   100% {
-    transform: scale(4);
+    transform: scale(4.2);
+    opacity: 0;
+  }
+}
+@keyframes tapFlash {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
     opacity: 0;
   }
 }
 
 .floating-number.hit-slice {
-  animation: hitSlice 0.32s ease-out forwards;
+  animation: hitSlice 0.34s ease-out forwards;
   pointer-events: none;
   z-index: 5;
 }
@@ -724,14 +749,63 @@
 .floating-number.hit-slice::after {
   content: '';
   position: absolute;
-  left: -10%;
-  top: 45%;
-  width: 120%;
-  height: 3px;
-  background: var(--color-primary);
+  left: -15%;
+  top: 42%;
+  width: 130%;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-primary),
+    #fff8e7,
+    var(--color-primary),
+    transparent
+  );
   border-radius: 2px;
   transform: rotate(-28deg);
-  box-shadow: 0 0 6px var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent), 0 0 4px #fff;
+  animation: sliceFlash 0.34s ease-out forwards;
+}
+@keyframes sliceFlash {
+  0% {
+    opacity: 1;
+    height: 5px;
+  }
+  100% {
+    opacity: 0.3;
+    height: 2px;
+  }
+}
+
+/* Jejak blade saat geser (slice) — layer DOM, bukan React state */
+.slice-trail-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  overflow: hidden;
+}
+.slice-trail-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 70%, #fff);
+  box-shadow: 0 0 8px var(--color-accent);
+  pointer-events: none;
+  z-index: 30;
+  animation: trailFade 0.35s ease-out forwards;
+}
+@keyframes trailFade {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
 }
 
 @keyframes hitTap {

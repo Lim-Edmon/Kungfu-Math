@@ -66,14 +66,16 @@ function playFile(key: string, volume = 0.5): boolean {
         cache[key] = null;
       });
     }
-    const a = cache[key];
-    if (!a || missing[key]) return false;
-    a.currentTime = 0;
+    const base = cache[key];
+    if (!base || missing[key]) return false;
+    // Clone biar tap cepat tidak saling potong
+    const a = base.cloneNode(true) as HTMLAudioElement;
     a.volume = volume;
     void a.play().catch(() => {
+      /* file mungkin belum ada — fallback tone */
       missing[key] = true;
     });
-    return true;
+    return !missing[key];
   } catch {
     missing[key] = true;
     return false;
@@ -176,18 +178,31 @@ function stopToneBgm(): void {
   }
 }
 
-/** Hentikan SEMUA musik (kota + BGM default + tone) — wajib sebelum ganti lagu */
+/** Hentikan SEMUA musik (kota + BGM default + tone) — wajib sebelum ganti lagu / keluar */
 export function stopAllMusic(): void {
   musicGen += 1;
   if (cityAudio) {
     try {
+      cityAudio.onended = null;
+      cityAudio.onerror = null;
       cityAudio.pause();
+      cityAudio.currentTime = 0;
       cityAudio.removeAttribute('src');
       cityAudio.load();
     } catch {
       /* ignore */
     }
     cityAudio = null;
+  }
+  if (bgmAudio) {
+    try {
+      bgmAudio.pause();
+      bgmAudio.removeAttribute('src');
+      bgmAudio.load();
+    } catch {
+      /* ignore */
+    }
+    bgmAudio = null;
   }
   stopToneBgm();
 }
@@ -286,25 +301,28 @@ export function playCityMusic(cityId: string | undefined): void {
 export const sfx = {
   tap(): void {
     playOrFallback('tap', () => {
-      playTone(640, 0.05, 'triangle', 0.09);
-      playTone(820, 0.04, 'sine', 0.06, 30);
+      // “klik” pendek + echo kecil — terasa di HP
+      playTone(720, 0.04, 'triangle', 0.14);
+      playTone(980, 0.035, 'sine', 0.1, 25);
+      playTone(1200, 0.03, 'sine', 0.05, 50);
     });
   },
   correct(): void {
     playOrFallback('correct', () => {
-      playTone(523, 0.07, 'sine', 0.11);
-      playTone(659, 0.07, 'sine', 0.11, 60);
-      playTone(784, 0.12, 'sine', 0.12, 120);
+      playTone(523, 0.06, 'sine', 0.13);
+      playTone(659, 0.07, 'sine', 0.13, 55);
+      playTone(784, 0.11, 'triangle', 0.14, 110);
     });
   },
   wrong(): void {
-    playOrFallback('wrong', () => playSlide(320, 90, 0.22, 'square', 0.07));
+    playOrFallback('wrong', () => playSlide(280, 70, 0.2, 'square', 0.09));
   },
   combo(): void {
     playOrFallback('combo', () => {
-      playTone(659, 0.05, 'triangle', 0.1);
-      playTone(784, 0.05, 'triangle', 0.1, 45);
-      playTone(988, 0.1, 'sine', 0.12, 90);
+      playTone(659, 0.05, 'triangle', 0.12);
+      playTone(784, 0.05, 'triangle', 0.12, 40);
+      playTone(988, 0.08, 'sine', 0.14, 80);
+      playTone(1175, 0.1, 'sine', 0.1, 130);
     });
   },
   /** Menang / lolos kota / rekor — nada lebih ceria */
@@ -348,12 +366,17 @@ export const sfx = {
     });
   },
   slash(): void {
-    playOrFallback('slash', () => playSlide(800, 200, 0.12, 'sawtooth', 0.05));
+    playOrFallback('slash', () => {
+      // Whoosh tebas
+      playSlide(1100, 180, 0.11, 'sawtooth', 0.07);
+      playSlide(700, 120, 0.09, 'triangle', 0.05);
+    });
   },
   boom(): void {
     playOrFallback('boom', () => {
-      playSlide(150, 40, 0.25, 'square', 0.08);
-      playTone(60, 0.2, 'triangle', 0.06, 20);
+      playSlide(180, 35, 0.28, 'square', 0.1);
+      playTone(55, 0.22, 'triangle', 0.08, 15);
+      playTone(90, 0.15, 'sine', 0.05, 40);
     });
   },
 
