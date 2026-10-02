@@ -163,7 +163,7 @@ function App() {
   // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
   useEffect(() => {
     if (!celebrateOpen) return;
-    const t = setTimeout(() => setCelebrateOpen(false), 3400);
+    const t = setTimeout(() => setCelebrateOpen(false), 3000);
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
@@ -429,7 +429,7 @@ function App() {
                       className="btn-primary result-funfact-close"
                       onClick={() => setFunFactOpen(false)}
                     >
-                      Mengerti
+                      {t('btnGotIt')}
                     </button>
                   </div>
                 </div>

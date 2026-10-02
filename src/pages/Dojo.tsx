@@ -14,6 +14,7 @@ import {
   ADVENTURE_DIFFICULTIES,
   getCityById,
   getCountryNameId,
+  getCountryNameEn,
 } from '../lib/adventure';
 import type { ScoreRecord } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
@@ -23,7 +24,8 @@ type DojoTab = 'level' | 'petualangan';
 function tempoLabel(tempoId: string | undefined): string {
   if (!tempoId) return '';
   const d = ADVENTURE_DIFFICULTIES.find((x) => x.id === tempoId);
-  return d?.labelId ?? tempoId;
+  if (!d) return tempoId;
+  return getLang() === 'en' ? d.labelEn : d.labelId;
 }
 
 function formatRecordMeta(
@@ -34,7 +36,6 @@ function formatRecordMeta(
   if (!rec || rec.score <= 0) return '';
   const parts: string[] = [];
   const by = (rec.by || '').trim();
-  // Data lama "Pendekar" diganti nama aktual
   if (by && by !== 'Pendekar') parts.push(by);
   else if (fallbackName) parts.push(fallbackName);
   const tgl = formatRecordDate(rec.at);
@@ -43,11 +44,14 @@ function formatRecordMeta(
   parts.push(arenaLabel(rec.arena));
   if (kind === 'level' && rec.levelId) {
     const lv = getLevelById(rec.levelId as import('../lib/levels').DifficultyLevel);
-    if (lv?.labelId) parts.push(`Lv ${lv.labelId}`);
+    if (lv) {
+      const lab = getLang() === 'en' ? lv.labelEn : lv.labelId;
+      parts.push(`${t('lvPrefix')} ${lab}`);
+    }
   }
   if (kind === 'adv' && rec.tempoId) {
     const tp = tempoLabel(rec.tempoId);
-    if (tp) parts.push(`Tempo ${tp}`);
+    if (tp) parts.push(`${t('tempoPrefix')} ${tp}`);
   }
   return parts.join(' · ');
 }
@@ -61,7 +65,7 @@ export default function Dojo() {
       : 'yu-jin';
   const character = getCharacterById(preferredId);
   const displayName =
-    progress.playerName?.trim() || character?.name || 'Pemain';
+    progress.playerName?.trim() || character?.name || t('playerDefault');
 
   const [tab, setTab] = useState<DojoTab>('level');
   const [tipsOpen, setTipsOpen] = useState(false);
@@ -138,7 +142,7 @@ export default function Dojo() {
           className={`dojo-tab ${tab === 'level' ? 'active' : ''}`}
           onClick={() => setTab('level')}
         >
-          Per level
+          {t('tabPerLevel')}
         </button>
         <button
           type="button"
@@ -147,7 +151,7 @@ export default function Dojo() {
           className={`dojo-tab ${tab === 'petualangan' ? 'active' : ''}`}
           onClick={() => setTab('petualangan')}
         >
-          Petualangan
+          {t('tabAdventure')}
         </button>
       </div>
 
@@ -169,16 +173,13 @@ export default function Dojo() {
               </li>
             ))}
           </ul>
-          <p className="dojo-record-note">
-            Detail rekor: nama · tanggal · Slice/Tap · Diam/Ketangkasan
-          </p>
         </section>
       )}
 
       {tab === 'petualangan' && (
         <section className="dojo-section">
           <p className="dojo-adv-summary">
-            Terbuka {unlockedCount} kota · rekor tertinggi petualangan{' '}
+            {t('citiesOpen')} {unlockedCount} {t('citiesUnit')} · {t('bestAdventure')}{' '}
             <strong>{bestAdventure > 0 ? bestAdventure : '—'}</strong>
           </p>
           <ul className="dojo-score-list">
@@ -189,7 +190,7 @@ export default function Dojo() {
               const hs =
                 rec?.score ?? progress.adventureHighScores?.[c.id] ?? 0;
               const passed = hs >= c.targetScore;
-              const country = getCountryNameId(c.countryId);
+              const country = getLang() === 'en' ? getCountryNameEn(c.countryId) : getCountryNameId(c.countryId);
               const isCurrent = c.id === currentCity.id;
               const meta = formatRecordMeta(rec, 'adv', displayName);
               return (
@@ -200,12 +201,12 @@ export default function Dojo() {
                   <div>
                     <span className="dojo-score-label">
                       {passed ? '✅' : unlocked ? '📌' : '🔒'} {i + 1}.{' '}
-                      {c.nameId}
-                      {isCurrent ? ' · sekarang' : ''}
+                      {getLang() === 'en' ? c.nameEn : c.nameId}
+                      {isCurrent ? ` · ${t('nowHere')}` : ''}
                     </span>
                     <span className="dojo-score-desc">
-                      {country} · target {c.targetScore}
-                      {!unlocked ? ' · terkunci' : passed ? ' · lolos' : ''}
+                      {country} · {t('target')} {c.targetScore}
+                      {!unlocked ? ` · ${t('locked')}` : passed ? ` · ${t('cleared')}` : ''}
                     </span>
                     {meta ? (
                       <span className="dojo-score-meta">{meta}</span>
@@ -218,9 +219,6 @@ export default function Dojo() {
               );
             })}
           </ul>
-          <p className="dojo-record-note">
-            Detail rekor: nama · tanggal · Slice/Tap · Diam/Ketangkasan · tempo
-          </p>
         </section>
       )}
 
@@ -238,27 +236,16 @@ export default function Dojo() {
         </button>
         {tipsOpen && (
           <ul className="dojo-tips">
-            <li>
-              <strong>Tap</strong> — ketuk angka. Cocok karakter tangan kosong.
-            </li>
-            <li>
-              <strong>Slice</strong> — tahan lalu geser melewati angka.
-            </li>
-            <li>
-              <strong>− dan ÷</strong> — urutan klik penting (pertama lalu kedua).
-            </li>
-            <li>
-              Hindari bom 💣 — nyawa berkurang; angka yang dipilih kembali.
-            </li>
-            <li>
-              <strong>{t('tabAdventure')}</strong> — capai target skor kota untuk buka
-              kota berikutnya. Bonus waktu tergantung tempo perjalanan.
-            </li>
+            <li>{t('tipSlice')}</li>
+            <li>{t('tipTap')}</li>
+            <li>{t('tipAgility')}</li>
+            <li>{t('tipAdventure')}</li>
+            <li>{t('tipExport')}</li>
           </ul>
         )}
       </section>
 
-      <p className="dojo-note">{t('dojoNote')}</p>
+      
     </div>
   );
 }

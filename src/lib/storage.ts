@@ -9,6 +9,7 @@ import type {
   ScoreRecord,
 } from './types';
 import { DEFAULT_PROGRESS } from './types';
+import { getLang, t } from './i18n';
 import { ADVENTURE_CITIES } from './adventure';
 
 const STORAGE_KEY = 'kungfu-math-progress';
@@ -353,7 +354,8 @@ export function formatRecordDate(iso: string | undefined): string {
   try {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleDateString('id-ID', {
+    const loc = getLang() === 'en' ? 'en-GB' : 'id-ID';
+    return d.toLocaleDateString(loc, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -364,9 +366,9 @@ export function formatRecordDate(iso: string | undefined): string {
 }
 
 export function arenaLabel(arena: ArenaStyle | undefined): string {
-  return arena === 'agility' ? 'Ketangkasan' : 'Diam';
+  return arena === 'agility' ? t('modeAgility') : t('modeStatic');
 }
 
 export function inputModeLabel(mode: InputMode | undefined): string {
-  return mode === 'tap' ? 'Tap' : 'Slice';
+  return mode === 'tap' ? t('modeTap') : t('modeSlice');
 }

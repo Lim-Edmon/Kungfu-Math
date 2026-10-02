@@ -21,6 +21,7 @@ import {
   getCharactersByMode,
   getCharacterById,
   getDefaultCharacter,
+  characterRoleLabel,
 } from '../lib/characters';
 import InstallHint from '../components/InstallHint';
 import AdventureMap from '../components/AdventureMap';
@@ -479,7 +480,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                         </div>
                         <div className="character-info">
                           <strong>{char.name}</strong>
-                          <span>{char.mode === 'slice' ? 'Slice' : 'Tap'}</span>
+                          <span>{characterRoleLabel(char, getLang())}</span>
                         </div>
                         {isSelected && <span className="check-mark">✓</span>}
                       </button>

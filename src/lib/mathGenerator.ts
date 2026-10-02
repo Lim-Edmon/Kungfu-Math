@@ -212,7 +212,18 @@ export function generateQuestion(
     }
   }
 
-  const distractorCount = randomInt(3, 5);
+  // Jumlah bola total naik seiring level (user request)
+  // pemula 4–6, dasar 4–7, menengah 5–8, mahir 5–9, master 6–10
+  const ballRange: Record<string, [number, number]> = {
+    pemula: [4, 6],
+    dasar: [4, 7],
+    menengah: [5, 8],
+    mahir: [5, 9],
+    master: [6, 10],
+  };
+  const [bMin, bMax] = ballRange[level] ?? [4, 6];
+  const totalBalls = randomInt(bMin, bMax);
+  const distractorCount = Math.max(1, totalBalls - correctNumbers.length);
   const distractors = makeDistractors(correctNumbers, distractorCount, maxVal);
   const allNumbers = shuffle([...correctNumbers, ...distractors]);
 

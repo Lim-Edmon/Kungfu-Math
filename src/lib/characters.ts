@@ -104,3 +104,25 @@ export function getDefaultCharacter(mode: "slice" | "tap"): Character {
 export function getCharacterById(id: string): Character | undefined {
   return CHARACTERS.find((c) => c.id === id);
 }
+
+/** Label pendekar untuk kartu pilih (bukan di HUD/rekor) */
+export function characterRoleLabel(char: Character, lang: 'id' | 'en'): string {
+  const weaponMap: Record<string, { id: string; en: string }> = {
+    tombak: { id: 'Pendekar tombak', en: 'Spear hero' },
+    tongkat: { id: 'Pendekar tongkat', en: 'Staff hero' },
+    pedang: { id: 'Pendekar pedang', en: 'Sword hero' },
+    tendangan: { id: 'Pendekar tendangan', en: 'Kicking hero' },
+    shaolin: { id: 'Pendekar tinju', en: 'Fist hero' },
+    telapak: { id: 'Pendekar telapak', en: 'Palm hero' },
+  };
+  const key = (char as { weapon?: string; style?: string }).weapon
+    || (char as { style?: string }).style
+    || '';
+  const row = weaponMap[key];
+  if (!row) {
+    return char.mode === 'slice'
+      ? (lang === 'en' ? 'Armed hero' : 'Pendekar bersenjata')
+      : (lang === 'en' ? 'Barehand hero' : 'Pendekar tangan kosong');
+  }
+  return lang === 'en' ? row.en : row.id;
+}
