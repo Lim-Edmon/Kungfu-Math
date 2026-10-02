@@ -44,9 +44,9 @@ export interface AdventureDifficulty {
   descEn: string;
 }
 
-export const ADVENTURE_REGIONS: { id: string; labelId: string }[] = [
-  { id: 'id', labelId: 'Indonesia' },
-  { id: 'sea', labelId: 'Asia Tenggara' },
+export const ADVENTURE_REGIONS: { id: string; labelId: string; labelEn: string }[] = [
+  { id: 'id', labelId: 'Indonesia', labelEn: 'Indonesia' },
+  { id: 'sea', labelId: 'Asia Tenggara', labelEn: 'Southeast Asia' },
 ];
 
 /**

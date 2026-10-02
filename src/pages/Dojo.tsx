@@ -1,6 +1,6 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   loadProgress,
   formatRecordDate,
@@ -12,6 +12,7 @@ import { getCharacterById } from '../lib/characters';
 import {
   ADVENTURE_CITIES,
   ADVENTURE_DIFFICULTIES,
+  ADVENTURE_REGIONS,
   getCityById,
   getCountryNameId,
   getCountryNameEn,
@@ -69,6 +70,8 @@ export default function Dojo() {
 
   const [tab, setTab] = useState<DojoTab>('level');
   const [tipsOpen, setTipsOpen] = useState(false);
+  const [openRegions, setOpenRegions] = useState<Record<string, boolean>>({});
+  const regionListRef = useRef<HTMLDivElement>(null);
 
   const rows = LEVELS.map((lv) => {
     const rec = progress.highScoreRecords?.[lv.id];
@@ -99,6 +102,69 @@ export default function Dojo() {
     (m, c) => Math.max(m, progress.adventureHighScores?.[c.id] ?? 0),
     0
   );
+
+  /** Region aktif = region kota saat ini; next = region berikutnya jika ada kota terbuka di sana */
+  const activeRegionId = currentCity.regionId;
+  const regionsWithUnlock = useMemo(() => {
+    const set = new Set<string>();
+    unlockedList.forEach((id) => {
+      const c = ADVENTURE_CITIES.find((x) => x.id === id);
+      if (c) set.add(c.regionId);
+    });
+    set.add('id');
+    return set;
+  }, [unlockedList]);
+
+  const nextRegionId = useMemo(() => {
+    const idx = ADVENTURE_REGIONS.findIndex((r) => r.id === activeRegionId);
+    if (idx < 0) return null;
+    return ADVENTURE_REGIONS[idx + 1]?.id ?? null;
+  }, [activeRegionId]);
+
+  // Default buka: region aktif + next (jika baru terbuka / bersebelahan)
+  useEffect(() => {
+    if (tab !== 'petualangan') return;
+    const init: Record<string, boolean> = {};
+    ADVENTURE_REGIONS.forEach((r) => {
+      const unlockedHere = regionsWithUnlock.has(r.id);
+      const isActive = r.id === activeRegionId;
+      const isNext =
+        r.id === nextRegionId && regionsWithUnlock.has(r.id);
+      init[r.id] = isActive || isNext || (unlockedHere && r.id === activeRegionId);
+      // Region belum ada kota terbuka → collaps
+      if (!unlockedHere) init[r.id] = false;
+      if (isActive) init[r.id] = true;
+      if (isNext) init[r.id] = true;
+    });
+    setOpenRegions(init);
+  }, [tab, activeRegionId, nextRegionId, regionsWithUnlock]);
+
+  // Klik di luar section region → collapse region yang bukan aktif/next
+  useEffect(() => {
+    if (tab !== 'petualangan') return;
+    const onDown = (e: MouseEvent | TouchEvent) => {
+      const el = regionListRef.current;
+      if (!el) return;
+      const target = e.target as Node;
+      if (el.contains(target)) return;
+      setOpenRegions((prev) => {
+        const next = { ...prev };
+        ADVENTURE_REGIONS.forEach((r) => {
+          const keep =
+            r.id === activeRegionId ||
+            (r.id === nextRegionId && regionsWithUnlock.has(r.id));
+          if (!keep) next[r.id] = false;
+        });
+        return next;
+      });
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('touchstart', onDown);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('touchstart', onDown);
+    };
+  }, [tab, activeRegionId, nextRegionId, regionsWithUnlock]);
 
   return (
     <div className="dojo-page">
@@ -182,43 +248,95 @@ export default function Dojo() {
             {t('citiesOpen')} {unlockedCount} {t('citiesUnit')} · {t('bestAdventure')}{' '}
             <strong>{bestAdventure > 0 ? bestAdventure : '—'}</strong>
           </p>
-          <ul className="dojo-score-list">
-            {ADVENTURE_CITIES.map((c, i) => {
-              const unlocked =
-                c.id === 'jakarta' || unlockedList.includes(c.id);
-              const rec = progress.adventureScoreRecords?.[c.id];
-              const hs =
-                rec?.score ?? progress.adventureHighScores?.[c.id] ?? 0;
-              const passed = hs >= c.targetScore;
-              const country = getLang() === 'en' ? getCountryNameEn(c.countryId) : getCountryNameId(c.countryId);
-              const isCurrent = c.id === currentCity.id;
-              const meta = formatRecordMeta(rec, 'adv', displayName);
+          <div className="dojo-region-list" ref={regionListRef}>
+            {ADVENTURE_REGIONS.map((reg) => {
+              const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
+              if (!cities.length) return null;
+              const regionUnlocked = regionsWithUnlock.has(reg.id);
+              const open = !!openRegions[reg.id];
+              const label =
+                getLang() === 'en' ? reg.labelEn : reg.labelId;
+              const openCount = cities.filter(
+                (c) => c.id === 'jakarta' || unlockedList.includes(c.id)
+              ).length;
               return (
-                <li
-                  key={c.id}
-                  className={`dojo-score-row ${isCurrent ? 'dojo-row-current' : ''}`}
+                <div
+                  key={reg.id}
+                  className={`dojo-region ${regionUnlocked ? '' : 'is-locked'}`}
                 >
-                  <div>
-                    <span className="dojo-score-label">
-                      {passed ? '✅' : unlocked ? '📌' : '🔒'} {i + 1}.{' '}
-                      {getLang() === 'en' ? c.nameEn : c.nameId}
-                      {isCurrent ? ` · ${t('nowHere')}` : ''}
+                  <button
+                    type="button"
+                    className="dojo-region-head"
+                    aria-expanded={open}
+                    onClick={() =>
+                      setOpenRegions((prev) => ({
+                        ...prev,
+                        [reg.id]: !prev[reg.id],
+                      }))
+                    }
+                  >
+                    <span>
+                      {open ? '▾' : '▸'} {label}
                     </span>
-                    <span className="dojo-score-desc">
-                      {country} · {t('target')} {c.targetScore}
-                      {!unlocked ? ` · ${t('locked')}` : passed ? ` · ${t('cleared')}` : ''}
+                    <span className="dojo-region-meta">
+                      {openCount}/{cities.length}
+                      {!regionUnlocked ? ` · ${t('locked')}` : ''}
                     </span>
-                    {meta ? (
-                      <span className="dojo-score-meta">{meta}</span>
-                    ) : null}
-                  </div>
-                  <span className="dojo-score-value">
-                    {hs > 0 ? hs : '—'}
-                  </span>
-                </li>
+                  </button>
+                  {open && (
+                    <ul className="dojo-score-list dojo-region-body">
+                      {cities.map((c) => {
+                        const i = ADVENTURE_CITIES.findIndex((x) => x.id === c.id);
+                        const unlocked =
+                          c.id === 'jakarta' || unlockedList.includes(c.id);
+                        const rec = progress.adventureScoreRecords?.[c.id];
+                        const hs =
+                          rec?.score ??
+                          progress.adventureHighScores?.[c.id] ??
+                          0;
+                        const passed = hs >= c.targetScore;
+                        const country =
+                          getLang() === 'en'
+                            ? getCountryNameEn(c.countryId)
+                            : getCountryNameId(c.countryId);
+                        const isCurrent = c.id === currentCity.id;
+                        const meta = formatRecordMeta(rec, 'adv', displayName);
+                        return (
+                          <li
+                            key={c.id}
+                            className={`dojo-score-row ${isCurrent ? 'dojo-row-current' : ''}`}
+                          >
+                            <div>
+                              <span className="dojo-score-label">
+                                {passed ? '✅' : unlocked ? '📌' : '🔒'}{' '}
+                                {i + 1}.{' '}
+                                {getLang() === 'en' ? c.nameEn : c.nameId}
+                                {isCurrent ? ` · ${t('nowHere')}` : ''}
+                              </span>
+                              <span className="dojo-score-desc">
+                                {country} · {t('target')} {c.targetScore}
+                                {!unlocked
+                                  ? ` · ${t('locked')}`
+                                  : passed
+                                    ? ` · ${t('cleared')}`
+                                    : ''}
+                              </span>
+                              {meta ? (
+                                <span className="dojo-score-meta">{meta}</span>
+                              ) : null}
+                            </div>
+                            <span className="dojo-score-value">
+                              {hs > 0 ? hs : '—'}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
               );
             })}
-          </ul>
+          </div>
         </section>
       )}
 

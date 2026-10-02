@@ -2575,3 +2575,53 @@ a.btn-link-trakteer:hover,
     max-width: 110px;
   }
 }
+
+
+/* Kotak tipis pemisah section Pengaturan */
+.settings-section {
+  border: 1px solid var(--color-border, #d0d0d0);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--color-card, rgba(255,255,255,0.55));
+}
+.settings-section + .settings-section {
+  margin-top: 2px;
+}
+
+/* Region collapsible di Progres petualangan */
+.dojo-region {
+  border: 1px solid var(--color-border, #d0d0d0);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: var(--color-card, rgba(255,255,255,0.5));
+}
+.dojo-region-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-align: left;
+}
+.dojo-region-head:hover {
+  background: rgba(0,0,0,0.04);
+}
+.dojo-region-meta {
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+.dojo-region-body {
+  padding: 0 8px 8px;
+}
+.dojo-region.is-locked .dojo-region-head {
+  opacity: 0.85;
+}

@@ -197,8 +197,7 @@ export default function AdventureMap({
     y: (minY + maxY) / 2,
   };
 
-  const pinR = Math.min(vbW, vbH) * (mapDebug.on ? 0.016 : 0.028);
-  const fontSize = Math.min(vbW, vbH) * (mapDebug.on ? 0.022 : 0.055);
+  // pinR/fontSize dihitung ulang setelah zoom animasi (lihat drawPinR)
 
   const fromCity = travelFromId
     ? ADVENTURE_CITIES.find((c) => c.id === travelFromId)
@@ -209,6 +208,52 @@ export default function AdventureMap({
   const traveling = !!(fromCity && toCity);
 
   const [t, setT] = useState(0);
+
+  /** Zoom intro: world → target ~2 detik saat masuk / ganti kota aktif */
+  const [zoomVB, setZoomVB] = useState({
+    minX: 0,
+    minY: 0,
+    vbW: 100,
+    vbH: 100,
+  });
+
+  useEffect(() => {
+    if (mapDebug.on) {
+      setZoomVB({ minX, minY, vbW, vbH });
+      return;
+    }
+    // Mulai dari peta dunia penuh
+    const start = { minX: 0, minY: 0, vbW: 100, vbH: 100 };
+    const end = { minX, minY, vbW, vbH };
+    setZoomVB(start);
+    const dur = 2000;
+    const t0 = performance.now();
+    let raf = 0;
+    const ease = (x: number) => 1 - Math.pow(1 - x, 3);
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / dur);
+      const e = ease(p);
+      setZoomVB({
+        minX: start.minX + (end.minX - start.minX) * e,
+        minY: start.minY + (end.minY - start.minY) * e,
+        vbW: start.vbW + (end.vbW - start.vbW) * e,
+        vbH: start.vbH + (end.vbH - start.vbH) * e,
+      });
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [activeId, minX, minY, vbW, vbH, mapDebug.on]);
+
+  // Nilai view yang dipakai render (hasil animasi zoom)
+  const drawMinX = zoomVB.minX;
+  const drawMinY = zoomVB.minY;
+  const drawVbW = zoomVB.vbW;
+  const drawVbH = zoomVB.vbH;
+  const drawMaxX = drawMinX + drawVbW;
+  const drawMaxY = drawMinY + drawVbH;
+  const pinR = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.016 : 0.028);
+  const fontSize = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.022 : 0.055);
 
   useEffect(() => {
     if (!traveling) {
@@ -248,12 +293,12 @@ export default function AdventureMap({
 
   /** Apakah koordinat kota masuk viewBox (sedikit margin) */
   const inView = (mapX: number, mapY: number) => {
-    const m = Math.min(vbW, vbH) * 0.05;
+    const m = Math.min(drawVbW, drawVbH) * 0.05;
     return (
-      mapX >= minX - m &&
-      mapX <= maxX + m &&
-      mapY >= minY - m &&
-      mapY <= maxY + m
+      mapX >= drawMinX - m &&
+      mapX <= drawMaxX + m &&
+      mapY >= drawMinY - m &&
+      mapY <= drawMaxY + m
     );
   };
 
@@ -278,8 +323,8 @@ export default function AdventureMap({
       });
 
   const pct = (mapX: number, mapY: number) => ({
-    left: `${((mapX - minX) / vbW) * 100}%`,
-    top: `${((mapY - minY) / vbH) * 100}%`,
+    left: `${((mapX - drawMinX) / drawVbW) * 100}%`,
+    top: `${((mapY - drawMinY) / drawVbH) * 100}%`,
   });
 
   /** Klik peta (debug) → koordinat absolut 0–100 */
@@ -290,8 +335,8 @@ export default function AdventureMap({
     const rect = frameRef.current.getBoundingClientRect();
     const px = (e.clientX - rect.left) / rect.width;
     const py = (e.clientY - rect.top) / rect.height;
-    const mapX = minX + px * vbW;
-    const mapY = minY + py * vbH;
+    const mapX = drawMinX + px * drawVbW;
+    const mapY = drawMinY + py * drawVbH;
     setClickCoord({
       x: Math.round(mapX * 100) / 100,
       y: Math.round(mapY * 100) / 100,
@@ -319,7 +364,7 @@ export default function AdventureMap({
       >
         <svg
           className="adventure-map"
-          viewBox={`${minX} ${minY} ${vbW} ${vbH}`}
+          viewBox={`${drawMinX} ${drawMinY} ${drawVbW} ${drawVbH}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-hidden
@@ -340,8 +385,8 @@ export default function AdventureMap({
               x2={fromCity.mapX + (toCity.mapX - fromCity.mapX) * t}
               y2={fromCity.mapY + (toCity.mapY - fromCity.mapY) * t}
               stroke="#c41e3a"
-              strokeWidth={Math.min(vbW, vbH) * 0.01}
-              strokeDasharray={`${vbW * 0.02} ${vbW * 0.015}`}
+              strokeWidth={Math.min(drawVbW, drawVbH) * 0.01}
+              strokeDasharray={`${drawVbW * 0.02} ${drawVbW * 0.015}`}
               opacity="0.85"
             />
           )}
@@ -481,7 +526,7 @@ export default function AdventureMap({
             const dx = toCity.mapX - fromCity.mapX;
             const dy = toCity.mapY - fromCity.mapY;
             const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
-            const s = Math.min(vbW, vbH) * (mapDebug.on ? 0.06 : 0.14);
+            const s = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.06 : 0.14);
             return (
               <g
                 transform={`rotate(${rot}, ${planeX}, ${planeY})`}
