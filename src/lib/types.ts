@@ -69,6 +69,8 @@ export interface PlayerProgress {
   soundMuted: boolean;
   totalGamesPlayed: number;
   language: 'id' | 'en';
+  /** true = user memilih manual di Pengaturan (jangan auto-overwrite) */
+  languageChosen: boolean;
   /** Nama panggilan pemain (muncul di game) */
   playerName: string;
   /** Mode petualangan: kota aktif */
@@ -94,6 +96,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   soundMuted: false,
   totalGamesPlayed: 0,
   language: 'id',
+  languageChosen: false,
   playerName: '',
   adventureCityId: 'jakarta',
   adventureUnlocked: ['jakarta'],

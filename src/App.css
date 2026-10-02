@@ -949,6 +949,15 @@
   font-weight: 600;
 }
 
+.settings-lang-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.settings-lang-actions .settings-toggle {
+  flex: 1 1 120px;
+  text-align: center;
+}
 .settings-toggle.active {
   border-color: var(--color-success);
 }

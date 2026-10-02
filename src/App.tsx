@@ -45,6 +45,7 @@ import {
   MVP_PATH_LAST_CITY_ID,
   MVP_PATH_COMPLETE_MSG,
 } from './lib/adventure';
+import { setLang, detectLangFromDevice } from './lib/i18n';
 import './styles/theme.css';
 import './App.css';
 
@@ -124,7 +125,8 @@ function App() {
   const [lastHighScore, setLastHighScore] = useState(0);
   const [isNewRecord, setIsNewRecord] = useState(false);
 
-  // Tema & preferensi dari localStorage saat app dibuka (bukan hanya di Home)
+  // Tema, bahasa, preferensi dari localStorage saat app dibuka
+  const [langTick, setLangTick] = useState(0);
   useEffect(() => {
     const p = loadProgress();
     document.documentElement.setAttribute(
@@ -136,6 +138,17 @@ function App() {
     if (p.preferredCharacter) {
       setSelectedCharacterId(p.preferredCharacter);
     }
+    // Bahasa: manual jika sudah dipilih; else auto (luar Indonesia → EN)
+    let lang = p.language || 'id';
+    if (!p.languageChosen) {
+      const detected = detectLangFromDevice();
+      lang = detected;
+      if (detected !== p.language) {
+        updateProgress({ language: detected });
+      }
+    }
+    setLang(lang);
+    setLangTick((n) => n + 1);
   }, []);
 
   // Menu / hasil: BGM default volume rendah. Game mengatur musik sendiri.
@@ -150,7 +163,7 @@ function App() {
   // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
   useEffect(() => {
     if (!celebrateOpen) return;
-    const t = setTimeout(() => setCelebrateOpen(false), 1400);
+    const t = setTimeout(() => setCelebrateOpen(false), 3400);
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
@@ -315,7 +328,10 @@ function App() {
         {screen === 'dojo' && <Dojo />}
 
         {screen === 'settings' && (
-          <Settings onBack={() => setScreen('home')} />
+          <Settings
+            onBack={() => setScreen('home')}
+            onLangChange={() => setLangTick((n) => n + 1)}
+          />
         )}
 
         {screen === 'game' && selectedCharacterId && (
@@ -511,7 +527,7 @@ function App() {
       {showChrome && (
         <>
           <Footer />
-          <BottomNav active={navActive} onChange={handleNav} />
+          <BottomNav key={langTick} active={navActive} onChange={handleNav} />
         </>
       )}
     </div>

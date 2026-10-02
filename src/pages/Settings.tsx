@@ -8,13 +8,19 @@ import {
   importProgress,
 } from '../lib/storage';
 import { TRAKTEER_URL, APP_URL, buildInviteText } from '../lib/constants';
+import { t, getLang, setLang, type Lang } from '../lib/i18n';
 
 interface SettingsProps {
   onBack: () => void;
+  onLangChange?: () => void;
 }
 
-export default function Settings({ onBack: _onBack }: SettingsProps) {
+export default function Settings({
+  onBack: _onBack,
+  onLangChange,
+}: SettingsProps) {
   const [soundMuted, setSoundMuted] = useState(false);
+  const [lang, setLangLocal] = useState<Lang>('id');
   const [exportCode, setExportCode] = useState('');
   const [importCode, setImportCode] = useState('');
   const [message, setMessage] = useState('');
@@ -24,13 +30,22 @@ export default function Settings({ onBack: _onBack }: SettingsProps) {
   useEffect(() => {
     const p = loadProgress();
     setSoundMuted(p.soundMuted);
+    setLangLocal(p.language || getLang());
   }, []);
 
   const handleMuteToggle = () => {
     const next = !soundMuted;
     setSoundMuted(next);
     updateProgress({ soundMuted: next });
-    setMessage(next ? 'Suara dimatikan' : 'Suara diaktifkan');
+    setMessage(next ? t('soundOff') : t('soundOn'));
+  };
+
+  const handleLang = (next: Lang) => {
+    setLangLocal(next);
+    setLang(next);
+    updateProgress({ language: next, languageChosen: true });
+    onLangChange?.();
+    setMessage(next === 'en' ? 'Language: English' : 'Bahasa: Indonesia');
   };
 
   const handleExport = () => {
@@ -120,25 +135,44 @@ export default function Settings({ onBack: _onBack }: SettingsProps) {
   return (
     <div className="settings-page">
       <header className="settings-header">
-        <h1>Pengaturan</h1>
+        <h1>{t('settingsTitle')}</h1>
       </header>
 
       <section className="settings-section">
-        <h2>Suara</h2>
+        <h2>{t('settingsSound')}</h2>
         <button
           type="button"
           className={`settings-toggle ${soundMuted ? '' : 'active'}`}
           onClick={handleMuteToggle}
         >
-          {soundMuted ? '🔇 Suara mati' : '🔊 Suara nyala'}
+          {soundMuted ? t('soundOff') : t('soundOn')}
         </button>
-        <p className="settings-note">
-          Mematikan SFX dan musik latar. Pengaturan tersimpan di HP ini.
-        </p>
+        <p className="settings-note">{t('soundNote')}</p>
       </section>
 
       <section className="settings-section">
-        <h2>Pindah Progress antar HP</h2>
+        <h2>{t('settingsLanguage')}</h2>
+        <div className="export-actions settings-lang-actions">
+          <button
+            type="button"
+            className={`settings-toggle ${lang === 'id' ? 'active' : ''}`}
+            onClick={() => handleLang('id')}
+          >
+            {t('langId')}
+          </button>
+          <button
+            type="button"
+            className={`settings-toggle ${lang === 'en' ? 'active' : ''}`}
+            onClick={() => handleLang('en')}
+          >
+            {t('langEn')}
+          </button>
+        </div>
+        <p className="settings-note">{t('langNote')}</p>
+      </section>
+
+      <section className="settings-section">
+        <h2>{t('settingsProgress')}</h2>
         <p className="settings-note">
           Tanpa login / akun. Buat kode di HP ini → kirim ke HP lain → tempel
           kode di Settings HP tujuan. Progress (skor, nama, preferensi) ikut

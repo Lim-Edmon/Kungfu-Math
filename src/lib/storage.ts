@@ -96,6 +96,9 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (typeof p.language === 'string' && LANGS.has(p.language)) {
     next.language = p.language as 'id' | 'en';
   }
+  if (typeof p.languageChosen === 'boolean') {
+    next.languageChosen = p.languageChosen;
+  }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
 
   // Sinkron dengan ADVENTURE_CITIES — jangan hardcode (supaya kota baru tidak terhapus saat load/import)

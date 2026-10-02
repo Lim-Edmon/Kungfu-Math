@@ -1,5 +1,7 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
+import { t } from '../lib/i18n';
+
 export type NavTab = 'home' | 'dojo' | 'settings';
 
 interface BottomNavProps {
@@ -9,7 +11,7 @@ interface BottomNavProps {
 
 export default function BottomNav({ active, onChange }: BottomNavProps) {
   return (
-    <nav className="bottom-nav" aria-label="Menu utama">
+    <nav className="bottom-nav" aria-label="Main menu">
       <button
         type="button"
         className={`bottom-nav-item ${active === 'home' ? 'active' : ''}`}
@@ -18,7 +20,7 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
         <span className="bottom-nav-icon" aria-hidden>
           🥋
         </span>
-        <span className="bottom-nav-label">Latihan</span>
+        <span className="bottom-nav-label">{t('navLatihan')}</span>
       </button>
       <button
         type="button"
@@ -28,7 +30,7 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
         <span className="bottom-nav-icon" aria-hidden>
           🏯
         </span>
-        <span className="bottom-nav-label">Progres</span>
+        <span className="bottom-nav-label">{t('navProgres')}</span>
       </button>
       <button
         type="button"
@@ -38,7 +40,7 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
         <span className="bottom-nav-icon" aria-hidden>
           ⚙️
         </span>
-        <span className="bottom-nav-label">Pengaturan</span>
+        <span className="bottom-nav-label">{t('navPengaturan')}</span>
       </button>
     </nav>
   );
