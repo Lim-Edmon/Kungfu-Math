@@ -2625,3 +2625,17 @@ a.btn-link-trakteer:hover,
 .dojo-region.is-locked .dojo-region-head {
   opacity: 0.85;
 }
+
+
+/* Tombol suara setengah lebar */
+.settings-toggle-half {
+  width: 50% !important;
+  max-width: 50%;
+}
+/* Trakteer full lebar section */
+.btn-trakteer-full {
+  display: block;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}

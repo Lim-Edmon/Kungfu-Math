@@ -31,8 +31,8 @@ const STRINGS = {
     settingsInvite: 'Ajak keluarga coba',
     settingsInviteNote:
       'Kirim ajakan ke orang tua / ponakan / sepupu supaya anak belajar hitung lewat game sederhana ini.',
-    btnShare: '📤 Bagikan (WA / lain)',
-    btnCopyInvite: 'Salin pesan ajakan',
+    btnShare: '📤 Bagikan',
+    btnCopyInvite: 'Salin undangan',
     settingsPrivacy: 'Privasi',
     settingsPrivacyNote:
       'Progress disimpan di HP ini saja (localStorage). Tidak ada login, tidak ada kirim data ke server.',
@@ -182,8 +182,8 @@ const STRINGS = {
     settingsInvite: 'Invite family to try',
     settingsInviteNote:
       'Share with parents or relatives so kids can practice mental math through a simple game.',
-    btnShare: '📤 Share (WA / other)',
-    btnCopyInvite: 'Copy invite message',
+    btnShare: '📤 Share',
+    btnCopyInvite: 'Copy invitation',
     settingsPrivacy: 'Privacy',
     settingsPrivacyNote:
       'Progress stays on this device only (localStorage). No login, no server upload.',

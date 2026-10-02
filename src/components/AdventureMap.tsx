@@ -209,22 +209,32 @@ export default function AdventureMap({
 
   const [t, setT] = useState(0);
 
-  /** Zoom intro: world → target ~2 detik saat masuk / ganti kota aktif */
+  /**
+   * Zoom intro world → target hanya SEKALI per mount (masuk petualangan).
+   * Ganti kota dalam sesi yang sama: snap ke target (pesawat tetap terlihat).
+   * Keluar game lalu masuk lagi → component remount → zoom lagi.
+   */
   const [zoomVB, setZoomVB] = useState({
     minX: 0,
     minY: 0,
     vbW: 100,
     vbH: 100,
   });
+  const didIntroZoomRef = useRef(false);
 
   useEffect(() => {
     if (mapDebug.on) {
       setZoomVB({ minX, minY, vbW, vbH });
       return;
     }
-    // Mulai dari peta dunia penuh
-    const start = { minX: 0, minY: 0, vbW: 100, vbH: 100 };
     const end = { minX, minY, vbW, vbH };
+    // Sudah zoom di sesi ini → cukup pindah view, tanpa animasi dari dunia
+    if (didIntroZoomRef.current) {
+      setZoomVB(end);
+      return;
+    }
+    didIntroZoomRef.current = true;
+    const start = { minX: 0, minY: 0, vbW: 100, vbH: 100 };
     setZoomVB(start);
     const dur = 2000;
     const t0 = performance.now();

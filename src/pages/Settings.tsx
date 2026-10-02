@@ -160,11 +160,18 @@ ${t('waProgressSuffix')}`
         <h1>{t('settingsTitle')}</h1>
       </header>
 
+      {/* 1. Privasi */}
+      <section className="settings-section">
+        <h2>{t('settingsPrivacy')}</h2>
+        <p className="settings-note">{t('settingsPrivacyNote')}</p>
+      </section>
+
+      {/* 2. Suara */}
       <section className="settings-section">
         <h2>{t('settingsSound')}</h2>
         <button
           type="button"
-          className={`settings-toggle ${soundMuted ? '' : 'active'}`}
+          className={`settings-toggle settings-toggle-half ${soundMuted ? '' : 'active'}`}
           onClick={handleMuteToggle}
         >
           {soundMuted ? t('soundOff') : t('soundOn')}
@@ -172,6 +179,7 @@ ${t('waProgressSuffix')}`
         <p className="settings-note">{t('soundNote')}</p>
       </section>
 
+      {/* 3. Bahasa */}
       <section className="settings-section">
         <h2>{t('settingsLanguage')}</h2>
         <div className="export-actions settings-lang-actions">
@@ -190,8 +198,9 @@ ${t('waProgressSuffix')}`
             {t('langEn')}
           </button>
         </div>
-              </section>
+      </section>
 
+      {/* 4. Pindah progres */}
       <section className="settings-section">
         <h2>{t('settingsProgress')}</h2>
         <p className="settings-note">{t('settingsProgressNote')}</p>
@@ -219,6 +228,7 @@ ${t('waProgressSuffix')}`
         )}
       </section>
 
+      {/* 5. Masukan kode */}
       <section className="settings-section">
         <h2>{t('settingsImport')}</h2>
         <p className="settings-note">{t('settingsImportNote')}</p>
@@ -234,6 +244,21 @@ ${t('waProgressSuffix')}`
         </button>
       </section>
 
+      {/* 6. Saran & dukungan */}
+      <section className="settings-section">
+        <h2>{t('settingsSupport')}</h2>
+        <p className="settings-note">{t('settingsSupportNote')}</p>
+        <a
+          href={TRAKTEER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-trakteer btn-trakteer-full"
+        >
+          {t('btnTrakteer')}
+        </a>
+      </section>
+
+      {/* 7. Ajak keluarga */}
       <section className="settings-section">
         <h2>{t('settingsInvite')}</h2>
         <p className="settings-note">{t('settingsInviteNote')}</p>
@@ -247,6 +272,7 @@ ${t('waProgressSuffix')}`
         </div>
       </section>
 
+      {/* 8. Hapus data */}
       <section className="settings-section">
         <h2>{t('clearDataTitle')}</h2>
         <p className="settings-note">{t('clearDataNote')}</p>
@@ -257,8 +283,12 @@ ${t('waProgressSuffix')}`
         )}
         {clearConfirm && (
           <div className="export-actions" style={{ marginTop: 8 }}>
-            <button type="button" className="btn-primary" onClick={handleClearAll}
-              style={{ background: '#c62828', borderColor: '#c62828' }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleClearAll}
+              style={{ background: '#c62828', borderColor: '#c62828' }}
+            >
               {t('clearDataConfirm')}
             </button>
             <button
@@ -273,24 +303,6 @@ ${t('waProgressSuffix')}`
             </button>
           </div>
         )}
-      </section>
-
-      <section className="settings-section">
-        <h2>{t('settingsPrivacy')}</h2>
-        <p className="settings-note">{t('settingsPrivacyNote')}</p>
-      </section>
-
-      <section className="settings-section">
-        <h2>{t('settingsSupport')}</h2>
-        <p className="settings-note">{t('settingsSupportNote')}</p>
-        <a
-          href={TRAKTEER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-trakteer"
-        >
-          {t('btnTrakteer')}
-        </a>
       </section>
 
       {message && <p className="settings-message">{message}</p>}
