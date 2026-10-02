@@ -35,13 +35,19 @@ export default function Settings({
       setMessage(t('clearDataWarn'));
       return;
     }
+    // Pop-up kedua agar tidak terhapus karena tidak sengaja
+    const ok = window.confirm(t('clearDataPopup'));
+    if (!ok) {
+      setClearConfirm(false);
+      setMessage('');
+      return;
+    }
     clearAllGameData(true);
     setClearConfirm(false);
     setExportCode('');
     setImportCode('');
     setMessage(t('clearDataDone'));
     onLangChange?.();
-    // Paksa refresh agar Home/Progres ikut reset total
     window.setTimeout(() => window.location.reload(), 400);
   };
 

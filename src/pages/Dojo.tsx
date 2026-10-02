@@ -115,31 +115,17 @@ export default function Dojo() {
     return set;
   }, [unlockedList]);
 
-  const nextRegionId = useMemo(() => {
-    const idx = ADVENTURE_REGIONS.findIndex((r) => r.id === activeRegionId);
-    if (idx < 0) return null;
-    return ADVENTURE_REGIONS[idx + 1]?.id ?? null;
-  }, [activeRegionId]);
-
-  // Default buka: region aktif + next (jika baru terbuka / bersebelahan)
+  // Default buka: HANYA region aktif (user bisa buka manual region lain)
   useEffect(() => {
     if (tab !== 'petualangan') return;
     const init: Record<string, boolean> = {};
     ADVENTURE_REGIONS.forEach((r) => {
-      const unlockedHere = regionsWithUnlock.has(r.id);
-      const isActive = r.id === activeRegionId;
-      const isNext =
-        r.id === nextRegionId && regionsWithUnlock.has(r.id);
-      init[r.id] = isActive || isNext || (unlockedHere && r.id === activeRegionId);
-      // Region belum ada kota terbuka → collaps
-      if (!unlockedHere) init[r.id] = false;
-      if (isActive) init[r.id] = true;
-      if (isNext) init[r.id] = true;
+      init[r.id] = r.id === activeRegionId;
     });
     setOpenRegions(init);
-  }, [tab, activeRegionId, nextRegionId, regionsWithUnlock]);
+  }, [tab, activeRegionId]);
 
-  // Klik di luar section region → collapse region yang bukan aktif/next
+  // Klik di luar list region → collapse semua kecuali region aktif
   useEffect(() => {
     if (tab !== 'petualangan') return;
     const onDown = (e: MouseEvent | TouchEvent) => {
@@ -150,10 +136,7 @@ export default function Dojo() {
       setOpenRegions((prev) => {
         const next = { ...prev };
         ADVENTURE_REGIONS.forEach((r) => {
-          const keep =
-            r.id === activeRegionId ||
-            (r.id === nextRegionId && regionsWithUnlock.has(r.id));
-          if (!keep) next[r.id] = false;
+          next[r.id] = r.id === activeRegionId;
         });
         return next;
       });
@@ -164,7 +147,7 @@ export default function Dojo() {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('touchstart', onDown);
     };
-  }, [tab, activeRegionId, nextRegionId, regionsWithUnlock]);
+  }, [tab, activeRegionId]);
 
   return (
     <div className="dojo-page">

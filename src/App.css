@@ -2632,10 +2632,14 @@ a.btn-link-trakteer:hover,
   width: 50% !important;
   max-width: 50%;
 }
-/* Trakteer full lebar section */
-.btn-trakteer-full {
-  display: block;
-  width: 100%;
+/* Trakteer full lebar section — override max-width 42% */
+a.btn-trakteer.btn-trakteer-full,
+.btn-trakteer.btn-trakteer-full {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
   text-align: center;
   box-sizing: border-box;
+  justify-content: center;
 }

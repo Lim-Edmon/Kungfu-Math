@@ -150,6 +150,7 @@ const STRINGS = {
     clearDataWarn: 'Yakin hapus SEMUA data game di HP ini? Rekor, progress, dan kota terbuka akan hilang. Tidak bisa dibatalkan.',
     clearDataDone: 'Semua data game dihapus. Mulai dari awal.',
     clearDataConfirm: 'Ya, hapus semua',
+    clearDataPopup: 'Kamu yakin mau hapus SEMUA data permainan ini? Ini tidak dapat dikembalikan.',
     btnCancel: 'Batal',
     inviteText:
       'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak belajar berhitung sambil main. Gratis, tanpa login.\n\n',
@@ -301,6 +302,7 @@ const STRINGS = {
     clearDataWarn: 'Delete ALL game data on this phone? Records, progress, and unlocked cities will be gone. This cannot be undone.',
     clearDataDone: 'All game data cleared. Starting fresh.',
     clearDataConfirm: 'Yes, clear all',
+    clearDataPopup: 'Are you sure you want to delete ALL game data? This cannot be undone.',
     btnCancel: 'Cancel',
     inviteText:
       'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids learning arithmetic while playing. Free, no login.\n\n',

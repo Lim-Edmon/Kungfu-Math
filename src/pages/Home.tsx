@@ -64,6 +64,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [cityId, setCityId] = useState('jakarta');
   const [travelFrom, setTravelFrom] = useState<string | null>(null);
   const [travelTo, setTravelTo] = useState<string | null>(null);
+  /** Region list kota di petualangan — default hanya region kota aktif */
+  const [openHomeRegions, setOpenHomeRegions] = useState<Record<string, boolean>>({});
   const [adventureDiffId, setAdventureDiffId] = useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
@@ -332,49 +334,80 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       (c) => c.regionId === reg.id
                     );
                     if (cities.length === 0) return null;
+                    const activeCity = ADVENTURE_CITIES.find((c) => c.id === cityId);
+                    const isActiveReg = (activeCity?.regionId || 'id') === reg.id;
+                    const open =
+                      openHomeRegions[reg.id] !== undefined
+                        ? !!openHomeRegions[reg.id]
+                        : isActiveReg;
+                    const label = getLang() === 'en' ? reg.labelEn : reg.labelId;
                     return (
-                      <div key={reg.id} className="city-region-block">
-                        <p className="city-region-label">{reg.labelId}</p>
-                        <div className="city-chip-row" role="list">
-                          {cities.map((c) => {
-                            const prog = loadProgress();
-                            const unlockedList = prog.adventureUnlocked?.length
-                              ? prog.adventureUnlocked
-                              : ['jakarta'];
-                            const unlocked =
-                              c.id === 'jakarta' ||
-                              unlockedList.includes(c.id);
-                            const country = getLang() === 'en' ? getCountryNameEn(c.countryId) : getCountryNameId(c.countryId);
-                            const order =
-                              ADVENTURE_CITIES.findIndex((x) => x.id === c.id) +
-                              1;
-                            return (
-                              <button
-                                type="button"
-                                key={c.id}
-                                role="listitem"
-                                className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
-                                disabled={!unlocked}
-                                onClick={() => {
-                                  if (!unlocked) return;
-                                  if (c.id !== cityId) {
-                                    setTravelFrom(cityId);
-                                    setTravelTo(c.id);
-                                  }
-                                  setCityId(c.id);
-                                  updateProgress({ adventureCityId: c.id });
-                                }}
-                              >
-                                <span className="city-chip-name">
-                                  {order}. {getLang() === 'en' ? c.nameEn : c.nameId}
-                                </span>
-                                <span className="city-chip-country">
-                                  {country}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+                      <div key={reg.id} className="city-region-block dojo-region">
+                        <button
+                          type="button"
+                          className="dojo-region-head city-region-label"
+                          aria-expanded={open}
+                          onClick={() =>
+                            setOpenHomeRegions((prev) => ({
+                              ...prev,
+                              [reg.id]: !open,
+                            }))
+                          }
+                        >
+                          <span>
+                            {open ? '▾' : '▸'} {label}
+                          </span>
+                        </button>
+                        {open && (
+                          <div className="city-chip-row" role="list">
+                            {cities.map((c) => {
+                              const prog = loadProgress();
+                              const unlockedList = prog.adventureUnlocked?.length
+                                ? prog.adventureUnlocked
+                                : ['jakarta'];
+                              const unlocked =
+                                c.id === 'jakarta' ||
+                                unlockedList.includes(c.id);
+                              const country =
+                                getLang() === 'en'
+                                  ? getCountryNameEn(c.countryId)
+                                  : getCountryNameId(c.countryId);
+                              const order =
+                                ADVENTURE_CITIES.findIndex((x) => x.id === c.id) +
+                                1;
+                              return (
+                                <button
+                                  type="button"
+                                  key={c.id}
+                                  role="listitem"
+                                  className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
+                                  disabled={!unlocked}
+                                  onClick={() => {
+                                    if (!unlocked) return;
+                                    if (c.id !== cityId) {
+                                      setTravelFrom(cityId);
+                                      setTravelTo(c.id);
+                                    }
+                                    setCityId(c.id);
+                                    updateProgress({ adventureCityId: c.id });
+                                    setOpenHomeRegions((prev) => ({
+                                      ...prev,
+                                      [c.regionId]: true,
+                                    }));
+                                  }}
+                                >
+                                  <span className="city-chip-name">
+                                    {order}.{' '}
+                                    {getLang() === 'en' ? c.nameEn : c.nameId}
+                                  </span>
+                                  <span className="city-chip-country">
+                                    {country}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
