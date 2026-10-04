@@ -2804,3 +2804,26 @@ a.btn-trakteer.btn-trakteer-full,
   cursor: pointer;
   text-decoration: underline;
 }
+
+
+/* Ujung jalur petualangan */
+.result-journey-end-modal {
+  border: 2px solid rgba(196, 30, 58, 0.35);
+  background: linear-gradient(180deg, #fff8e1 0%, var(--color-card, #fff) 40%);
+}
+.result-journey-emoji {
+  margin: 0 0 6px;
+  font-size: 2.4rem;
+  line-height: 1;
+  text-align: center;
+}
+.result-journey-hint {
+  margin: 0 0 14px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted, #666);
+  text-align: center;
+  line-height: 1.4;
+}
+.result-journey-end-overlay {
+  z-index: 40;
+}

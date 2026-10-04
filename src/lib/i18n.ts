@@ -168,6 +168,12 @@ const STRINGS = {
     tut4Body: 'Di mode Petualangan, capai target skor di setiap kota untuk membuka kota berikutnya. Ada fun fact singkat tentang kota itu!',
     tutFinish: 'Mulai main!',
     tutSkip: 'Tutup',
+
+    journeyEndTitle: 'Luar biasa!',
+    journeyEndBody:
+      'Kamu berhasil mencapai ujung perjalanan saat ini. Mohon menunggu — akan ada petualangan lain yang menanti berikutnya.',
+    journeyEndHint: 'Region baru akan ditambahkan di update berikut.',
+    cityClearedEndSub: 'Ujung jalur saat ini tercapai. Petualangan baru menyusul!',
   },
   en: {
     navLatihan: 'Practice',
@@ -334,6 +340,12 @@ const STRINGS = {
     tut4Body: 'In Adventure mode, hit each city’s score target to unlock the next city. You’ll also get a short fun fact about that city!',
     tutFinish: 'Let’s play!',
     tutSkip: 'Close',
+
+    journeyEndTitle: 'Fantastic!',
+    journeyEndBody:
+      'You have reached the end of the current journey. Please wait — more adventures are coming next.',
+    journeyEndHint: 'New regions will be added in a future update.',
+    cityClearedEndSub: 'End of the current path. New adventures are on the way!',
   },
 } as const;
 

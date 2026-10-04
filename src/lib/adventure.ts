@@ -891,8 +891,9 @@ export const MVP_REGION_UNLOCK_MSG =
 /** Kota terakhir jalur SEA (ujung utara) */
 export const MVP_PATH_LAST_CITY_ID = 'hanoi';
 
+/** Teks cadangan ID — UI pakai i18n journeyEnd* */
 export const MVP_PATH_COMPLETE_MSG =
-  'Kamu sudah menuntaskan jalur Indonesia dan Asia Tenggara. Hebat, pendekar!';
+  'Luar biasa! Kamu berhasil mencapai ujung perjalanan saat ini. Mohon menunggu — petualangan baru menanti berikutnya.';
 
 export function getCityById(id: string): AdventureCity {
   return ADVENTURE_CITIES.find((c) => c.id === id) ?? ADVENTURE_CITIES[0];

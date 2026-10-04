@@ -43,8 +43,6 @@ import {
   pickCityFunFact,
   MVP_REGION_LAST_CITY_ID,
   MVP_REGION_UNLOCK_MSG,
-  MVP_PATH_LAST_CITY_ID,
-  MVP_PATH_COMPLETE_MSG,
 } from './lib/adventure';
 import { setLang, detectLangFromDevice, t, getLang } from './lib/i18n';
 import './styles/theme.css';
@@ -56,8 +54,15 @@ function resultHeadline(
   grade: string,
   isNewRecord: boolean,
   score: number,
-  opts?: { passedCity?: boolean; cityName?: string }
+  opts?: { passedCity?: boolean; cityName?: string; journeyComplete?: boolean }
 ): { title: string; sub: string; tone: string } {
+  if (opts?.journeyComplete) {
+    return {
+      title: t('journeyEndTitle'),
+      sub: t('journeyEndBody'),
+      tone: 'record',
+    };
+  }
   if (isNewRecord) {
     return {
       title: t('newRecord'),
@@ -69,8 +74,12 @@ function resultHeadline(
     return {
       title: t('cityCleared'),
       sub: opts.cityName
-        ? `Target ${opts.cityName} tercapai. Kamu bisa lanjut ke kota berikut!`
-        : 'Target kota tercapai. Kamu bisa lanjut ke kota berikut!',
+        ? getLang() === 'en'
+          ? `Target in ${opts.cityName} reached. You can continue to the next city!`
+          : `Target ${opts.cityName} tercapai. Kamu bisa lanjut ke kota berikut!`
+        : getLang() === 'en'
+          ? 'City target reached. You can continue to the next city!'
+          : 'Target kota tercapai. Kamu bisa lanjut ke kota berikut!',
       tone: 'great',
     };
   }
@@ -117,6 +126,7 @@ function App() {
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
+  const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [selectedLevel, setSelectedLevel] =
@@ -232,6 +242,7 @@ function App() {
     setNextCityId(null);
     setFunFact(null);
     setFunFactOpen(false);
+    setJourneyEndOpen(false);
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
@@ -256,7 +267,10 @@ function App() {
       const fact = passed ? pickCityFunFact(cityId) : null;
       setFunFact(fact);
       // Fun fact popup: manual close — biar anak sempat baca
-      setFunFactOpen(!!fact);
+      // Ujung jalur: popup khusus (bukan fun fact biasa)
+      const atEnd = passed && !nextId;
+      setFunFactOpen(!!fact && !atEnd);
+      setJourneyEndOpen(atEnd);
     }
 
     const willCelebrate =
@@ -389,15 +403,19 @@ function App() {
           const city =
             playKind === 'petualangan' ? getCityById(lastCityId) : null;
           const nextCity = nextCityId ? getCityById(nextCityId) : null;
+          const journeyComplete =
+            playKind === 'petualangan' && passedCity && !nextCity;
           const headline = resultHeadline(lastGrade, isNewRecord, lastScore, {
-            passedCity: playKind === 'petualangan' && passedCity,
+            passedCity: playKind === 'petualangan' && passedCity && !journeyComplete,
             cityName: getLang()==='en' ? city?.nameEn : city?.nameId,
+            journeyComplete,
           });
           const celebrate =
             isNewRecord ||
             passedCity ||
             lastGrade === 'S' ||
-            lastGrade === 'A';
+            lastGrade === 'A' ||
+            journeyComplete;
           return (
             <div className={`result-screen tone-${headline.tone}`}>
               {/* Ucapan selamat: layer atas, auto-close singkat */}
@@ -423,8 +441,36 @@ function App() {
                 </button>
               )}
 
+              {/* Ujung jalur petualangan: popup khusus, tutup manual */}
+              {journeyComplete && journeyEndOpen && (
+                <div
+                  className="result-funfact-overlay result-journey-end-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="journey-end-title"
+                >
+                  <div className="result-funfact-modal result-journey-end-modal">
+                    <p className="result-journey-emoji" aria-hidden>
+                      🏆
+                    </p>
+                    <p id="journey-end-title" className="result-funfact-label">
+                      {t('journeyEndTitle')}
+                    </p>
+                    <p className="result-funfact-text">{t('journeyEndBody')}</p>
+                    <p className="result-journey-hint">{t('journeyEndHint')}</p>
+                    <button
+                      type="button"
+                      className="btn-primary result-funfact-close"
+                      onClick={() => setJourneyEndOpen(false)}
+                    >
+                      {t('btnGotIt')}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Fun fact: layer bawah, HARUS ditutup manual agar anak sempat baca */}
-              {funFact && passedCity && funFactOpen && (
+              {funFact && passedCity && funFactOpen && !journeyComplete && (
                 <div
                   className="result-funfact-overlay"
                   role="dialog"
@@ -487,16 +533,11 @@ function App() {
                       : ''}
                   </p>
                 )}
-                {passedCity && lastCityId === MVP_REGION_LAST_CITY_ID && (
+                {passedCity &&
+                  lastCityId === MVP_REGION_LAST_CITY_ID &&
+                  nextCity && (
                   <div className="result-funfact result-region-unlock">
                     <p className="result-funfact-text">{MVP_REGION_UNLOCK_MSG}</p>
-                  </div>
-                )}
-                {passedCity &&
-                  lastCityId === MVP_PATH_LAST_CITY_ID &&
-                  !nextCity && (
-                  <div className="result-funfact result-region-unlock">
-                    <p className="result-funfact-text">{MVP_PATH_COMPLETE_MSG}</p>
                   </div>
                 )}
               </div>
