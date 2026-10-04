@@ -2392,6 +2392,25 @@ a.btn-link-trakteer {
 .wizard-header-text {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+}
+.home-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 5vw, 1.55rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: var(--color-text, #1a1a1a);
+}
+.home-tagline {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  color: var(--color-text-muted, #666);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .display-chip.header-display {
   width: 32px;
@@ -2546,11 +2565,18 @@ a.btn-link-trakteer {
 }
 
 .home-logo {
-  width: 84px !important;
-  height: 84px !important;
-  border-radius: 18px;
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 16px;
   object-fit: cover;
   flex-shrink: 0;
+}
+@media (min-width: 400px) {
+  .home-logo {
+    width: 84px !important;
+    height: 84px !important;
+    border-radius: 18px;
+  }
 }
 .home-loading {
   align-items: center;
