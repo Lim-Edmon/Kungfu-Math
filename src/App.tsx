@@ -22,6 +22,7 @@ import { useState, useEffect } from 'react';
 import Home, { type PlayKind } from './pages/Home';
 import Game from './pages/Game';
 import Settings from './pages/Settings';
+import Tutorial from './components/Tutorial';
 import Dojo from './pages/Dojo';
 import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
@@ -127,6 +128,8 @@ function App() {
 
   // Tema, bahasa, preferensi dari localStorage saat app dibuka
   const [langTick, setLangTick] = useState(0);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialFromSettings, setTutorialFromSettings] = useState(false);
   useEffect(() => {
     const p = loadProgress();
     document.documentElement.setAttribute(
@@ -149,6 +152,11 @@ function App() {
     }
     setLang(lang);
     setLangTick((n) => n + 1);
+    // Tutorial first-play (sekali)
+    if (!loadProgress().tutorialSeen) {
+      setTutorialOpen(true);
+      setTutorialFromSettings(false);
+    }
   }, []);
 
   // Menu / hasil: BGM default volume rendah. Game mengatur musik sendiri.
@@ -330,6 +338,10 @@ function App() {
 
         {screen === 'settings' && (
           <Settings
+            onShowTutorial={() => {
+              setTutorialFromSettings(true);
+              setTutorialOpen(true);
+            }}
             key={langTick}
             onBack={() => setScreen('home')}
             onLangChange={() => setLangTick((n) => n + 1)}
@@ -537,6 +549,18 @@ function App() {
           );
         })()}
       </main>
+
+      {tutorialOpen && (
+        <Tutorial
+          fromSettings={tutorialFromSettings}
+          onClose={() => {
+            setTutorialOpen(false);
+            if (!tutorialFromSettings) {
+              updateProgress({ tutorialSeen: true });
+            }
+          }}
+        />
+      )}
 
       {showChrome && (
         <>

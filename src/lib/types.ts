@@ -81,6 +81,8 @@ export interface PlayerProgress {
   adventureHighScores: Record<string, number>;
   /** Detail rekor petualangan per kota */
   adventureScoreRecords: Record<string, ScoreRecord>;
+  /** Sudah melihat tutorial first-play */
+  tutorialSeen: boolean;
 }
 
 export const DEFAULT_PROGRESS: PlayerProgress = {
@@ -102,4 +104,5 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   adventureUnlocked: ['jakarta'],
   adventureHighScores: {},
   adventureScoreRecords: {},
+  tutorialSeen: false,
 };

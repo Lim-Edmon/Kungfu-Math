@@ -2726,3 +2726,81 @@ a.btn-trakteer.btn-trakteer-full,
   box-sizing: border-box;
   justify-content: center;
 }
+
+
+/* —— Tutorial first-play —— */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+.tutorial-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--color-card, #fff);
+  border-radius: 20px;
+  padding: 24px 20px 18px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.tutorial-emoji {
+  margin: 0 0 8px;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.tutorial-title {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-text, #1a1a1a);
+}
+.tutorial-body {
+  margin: 0 0 18px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-text-muted, #555);
+  text-align: left;
+}
+.tutorial-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.tutorial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+}
+.tutorial-dot.is-on {
+  background: var(--color-primary, #c41e3a);
+  transform: scale(1.15);
+}
+.tutorial-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.tutorial-actions .btn-primary,
+.tutorial-actions .btn-ghost {
+  min-width: 120px;
+}
+.tutorial-skip {
+  display: block;
+  margin: 12px auto 0;
+  background: none;
+  border: none;
+  color: var(--color-text-muted, #888);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}

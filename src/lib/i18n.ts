@@ -154,6 +154,20 @@ const STRINGS = {
     btnCancel: 'Batal',
     inviteText:
       'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak belajar berhitung sambil main. Gratis, tanpa login.\n\n',
+
+    settingsTutorial: 'Cara main',
+    settingsTutorialNote: 'Lihat lagi penjelasan singkat slice, tap, bom, dan petualangan.',
+    btnShowTutorial: 'Lihat tutorial',
+    tut1Title: 'Selamat datang!',
+    tut1Body: 'Kungfu Math adalah latihan hitung cepat yang terasa seperti game. Pilih pendekar, lalu tebas atau ketuk angka yang benar.',
+    tut2Title: 'Slice & Tap',
+    tut2Body: 'Mode Slice: geser jari memotong angka jawaban. Mode Tap: ketuk angka yang benar. Baca soal di atas arena.',
+    tut3Title: 'Hati-hati bom!',
+    tut3Body: 'Jangan tebas atau ketuk bom. Kalau salah atau kena bom, nyawa berkurang. Nyawa habis = game selesai.',
+    tut4Title: 'Petualangan kota',
+    tut4Body: 'Di mode Petualangan, capai target skor di setiap kota untuk membuka kota berikutnya. Ada fun fact singkat tentang kota itu!',
+    tutFinish: 'Mulai main!',
+    tutSkip: 'Tutup',
   },
   en: {
     navLatihan: 'Practice',
@@ -306,6 +320,20 @@ const STRINGS = {
     btnCancel: 'Cancel',
     inviteText:
       'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids learning arithmetic while playing. Free, no login.\n\n',
+
+    settingsTutorial: 'How to play',
+    settingsTutorialNote: 'See the short guide for slice, tap, bombs, and adventure again.',
+    btnShowTutorial: 'Show tutorial',
+    tut1Title: 'Welcome!',
+    tut1Body: 'Kungfu Math is fast mental math that feels like a game. Pick a hero, then slice or tap the correct numbers.',
+    tut2Title: 'Slice & Tap',
+    tut2Body: 'Slice: swipe through answer numbers. Tap: tap the correct numbers. Read the question above the arena.',
+    tut3Title: 'Watch out for bombs!',
+    tut3Body: 'Do not slice or tap bombs. Wrong answers or bombs cost a life. No lives left = game over.',
+    tut4Title: 'City adventure',
+    tut4Body: 'In Adventure mode, hit each city’s score target to unlock the next city. You’ll also get a short fun fact about that city!',
+    tutFinish: 'Let’s play!',
+    tutSkip: 'Close',
   },
 } as const;
 

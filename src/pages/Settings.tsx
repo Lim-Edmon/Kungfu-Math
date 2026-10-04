@@ -14,11 +14,13 @@ import { t, getLang, setLang, type Lang } from '../lib/i18n';
 interface SettingsProps {
   onBack: () => void;
   onLangChange?: () => void;
+  onShowTutorial?: () => void;
 }
 
 export default function Settings({
   onBack: _onBack,
   onLangChange,
+  onShowTutorial,
 }: SettingsProps) {
   const [soundMuted, setSoundMuted] = useState(false);
   const [lang, setLangLocal] = useState<Lang>('id');
@@ -172,7 +174,20 @@ ${t('waProgressSuffix')}`
         <p className="settings-note">{t('settingsPrivacyNote')}</p>
       </section>
 
-      {/* 2. Suara */}
+      {/* 2. Tutorial */}
+      <section className="settings-section">
+        <h2>{t('settingsTutorial')}</h2>
+        <p className="settings-note">{t('settingsTutorialNote')}</p>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => onShowTutorial?.()}
+        >
+          {t('btnShowTutorial')}
+        </button>
+      </section>
+
+      {/* 3. Suara */}
       <section className="settings-section">
         <h2>{t('settingsSound')}</h2>
         <button

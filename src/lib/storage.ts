@@ -101,6 +101,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     next.languageChosen = p.languageChosen;
   }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
+  if (typeof p.tutorialSeen === 'boolean') next.tutorialSeen = p.tutorialSeen;
 
   // Sinkron dengan ADVENTURE_CITIES — jangan hardcode (supaya kota baru tidak terhapus saat load/import)
   const VALID_CITIES = new Set(ADVENTURE_CITIES.map((c) => c.id));
