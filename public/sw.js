@@ -2,7 +2,7 @@
  * Cache name memakai versi app — naikkan saat rilis (sinkron package.json version).
  * Author: Lim Edmon
  */
-const APP_VERSION = '0.1.1';
+const APP_VERSION = '0.1.2';
 const CACHE_STATIC = 'kungfu-math-static-' + APP_VERSION;
 const CACHE_PAGES = 'kungfu-math-pages-' + APP_VERSION;
 

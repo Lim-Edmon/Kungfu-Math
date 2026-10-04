@@ -197,11 +197,24 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             src="/logo.png"
             alt=""
             className="home-logo"
-            width={84}
-            height={84}
+            width={48}
+            height={48}
           />
           <div className="wizard-header-text">
-            <h1 className="home-title">Kungfu&nbsp;Math</h1>
+            <h1
+              className="home-title"
+              style={{
+                whiteSpace: 'nowrap',
+                wordBreak: 'keep-all',
+                overflowWrap: 'normal',
+                fontSize: '1.15rem',
+                lineHeight: 1.1,
+                margin: 0,
+                letterSpacing: '-0.03em',
+              }}
+            >
+              {'Kungfu\u00A0Math'}
+            </h1>
             <p className="home-tagline">{t('tagline')}</p>
           </div>
           <button

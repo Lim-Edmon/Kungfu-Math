@@ -2885,3 +2885,30 @@ h1.home-title,
   height: 56px !important;
   flex-shrink: 0 !important;
 }
+
+
+/* Vivo / narrow phone header — judul wajib 1 baris */
+.home-header.wizard-header-row {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+.home-logo {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+}
+.wizard-header-text {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+h1.home-title {
+  white-space: nowrap !important;
+  font-size: 1.15rem !important;
+  line-height: 1.1 !important;
+  margin: 0 !important;
+}

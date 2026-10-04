@@ -1,11 +1,5 @@
-Taruh file sesuai path:
-  src/App.css
-  src/pages/Home.tsx
-
-Lalu:
-  npm run build
-  git add -A
-  git commit -m "Force Kungfu Math single-line header"
-  git push
-
-Setelah deploy: hard refresh / buka di browser (bukan hanya ikon PWA) supaya CSS lama tidak nge-cache.
+1. unzip -o di folder project
+2. npm run build
+3. git add -A && git commit -m "Header 1 baris + SW 0.1.2" && git push
+4. Di HP Vivo: buka Chrome (bukan ikon PWA) → kunjungi situs → Settings situs → hapus data / Clear storage
+   Atau: uninstall PWA dari home, buka lagi dari browser, pasang ulang.
