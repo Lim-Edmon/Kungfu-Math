@@ -2395,12 +2395,16 @@ a.btn-link-trakteer {
   overflow: hidden;
 }
 .home-title {
-  margin: 0;
-  font-size: clamp(1.2rem, 5vw, 1.55rem);
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  white-space: nowrap;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 1.28rem !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.04em !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
   color: var(--color-text, #1a1a1a);
 }
 .home-tagline {
@@ -2565,17 +2569,16 @@ a.btn-link-trakteer {
 }
 
 .home-logo {
-  width: 72px !important;
-  height: 72px !important;
-  border-radius: 16px;
+  width: 56px !important;
+  height: 56px !important;
+  border-radius: 14px;
   object-fit: cover;
   flex-shrink: 0;
 }
-@media (min-width: 400px) {
+@media (min-width: 420px) {
   .home-logo {
-    width: 84px !important;
-    height: 84px !important;
-    border-radius: 18px;
+    width: 68px !important;
+    height: 68px !important;
   }
 }
 .home-loading {
@@ -2852,4 +2855,33 @@ a.btn-trakteer.btn-trakteer-full,
 }
 .result-journey-end-overlay {
   z-index: 40;
+}
+
+
+/* FORCE title satu baris (override cache/cascade) */
+.home-header.wizard-header-row {
+  gap: 8px !important;
+}
+.wizard-header-text {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+h1.home-title,
+.home-title {
+  display: block !important;
+  margin: 0 !important;
+  font-size: 1.28rem !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+  letter-spacing: -0.04em !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+}
+.home-logo {
+  width: 56px !important;
+  height: 56px !important;
+  flex-shrink: 0 !important;
 }
