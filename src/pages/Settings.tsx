@@ -167,6 +167,8 @@ ${t('waProgressSuffix')}`
       <header className="settings-header">
         <h1>{t('settingsTitle')}</h1>
       </header>
+      <p className="settings-note app-version-line">{t('appVersionLabel')}: 0.1.5</p>
+
 
       {/* 1. Privasi */}
       <section className="settings-section">

@@ -1,5 +1,0 @@
-unzip -o
-npm run build
-git add -A
-git commit -m "Combo bonus +5 diam +10 bergerak"
-git push

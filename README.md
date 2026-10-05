@@ -27,7 +27,7 @@ Deploy: push ke GitHub → Vercel otomatis build.
 
 ## Fitur saat ini
 
-### Latihan
+### Latihan bebas (mode bermain)
 - Mode **Slice** (geser) dan **Tap** (tekan)
 - Arena **Diam** atau **Ketangkasan** (angka bergerak)
 - Submode soal: **Acak** (default) atau **Fokus** (pilih operasi + − × ÷)
@@ -54,7 +54,7 @@ Deploy: push ke GitHub → Vercel otomatis build.
 
 ### Umum
 - Tutorial first-play (bisa dibuka lagi di Pengaturan)
-- Navigasi bawah: **Latihan · Progres · Pengaturan**
+- Navigasi bawah: **Bermain · Progres · Pengaturan**
 - Tema: Siang / Malam / Nyaman
 - Bahasa: Indonesia / English (otomatis luar ID jika belum dipilih manual)
 - SFX + BGM (bisa mute)

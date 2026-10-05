@@ -258,25 +258,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       <div className="wizard-body">
         {step === 1 && (
           <section className="wizard-panel">
-            <h2 className="wizard-panel-title">{t('levelTitle')}</h2>
-            <p className="wizard-panel-hint">{t('levelHint')}</p>
-            <div className="level-list compact-levels">
-              {LEVELS.map((lv) => (
-                <button
-                  type="button"
-                  key={lv.id}
-                  className={`level-btn ${level === lv.id ? 'active' : ''}`}
-                  onClick={() => {
-                    setLevel(lv.id);
-                    updateProgress({ preferredLevel: lv.id });
-                  }}
-                >
-                  <strong>{getLang() === 'en' ? lv.labelEn : lv.labelId}</strong>
-                  <span>{getLang() === 'en' ? lv.descEn : lv.descId}</span>
-                </button>
-              ))}
-            </div>
-
             <div className="ops-mode-block ops-mode-step1">
               <h3 className="subsection-title">{t('opsModeTitle')}</h3>
               <p className="wizard-panel-hint">{t('opsModeHint')}</p>
@@ -306,12 +287,14 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               </div>
               {opsMode === 'focus' && (
                 <div className="focus-ops-row">
-                  {([
-                    ['add', t('opAdd')],
-                    ['sub', t('opSub')],
-                    ['mul', t('opMul')],
-                    ['div', t('opDiv')],
-                  ] as const).map(([id, label]) => {
+                  {(
+                    [
+                      ['add', t('opAdd')],
+                      ['sub', t('opSub')],
+                      ['mul', t('opMul')],
+                      ['div', t('opDiv')],
+                    ] as const
+                  ).map(([id, label]) => {
                     const on = focusOps.includes(id);
                     return (
                       <button
@@ -336,6 +319,25 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                   })}
                 </div>
               )}
+            </div>
+
+            <h2 className="wizard-panel-title">{t('levelTitle')}</h2>
+            <p className="wizard-panel-hint">{t('levelHint')}</p>
+            <div className="level-list compact-levels">
+              {LEVELS.map((lv) => (
+                <button
+                  type="button"
+                  key={lv.id}
+                  className={`level-btn ${level === lv.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setLevel(lv.id);
+                    updateProgress({ preferredLevel: lv.id });
+                  }}
+                >
+                  <strong>{getLang() === 'en' ? lv.labelEn : lv.labelId}</strong>
+                  <span>{getLang() === 'en' ? lv.descEn : lv.descId}</span>
+                </button>
+              ))}
             </div>
           </section>
         )}
