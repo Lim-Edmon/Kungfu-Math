@@ -40,7 +40,13 @@ interface GameProps {
   /** Petualangan: skor lolos ke kota berikutnya */
   targetScore?: number;
   onExit: () => void;
-  onFinish: (score: number, grade: string) => void;
+  /** Latihan Fokus: batasi operasi (harus cocok level) */
+  forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>;
+  onFinish: (
+    score: number,
+    grade: string,
+    meta?: { maxCombo: number; perfect: boolean }
+  ) => void;
 }
 
 /**
@@ -198,8 +204,12 @@ export default function Game({
   cityId,
   targetScore,
   onExit,
+  forceOps,
   onFinish,
 }: GameProps) {
+  const forceOpsRef = useRef(forceOps);
+  forceOpsRef.current = forceOps;
+  const mistakesRef = useRef(0);
   const character = getCharacterById(characterId);
   const playerName = loadProgress().playerName?.trim() || '';
   const displayName = playerName || character?.name || 'Pendekar';
@@ -283,7 +293,7 @@ export default function Game({
     const next = () => {
       i += 1;
       if (i >= steps.length) {
-        const q = generateQuestion(levelRef.current);
+        const q = generateQuestion(levelRef.current, { forceOps: forceOpsRef.current });
         setState((prev) => ({
           ...prev,
           status: 'playing',
@@ -320,7 +330,15 @@ export default function Game({
             prev.questionsSolved,
             prev.maxCombo
           );
-          setTimeout(() => onFinish(prev.score, grade), 100);
+          setTimeout(
+              () =>
+                onFinish(prev.score, grade, {
+                  maxCombo: prev.maxCombo,
+                  perfect:
+                    mistakesRef.current === 0 && prev.questionsSolved > 0,
+                }),
+              100
+            );
           return { ...prev, timeLeft: 0, status: 'won' };
         }
         return { ...prev, timeLeft: prev.timeLeft - 1 };
@@ -339,7 +357,7 @@ export default function Game({
 
   const spawnNextQuestion = useCallback((prev: GameState): GameState => {
     // Tetap di level yang dipilih user (tidak auto-naik mid-game)
-    const q = generateQuestion(levelRef.current);
+    const q = generateQuestion(levelRef.current, { forceOps: forceOpsRef.current });
     return {
       ...prev,
       question: q,
@@ -394,7 +412,15 @@ export default function Game({
           prev.questionsSolved,
           prev.maxCombo
         );
-        setTimeout(() => onFinish(prev.score, grade), 100);
+        setTimeout(
+              () =>
+                onFinish(prev.score, grade, {
+                  maxCombo: prev.maxCombo,
+                  perfect:
+                    mistakesRef.current === 0 && prev.questionsSolved > 0,
+                }),
+              100
+            );
         return {
           ...prev,
           lives: 0,
@@ -430,6 +456,7 @@ export default function Game({
 
         // Bom → nyawa −1, bom hilang, SEMUA bola non-bom yang sempat hilang MUNCUL LANGSUNG
         if (num.isBomb) {
+          mistakesRef.current += 1;
           sfx.boom();
           clearNextQuestionTimeout();
           const token = Date.now();
@@ -460,7 +487,15 @@ export default function Game({
               prev.questionsSolved,
               prev.maxCombo
             );
-            setTimeout(() => onFinish(prev.score, grade), 100);
+            setTimeout(
+              () =>
+                onFinish(prev.score, grade, {
+                  maxCombo: prev.maxCombo,
+                  perfect:
+                    mistakesRef.current === 0 && prev.questionsSolved > 0,
+                }),
+              100
+            );
             return {
               ...prev,
               lives: 0,
@@ -530,6 +565,7 @@ export default function Game({
         }
 
         // Salah → nyawa −1, bola muncul lagi, SOAL TETAP; tempo Berani: −waktu
+        mistakesRef.current += 1;
         sfx.wrong();
         let withTime = prev;
         if (timePenaltySec > 0) {
@@ -544,7 +580,15 @@ export default function Game({
               prev.questionsSolved,
               prev.maxCombo
             );
-            setTimeout(() => onFinish(prev.score, grade), 100);
+            setTimeout(
+              () =>
+                onFinish(prev.score, grade, {
+                  maxCombo: prev.maxCombo,
+                  perfect:
+                    mistakesRef.current === 0 && prev.questionsSolved > 0,
+                }),
+              100
+            );
             return {
               ...prev,
               timeLeft: 0,

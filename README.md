@@ -30,6 +30,7 @@ Deploy: push ke GitHub → Vercel otomatis build.
 ### Latihan
 - Mode **Slice** (geser) dan **Tap** (tekan)
 - Arena **Diam** atau **Ketangkasan** (angka bergerak)
+- Submode soal: **Acak** (default) atau **Fokus** (pilih operasi + − × ÷)
 - 6 karakter pendekar + nama pemain opsional
 - Level: Pemula → Dasar → Menengah → Mahir → Master
 - Soal matematika, nyawa, timer 60 dtk, skor, combo
@@ -39,18 +40,26 @@ Deploy: push ke GitHub → Vercel otomatis build.
 - Target skor per kota; lolos = buka kota berikutnya
 - Peta + pin; animasi pindah kota
 - Fun fact singkat saat lolos kota (tutup manual)
+- Popup khusus saat mencapai **ujung jalur** saat ini
 - Latar & musik per kota (opsional):
   - `public/cities/bg/{id}.webp` (atau .png / .jpg)
   - `public/cities/music/{id}.mp3`
   - Nama file = id kota (huruf kecil). Tidak ada → fallback default
 
+### Progres & motivasi
+- **Streak harian** — main berturut-turut dihitung per hari
+- **Lencana** — combo, streak, kota, run sempurna, clear region
+- Rekor **combo max** terpisah untuk latihan dan petualangan
+- Rekor skor per level + per kota (dengan detail nama/tanggal/mode)
+
 ### Umum
-- Navigasi bawah: **Latihan · Dojo · Atur**
-- Dojo: rekor per level + rekor per kota petualangan
+- Tutorial first-play (bisa dibuka lagi di Pengaturan)
+- Navigasi bawah: **Latihan · Progres · Pengaturan**
 - Tema: Siang / Malam / Nyaman
+- Bahasa: Indonesia / English (otomatis luar ID jika belum dipilih manual)
 - SFX + BGM (bisa mute)
 - PWA: pasang ke layar utama HP
-- Progress **localStorage** + kode pindah antar HP (tanpa login) di **Atur**
+- Progress **localStorage** + kode pindah antar HP (tanpa login) di **Pengaturan**
 - Responsive: HP, tablet, laptop/PC
 - Nama negara di UI selalu lengkap (bukan kode ISO)
 
@@ -64,7 +73,9 @@ Deploy: push ke GitHub → Vercel otomatis build.
 | Musik kota | `public/cities/music/{id}.mp3` (ideal ~12 dtk, loop) |
 | Peta dunia | `public/cities/map/` |
 
-Prompt musik/BG: file Excel `kungfu-math-jalur-musik-kota.xlsx`.
+Prompt musik/BG: file Excel di repo / project notes (`kungfu-math-jalur-musik-kota.xlsx`).
+
+**Polish aset** = mengganti BG/musik/karakter/logo dengan file yang lebih bagus tanpa ubah kode (cukup nama file sama).
 
 ## Catatan
 
@@ -77,28 +88,3 @@ Prompt musik/BG: file Excel `kungfu-math-jalur-musik-kota.xlsx`.
 Vite + React + TypeScript · Deploy: Vercel
 
 ---
-
-## Hak cipta & lisensi (penting)
-
-**© 2026 Lim Edmon. All Rights Reserved.**
-
-Kungfu Math (kode, aset gambar, karakter, musik, dokumentasi, merek) adalah
-karya **proprietary** milik Lim Edmon. Lihat file `LICENSE`.
-
-**Tidak diizinkan** tanpa izin tertulis dari pemilik:
-
-- menyalin, menyebar, atau menerbitkan ulang kode/aset ini
-- memakai sebagai dasar produk lain (komersial maupun non-komersial)
-- menghapus atau mengubah credit / copyright
-- mengklaim karya ini (atau turunannya) sebagai milik sendiri
-
-Main di situs resmi untuk belajar/bermain pribadi **boleh**.  
-Itu **bukan** izin untuk memakai source code atau aset di project lain.
-
-Bantuan / izin: [Trakteer lim.edmon](https://trakteer.id/lim.edmon)
-
-### Disclaimer teknis
-
-Produk disediakan **as-is** untuk edukasi dan penggunaan pribadi.  
-Belum diaudit untuk keamanan production, pembayaran, atau data sensitif.  
-Penulis tidak bertanggung jawab atas kerugian dari penggunaan software ini.

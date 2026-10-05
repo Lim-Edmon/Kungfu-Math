@@ -102,6 +102,34 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
   if (typeof p.tutorialSeen === 'boolean') next.tutorialSeen = p.tutorialSeen;
+  if (p.practiceOpsMode === 'random' || p.practiceOpsMode === 'focus') {
+    next.practiceOpsMode = p.practiceOpsMode;
+  }
+  if (Array.isArray(p.focusOps)) {
+    const allowed = new Set(['add', 'sub', 'mul', 'div']);
+    next.focusOps = p.focusOps.filter((x): x is 'add' | 'sub' | 'mul' | 'div' =>
+      typeof x === 'string' && allowed.has(x)
+    ).slice(0, 4);
+    if (next.focusOps.length === 0) next.focusOps = ['add'];
+  }
+  if (typeof p.dailyStreak === 'number' && Number.isFinite(p.dailyStreak)) {
+    next.dailyStreak = Math.max(0, Math.min(999, Math.floor(p.dailyStreak)));
+  }
+  if (typeof p.lastPlayDate === 'string') {
+    next.lastPlayDate = p.lastPlayDate.slice(0, 16);
+  }
+  if (typeof p.maxComboPractice === 'number' && Number.isFinite(p.maxComboPractice)) {
+    next.maxComboPractice = Math.max(0, Math.min(999, Math.floor(p.maxComboPractice)));
+  }
+  if (typeof p.maxComboAdventure === 'number' && Number.isFinite(p.maxComboAdventure)) {
+    next.maxComboAdventure = Math.max(0, Math.min(999, Math.floor(p.maxComboAdventure)));
+  }
+  if (typeof p.perfectCityStreak === 'number' && Number.isFinite(p.perfectCityStreak)) {
+    next.perfectCityStreak = Math.max(0, Math.min(99, Math.floor(p.perfectCityStreak)));
+  }
+  if (Array.isArray(p.badges)) {
+    next.badges = p.badges.filter((x): x is string => typeof x === 'string').slice(0, 40);
+  }
 
   // Sinkron dengan ADVENTURE_CITIES — jangan hardcode (supaya kota baru tidak terhapus saat load/import)
   const VALID_CITIES = new Set(ADVENTURE_CITIES.map((c) => c.id));

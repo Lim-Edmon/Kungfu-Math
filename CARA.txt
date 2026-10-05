@@ -1,5 +1,2 @@
-1. unzip -o di folder project
-2. npm run build
-3. git add -A && git commit -m "Header 1 baris + SW 0.1.2" && git push
-4. Di HP Vivo: buka Chrome (bukan ikon PWA) → kunjungi situs → Settings situs → hapus data / Clear storage
-   Atau: uninstall PWA dari home, buka lagi dari browser, pasang ulang.
+File di zip = path di project.
+unzip -o → npm run build → git add -A → commit → push

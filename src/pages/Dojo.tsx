@@ -19,6 +19,7 @@ import {
 } from '../lib/adventure';
 import type { ScoreRecord } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
+import { getBadgeDef } from '../lib/badges';;
 
 type DojoTab = 'level' | 'petualangan';
 
@@ -181,6 +182,50 @@ export default function Dojo() {
             {t('position')} <strong>{getLang() === 'en' ? currentCity.nameEn : currentCity.nameId}</strong>
           </p>
         </div>
+      </section>
+
+
+      <section className="dojo-stats-card">
+        <h2 className="dojo-section-title">{t('streakTitle')}</h2>
+        {(progress.dailyStreak || 0) > 0 ? (
+          <p className="dojo-streak-line">
+            🔥 <strong>{progress.dailyStreak}</strong> {t('streakDays')}
+          </p>
+        ) : (
+          <p className="settings-note">{t('streakNone')}</p>
+        )}
+        <h2 className="dojo-section-title">{t('recordsTitle')}</h2>
+        <ul className="dojo-record-list">
+          <li>
+            {t('maxComboPractice')}: <strong>×{progress.maxComboPractice || 0}</strong>
+          </li>
+          <li>
+            {t('maxComboAdventure')}: <strong>×{progress.maxComboAdventure || 0}</strong>
+          </li>
+          <li>
+            {t('perfectCityStreakLabel')}:{' '}
+            <strong>{progress.perfectCityStreak || 0}</strong>
+          </li>
+        </ul>
+        <h2 className="dojo-section-title">{t('badgesTitle')}</h2>
+        {(progress.badges || []).length === 0 ? (
+          <p className="settings-note">{t('badgesEmpty')}</p>
+        ) : (
+          <ul className="badge-grid">
+            {(progress.badges || []).map((id) => {
+              const b = getBadgeDef(id);
+              if (!b) return null;
+              const title = getLang() === 'en' ? b.titleEn : b.titleId;
+              const desc = getLang() === 'en' ? b.descEn : b.descId;
+              return (
+                <li key={id} className="badge-item" title={desc}>
+                  <span className="badge-emoji">{b.emoji}</span>
+                  <span className="badge-title">{title}</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <div className="dojo-tabs" role="tablist">

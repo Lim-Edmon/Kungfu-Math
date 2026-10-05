@@ -83,6 +83,22 @@ export interface PlayerProgress {
   adventureScoreRecords: Record<string, ScoreRecord>;
   /** Sudah melihat tutorial first-play */
   tutorialSeen: boolean;
+  /** Latihan: acak operasi atau fokus operasi tertentu */
+  practiceOpsMode: 'random' | 'focus';
+  /** Operasi yang difokuskan (jika focus) */
+  focusOps: Array<'add' | 'sub' | 'mul' | 'div'>;
+  /** Streak harian (hari berturut main) */
+  dailyStreak: number;
+  /** YYYY-MM-DD lokal terakhir main */
+  lastPlayDate: string;
+  /** Combo max sesi latihan */
+  maxComboPractice: number;
+  /** Combo max sesi petualangan */
+  maxComboAdventure: number;
+  /** Kota diloloskan sempurna berturut (tanpa salah di run itu) */
+  perfectCityStreak: number;
+  /** Id lencana yang sudah didapat */
+  badges: string[];
 }
 
 export const DEFAULT_PROGRESS: PlayerProgress = {
@@ -105,4 +121,12 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   adventureHighScores: {},
   adventureScoreRecords: {},
   tutorialSeen: false,
+  practiceOpsMode: 'random',
+  focusOps: ['add'],
+  dailyStreak: 0,
+  lastPlayDate: '',
+  maxComboPractice: 0,
+  maxComboAdventure: 0,
+  perfectCityStreak: 0,
+  badges: [],
 };

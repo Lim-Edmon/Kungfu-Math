@@ -60,7 +60,8 @@ function pickOp(ops: OperationType[]): OperationType {
  * Generate soal sesuai level (Pemula → Master)
  */
 export function generateQuestion(
-  levelId: DifficultyLevel | number = 'pemula'
+  levelId: DifficultyLevel | number = 'pemula',
+  opts?: { forceOps?: OperationType[] }
 ): MathQuestion {
   // Support lama: angka 1–5 masih diterima
   let level: DifficultyLevel = 'pemula';
@@ -78,7 +79,12 @@ export function generateQuestion(
   }
 
   const config = getLevelById(level);
-  const operation = pickOp(config.operations);
+  const forced = (opts?.forceOps || []).filter((op) =>
+    (config.operations as OperationType[]).includes(op)
+  );
+  const opsPool =
+    forced.length > 0 ? forced : (config.operations as OperationType[]);
+  const operation = pickOp(opsPool.length ? opsPool : ['add']);
 
   let a: number;
   let b: number;
