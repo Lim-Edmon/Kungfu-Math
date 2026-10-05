@@ -12,7 +12,8 @@ import {
   INITIAL_LIVES,
   ROUND_SECONDS,
   POINTS_PER_SOLVE,
-  COMBO_BONUS,
+  COMBO_BONUS_STATIC,
+  COMBO_BONUS_AGILITY,
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
 import { t } from '../lib/i18n';
@@ -538,9 +539,10 @@ export default function Game({
         // Cek jawaban
         if (isValidSelection(prev.question, selectedValues)) {
           const newCombo = prev.combo + 1;
+          const comboBonus = agility ? COMBO_BONUS_AGILITY : COMBO_BONUS_STATIC;
           const points =
             POINTS_PER_SOLVE +
-            (newCombo > 1 ? (newCombo - 1) * COMBO_BONUS : 0);
+            (newCombo > 1 ? (newCombo - 1) * comboBonus : 0);
           if (mode === 'slice') sfx.slash();
           if (newCombo > 1) sfx.combo();
           else sfx.correct();
@@ -866,7 +868,7 @@ export default function Game({
               <span className="hud-score">{state.score}</span>
               {state.combo >= 1 && (
                 <span className="hud-combo" aria-live="polite">
-                  x{state.combo}
+                  COMBO ×{state.combo}
                 </span>
               )}
               <button
@@ -922,6 +924,11 @@ export default function Game({
             className="slice-trail-layer"
             aria-hidden
           />
+          {state.combo >= 2 && state.status === 'playing' && (
+            <div className="combo-float" key={`c-${state.combo}-${state.questionsSolved}`}>
+              {t('comboLabel')} ×{state.combo}
+            </div>
+          )}
           {state.numbers.map((num, index) => {
             const hitClass = num.sliced
               ? mode === 'slice'

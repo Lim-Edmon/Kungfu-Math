@@ -19,7 +19,7 @@ import {
 } from '../lib/adventure';
 import type { ScoreRecord } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
-import { getBadgeDef } from '../lib/badges';
+import { BADGE_DEFS } from '../lib/badges';
 
 type DojoTab = 'level' | 'petualangan';
 
@@ -209,23 +209,25 @@ export default function Dojo() {
           </li>
         </ul>
         <h3 className="dojo-section-title">{t('badgesTitle')}</h3>
-        {(progress.badges || []).length === 0 ? (
+        <ul className="badge-grid">
+          {BADGE_DEFS.map((b) => {
+            const unlocked = (progress.badges || []).includes(b.id);
+            const title = getLang() === 'en' ? b.titleEn : b.titleId;
+            const desc = getLang() === 'en' ? b.descEn : b.descId;
+            return (
+              <li
+                key={b.id}
+                className={`badge-item ${unlocked ? '' : 'locked'}`}
+                title={desc}
+              >
+                <span className="badge-emoji">{unlocked ? b.emoji : '🔒'}</span>
+                <span className="badge-title">{title}</span>
+              </li>
+            );
+          })}
+        </ul>
+        {(progress.badges || []).length === 0 && (
           <p className="settings-note">{t('badgesEmpty')}</p>
-        ) : (
-          <ul className="badge-grid">
-            {(progress.badges || []).map((id) => {
-              const b = getBadgeDef(id);
-              if (!b) return null;
-              const title = getLang() === 'en' ? b.titleEn : b.titleId;
-              const desc = getLang() === 'en' ? b.descEn : b.descId;
-              return (
-                <li key={id} className="badge-item" title={desc}>
-                  <span className="badge-emoji">{b.emoji}</span>
-                  <span className="badge-title">{title}</span>
-                </li>
-              );
-            })}
-          </ul>
         )}
       </section>
 

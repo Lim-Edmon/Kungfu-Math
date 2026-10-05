@@ -37,4 +37,8 @@ export interface GameState {
 export const INITIAL_LIVES = 3;
 export const ROUND_SECONDS = 60;
 export const POINTS_PER_SOLVE = 100;
-export const COMBO_BONUS = 25;
+/** Bonus per tingkat combo: diam +5, bergerak +10 */
+export const COMBO_BONUS_STATIC = 5;
+export const COMBO_BONUS_AGILITY = 10;
+/** @deprecated pakai COMBO_BONUS_STATIC / AGILITY */
+export const COMBO_BONUS = 5;
