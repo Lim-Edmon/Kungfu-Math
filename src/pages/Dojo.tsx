@@ -59,6 +59,7 @@ function formatRecordMeta(
 }
 
 export default function Dojo() {
+  const [badgesOpen, setBadgesOpen] = useState(false);
   const progress = loadProgress();
   // Belum main / belum pilih: tampilkan Yu Jin (bukan Hong Yi warisan data lama)
   const preferredId =
@@ -185,8 +186,7 @@ export default function Dojo() {
       </section>
 
 
-      <section className="dojo-stats-card" aria-label="Streak combo badges">
-        <h2 className="dojo-stats-heading">{t('statsCardTitle')}</h2>
+      <section className="dojo-stats-card" aria-label="Streak">
         <h3 className="dojo-section-title">{t('streakTitle')}</h3>
         {(progress.dailyStreak || 0) > 0 ? (
           <p className="dojo-streak-line">
@@ -195,6 +195,9 @@ export default function Dojo() {
         ) : (
           <p className="settings-note">{t('streakNone')}</p>
         )}
+      </section>
+
+      <section className="dojo-stats-card" aria-label="Combo records">
         <h3 className="dojo-section-title">{t('recordsTitle')}</h3>
         <ul className="dojo-record-list">
           <li>
@@ -208,26 +211,45 @@ export default function Dojo() {
             <strong>{progress.perfectCityStreak || 0}</strong>
           </li>
         </ul>
-        <h3 className="dojo-section-title">{t('badgesTitle')}</h3>
-        <ul className="badge-grid">
-          {BADGE_DEFS.map((b) => {
-            const unlocked = (progress.badges || []).includes(b.id);
-            const title = getLang() === 'en' ? b.titleEn : b.titleId;
-            const desc = getLang() === 'en' ? b.descEn : b.descId;
-            return (
-              <li
-                key={b.id}
-                className={`badge-item ${unlocked ? '' : 'locked'}`}
-                title={desc}
-              >
-                <span className="badge-emoji">{unlocked ? b.emoji : '🔒'}</span>
-                <span className="badge-title">{title}</span>
-              </li>
-            );
-          })}
-        </ul>
-        {(progress.badges || []).length === 0 && (
-          <p className="settings-note">{t('badgesEmpty')}</p>
+      </section>
+
+      <section className="dojo-stats-card" aria-label="Badges">
+        <button
+          type="button"
+          className="dojo-collapse-btn"
+          onClick={() => setBadgesOpen((v) => !v)}
+          aria-expanded={badgesOpen}
+        >
+          <h3 className="dojo-section-title">
+            {t('badgesTitle')}
+            <span className="dojo-collapse-hint">
+              {badgesOpen ? t('badgesToggleHide') : t('badgesToggle')}
+            </span>
+          </h3>
+        </button>
+        {badgesOpen && (
+          <>
+            <ul className="badge-grid">
+              {BADGE_DEFS.map((b) => {
+                const unlocked = (progress.badges || []).includes(b.id);
+                const title = getLang() === 'en' ? b.titleEn : b.titleId;
+                const desc = getLang() === 'en' ? b.descEn : b.descId;
+                return (
+                  <li
+                    key={b.id}
+                    className={`badge-item ${unlocked ? '' : 'locked'}`}
+                    title={desc}
+                  >
+                    <span className="badge-emoji">{unlocked ? b.emoji : '🔒'}</span>
+                    <span className="badge-title">{title}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {(progress.badges || []).length === 0 && (
+              <p className="settings-note">{t('badgesEmpty')}</p>
+            )}
+          </>
         )}
       </section>
 

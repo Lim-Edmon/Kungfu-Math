@@ -258,69 +258,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       <div className="wizard-body">
         {step === 1 && (
           <section className="wizard-panel">
-            <div className="ops-mode-block ops-mode-step1">
-              <h3 className="subsection-title">{t('opsModeTitle')}</h3>
-              <p className="wizard-panel-hint">{t('opsModeHint')}</p>
-              <div className="mode-buttons">
-                <button
-                  type="button"
-                  className={`mode-btn ${opsMode === 'random' ? 'active' : ''}`}
-                  onClick={() => {
-                    setOpsMode('random');
-                    updateProgress({ practiceOpsMode: 'random' });
-                  }}
-                >
-                  <span className="mode-name">{t('opsRandom')}</span>
-                  <span className="mode-desc">{t('opsRandomDesc')}</span>
-                </button>
-                <button
-                  type="button"
-                  className={`mode-btn ${opsMode === 'focus' ? 'active' : ''}`}
-                  onClick={() => {
-                    setOpsMode('focus');
-                    updateProgress({ practiceOpsMode: 'focus' });
-                  }}
-                >
-                  <span className="mode-name">{t('opsFocus')}</span>
-                  <span className="mode-desc">{t('opsFocusDesc')}</span>
-                </button>
-              </div>
-              {opsMode === 'focus' && (
-                <div className="focus-ops-row">
-                  {(
-                    [
-                      ['add', t('opAdd')],
-                      ['sub', t('opSub')],
-                      ['mul', t('opMul')],
-                      ['div', t('opDiv')],
-                    ] as const
-                  ).map(([id, label]) => {
-                    const on = focusOps.includes(id);
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        className={`focus-op-chip ${on ? 'active' : ''}`}
-                        onClick={() => {
-                          let next = on
-                            ? focusOps.filter((x) => x !== id)
-                            : [...focusOps, id];
-                          if (next.length === 0) next = [id];
-                          setFocusOps(next);
-                          updateProgress({
-                            focusOps: next,
-                            practiceOpsMode: 'focus',
-                          });
-                        }}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
             <h2 className="wizard-panel-title">{t('levelTitle')}</h2>
             <p className="wizard-panel-hint">{t('levelHint')}</p>
             <div className="level-list compact-levels">
@@ -368,8 +305,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             {playKind === 'latihan' && (
               <div className="ops-mode-block">
                 <h3 className="subsection-title">{t('opsModeTitle')}</h3>
-                <p className="wizard-panel-hint">{t('opsModeHint')}</p>
-                <div className="mode-buttons">
+                <div className="mode-buttons mode-buttons-compact">
                   <button
                     type="button"
                     className={`mode-btn ${opsMode === 'random' ? 'active' : ''}`}

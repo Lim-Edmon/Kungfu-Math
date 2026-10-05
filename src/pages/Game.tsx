@@ -866,9 +866,9 @@ export default function Game({
             </button>
             <div className="hud-right-row">
               <span className="hud-score">{state.score}</span>
-              {state.combo >= 1 && (
+              {state.combo >= 2 && (
                 <span className="hud-combo" aria-live="polite">
-                  COMBO ×{state.combo}
+                  ×{state.combo}
                 </span>
               )}
               <button
@@ -925,8 +925,8 @@ export default function Game({
             aria-hidden
           />
           {state.combo >= 2 && state.status === 'playing' && (
-            <div className="combo-float" key={`c-${state.combo}-${state.questionsSolved}`}>
-              {t('comboLabel')} ×{state.combo}
+            <div className="combo-float" key={`c-${state.combo}-${state.questionsSolved}`} aria-hidden>
+              ×{state.combo}
             </div>
           )}
           {state.numbers.map((num, index) => {
