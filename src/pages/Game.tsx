@@ -864,8 +864,10 @@ export default function Game({
             </button>
             <div className="hud-right-row">
               <span className="hud-score">{state.score}</span>
-              {state.combo > 1 && (
-                <span className="hud-combo">x{state.combo}</span>
+              {state.combo >= 1 && (
+                <span className="hud-combo" aria-live="polite">
+                  x{state.combo}
+                </span>
               )}
               <button
                 type="button"

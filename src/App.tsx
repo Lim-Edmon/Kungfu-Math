@@ -37,6 +37,7 @@ import {
   updateProgress,
 } from './lib/storage';
 import {
+  ADVENTURE_CITIES,
   getCityById,
   getNextCityId,
   getAdventureDifficulty,
@@ -45,6 +46,11 @@ import {
   MVP_REGION_UNLOCK_MSG,
 } from './lib/adventure';
 import { setLang, detectLangFromDevice, t, getLang } from './lib/i18n';
+import {
+  nextDailyStreak,
+  evaluateNewBadges,
+  getBadgeDef,
+} from './lib/badges';
 import './styles/theme.css';
 import './App.css';
 
@@ -127,6 +133,11 @@ function App() {
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
+  const [newBadges, setNewBadges] = useState<string[]>([]);
+  const [lastMaxCombo, setLastMaxCombo] = useState(0);
+  const [forceOps, setForceOps] = useState<
+    Array<'add' | 'sub' | 'mul' | 'div'> | undefined
+  >(undefined);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
   const [selectedLevel, setSelectedLevel] =
@@ -191,7 +202,8 @@ function App() {
     level: DifficultyLevel,
     arena: ArenaStyle = 'static',
     kind: PlayKind = 'latihan',
-    diffId: string = 'normal'
+    diffId: string = 'normal',
+    opsForce?: Array<'add' | 'sub' | 'mul' | 'div'>
   ) => {
     setSelectedMode(mode);
     setSelectedArena(arena);
@@ -199,6 +211,7 @@ function App() {
     setSelectedLevel(level);
     setPlayKind(kind);
     setAdventureDiffId(diffId || 'normal');
+    setForceOps(kind === 'latihan' ? opsForce : undefined);
     setScreen('game');
   };
 
@@ -221,7 +234,11 @@ function App() {
     setScreen('home');
   };
 
-  const handleFinishGame = (score: number, grade: string) => {
+  const handleFinishGame = (
+    score: number,
+    grade: string,
+    runMeta?: { maxCombo: number; perfect: boolean }
+  ) => {
     const prog0 = loadProgress();
     const meta = {
       playerName: prog0.playerName,
@@ -243,17 +260,23 @@ function App() {
     setFunFact(null);
     setFunFactOpen(false);
     setJourneyEndOpen(false);
+    setNewBadges([]);
+
+    const maxCombo = runMeta?.maxCombo ?? 0;
+    setLastMaxCombo(maxCombo);
+    const perfect = !!runMeta?.perfect;
+    let passed = false;
+    let nextId: string | null = null;
+    let cityId = prog0.adventureCityId || 'jakarta';
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
-      const cityId = prog.adventureCityId || 'jakarta';
+      cityId = prog.adventureCityId || 'jakarta';
       setLastCityId(cityId);
       const city = getCityById(cityId);
       recordAdventureScore(cityId, score, meta);
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
-      let nextId: string | null = null;
-      let passed = false;
       if (score >= city.targetScore) {
         passed = true;
         nextId = getNextCityId(cityId);
@@ -266,19 +289,60 @@ function App() {
       setNextCityId(nextId);
       const fact = passed ? pickCityFunFact(cityId) : null;
       setFunFact(fact);
-      // Fun fact popup: manual close — biar anak sempat baca
-      // Ujung jalur: popup khusus (bukan fun fact biasa)
       const atEnd = passed && !nextId;
       setFunFactOpen(!!fact && !atEnd);
       setJourneyEndOpen(atEnd);
     }
 
+    // Streak + combo + perfect-city + badges
+    const progA = loadProgress();
+    const streakInfo = nextDailyStreak(progA.lastPlayDate, progA.dailyStreak || 0);
+    const maxComboPractice =
+      playKind === 'latihan'
+        ? Math.max(progA.maxComboPractice || 0, maxCombo)
+        : progA.maxComboPractice || 0;
+    const maxComboAdventure =
+      playKind === 'petualangan'
+        ? Math.max(progA.maxComboAdventure || 0, maxCombo)
+        : progA.maxComboAdventure || 0;
+    let perfectCityStreak = progA.perfectCityStreak || 0;
+    if (playKind === 'petualangan' && passed) {
+      perfectCityStreak = perfect ? perfectCityStreak + 1 : 0;
+    }
+    const clearedCityIds = ADVENTURE_CITIES.filter((c) => {
+      const hs = (loadProgress().adventureHighScores || {})[c.id] ?? 0;
+      return hs >= c.targetScore;
+    }).map((c) => c.id);
+    const citiesUnlocked = (loadProgress().adventureUnlocked || ['jakarta']).length;
+    const newly = evaluateNewBadges({
+      already: progA.badges || [],
+      totalGames: progA.totalGamesPlayed || 0,
+      dailyStreak: streakInfo.streak,
+      maxComboPractice,
+      maxComboAdventure,
+      citiesUnlocked,
+      perfectCityStreak,
+      runPerfect: perfect,
+      justClearedCityId: passed ? cityId : null,
+      clearedCityIds,
+    });
+    const badges = [...(progA.badges || []), ...newly];
+    updateProgress({
+      dailyStreak: streakInfo.streak,
+      lastPlayDate: streakInfo.lastPlayDate,
+      maxComboPractice,
+      maxComboAdventure,
+      perfectCityStreak,
+      badges,
+    });
+    if (newly.length) setNewBadges(newly);
+
     const willCelebrate =
       neu ||
-      (playKind === 'petualangan' &&
-        score >= getCityById(loadProgress().adventureCityId || 'jakarta').targetScore) ||
+      passed ||
       grade === 'S' ||
-      grade === 'A';
+      grade === 'A' ||
+      newly.length > 0;
     setCelebrateOpen(willCelebrate);
     setScreen('result');
   };
@@ -395,6 +459,7 @@ function App() {
                 : undefined
             }
             onExit={handleExitGame}
+            forceOps={forceOps}
             onFinish={handleFinishGame}
           />
         )}
@@ -503,6 +568,9 @@ function App() {
                   <strong>{t('score')} {lastScore}</strong>
                   <span> · {lastGrade}</span>
                 </p>
+                <p className="result-combo-note">
+                  {t('runMaxCombo')}: ×{lastMaxCombo}
+                </p>
                 {playKind === 'petualangan' && city && (
                   <p className="result-high">
                     {passedCity
@@ -532,6 +600,23 @@ function App() {
                         : ' · baru!'
                       : ''}
                   </p>
+                )}
+                {newBadges.length > 0 && (
+                  <div className="result-funfact result-badges-new">
+                    <p className="result-funfact-label">{t('newBadgesTitle')}</p>
+                    <ul className="badge-new-list">
+                      {newBadges.map((id) => {
+                        const b = getBadgeDef(id);
+                        if (!b) return null;
+                        const title = getLang() === 'en' ? b.titleEn : b.titleId;
+                        return (
+                          <li key={id}>
+                            {b.emoji} {title}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 )}
                 {passedCity &&
                   lastCityId === MVP_REGION_LAST_CITY_ID &&

@@ -1,2 +1,0 @@
-File di zip = path di project.
-unzip -o → npm run build → git add -A → commit → push

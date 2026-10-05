@@ -19,7 +19,7 @@ import {
 } from '../lib/adventure';
 import type { ScoreRecord } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
-import { getBadgeDef } from '../lib/badges';;
+import { getBadgeDef } from '../lib/badges';
 
 type DojoTab = 'level' | 'petualangan';
 
@@ -185,8 +185,9 @@ export default function Dojo() {
       </section>
 
 
-      <section className="dojo-stats-card">
-        <h2 className="dojo-section-title">{t('streakTitle')}</h2>
+      <section className="dojo-stats-card" aria-label="Streak combo badges">
+        <h2 className="dojo-stats-heading">{t('statsCardTitle')}</h2>
+        <h3 className="dojo-section-title">{t('streakTitle')}</h3>
         {(progress.dailyStreak || 0) > 0 ? (
           <p className="dojo-streak-line">
             🔥 <strong>{progress.dailyStreak}</strong> {t('streakDays')}
@@ -194,7 +195,7 @@ export default function Dojo() {
         ) : (
           <p className="settings-note">{t('streakNone')}</p>
         )}
-        <h2 className="dojo-section-title">{t('recordsTitle')}</h2>
+        <h3 className="dojo-section-title">{t('recordsTitle')}</h3>
         <ul className="dojo-record-list">
           <li>
             {t('maxComboPractice')}: <strong>×{progress.maxComboPractice || 0}</strong>
@@ -207,7 +208,7 @@ export default function Dojo() {
             <strong>{progress.perfectCityStreak || 0}</strong>
           </li>
         </ul>
-        <h2 className="dojo-section-title">{t('badgesTitle')}</h2>
+        <h3 className="dojo-section-title">{t('badgesTitle')}</h3>
         {(progress.badges || []).length === 0 ? (
           <p className="settings-note">{t('badgesEmpty')}</p>
         ) : (
