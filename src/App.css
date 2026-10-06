@@ -3103,3 +3103,26 @@ h1.home-title {
   font-weight: 500;
   color: var(--color-muted, #888);
 }
+
+.dojo-collapse-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+.dojo-collapse-hint {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-muted, #888);
+  white-space: nowrap;
+}
+.app-version-line {
+  margin-top: 1.25rem;
+  margin-bottom: 0.25rem;
+  text-align: center;
+  opacity: 0.75;
+  font-size: 0.8rem;
+}

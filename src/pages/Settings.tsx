@@ -8,7 +8,7 @@ import {
   importProgress,
   clearAllGameData,
 } from '../lib/storage';
-import { TRAKTEER_URL, APP_URL, buildInviteText } from '../lib/constants';
+import { TRAKTEER_URL, buildInviteText } from '../lib/constants';
 import { t, getLang, setLang, type Lang } from '../lib/i18n';
 
 interface SettingsProps {
@@ -129,7 +129,6 @@ ${t('waProgressSuffix')}`
         await navigator.share({
           title: 'Kungfu Math',
           text,
-          url: APP_URL,
         });
         setMessage(t('msgShareOk'));
         return;
@@ -167,9 +166,6 @@ ${t('waProgressSuffix')}`
       <header className="settings-header">
         <h1>{t('settingsTitle')}</h1>
       </header>
-      <p className="settings-note app-version-line">{t('appVersionLabel')}: 0.1.7</p>
-
-
       {/* 1. Privasi */}
       <section className="settings-section">
         <h2>{t('settingsPrivacy')}</h2>
@@ -329,6 +325,7 @@ ${t('waProgressSuffix')}`
       </section>
 
       {message && <p className="settings-message">{message}</p>}
+      <p className="settings-note app-version-line">{t('appVersionLabel')}: 0.1.7</p>
     </div>
   );
 }

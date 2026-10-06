@@ -15,7 +15,7 @@ import {
   getCountryNameEn,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
-import { LEVELS } from '../lib/levels';
+import { LEVELS, getLevelById } from '../lib/levels';
 import { loadProgress, updateProgress } from '../lib/storage';
 import {
   getCharactersByMode,
@@ -302,7 +302,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               </button>
             </div>
 
-            {playKind === 'latihan' && (
+            {playKind === 'latihan' && level && getLevelById(level).operations.length > 1 && (
               <div className="ops-mode-block">
                 <h3 className="subsection-title">{t('opsModeTitle')}</h3>
                 <div className="mode-buttons mode-buttons-compact">
@@ -338,26 +338,37 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                         ['mul', t('opMul')],
                         ['div', t('opDiv')],
                       ] as const
-                    ).map(([id, label]) => {
-                      const on = focusOps.includes(id);
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          className={`focus-op-chip ${on ? 'active' : ''}`}
-                          onClick={() => {
-                            let next = on
-                              ? focusOps.filter((x) => x !== id)
-                              : [...focusOps, id];
-                            if (next.length === 0) next = [id];
-                            setFocusOps(next);
-                            updateProgress({ focusOps: next, practiceOpsMode: 'focus' });
-                          }}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
+                    )
+                      .filter(([id]) =>
+                        (getLevelById(level).operations as string[]).includes(id)
+                      )
+                      .map(([id, label]) => {
+                        const on = focusOps.includes(id);
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            className={`focus-op-chip ${on ? 'active' : ''}`}
+                            onClick={() => {
+                              const allowed = getLevelById(level).operations as Array<
+                                'add' | 'sub' | 'mul' | 'div'
+                              >;
+                              let next = on
+                                ? focusOps.filter((x) => x !== id)
+                                : [...focusOps, id];
+                              next = next.filter((x) => allowed.includes(x));
+                              if (next.length === 0) next = [id];
+                              setFocusOps(next);
+                              updateProgress({
+                                focusOps: next,
+                                practiceOpsMode: 'focus',
+                              });
+                            }}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
                   </div>
                 )}
               </div>
@@ -666,8 +677,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                   playKind === 'petualangan'
                     ? adventureDiffId || undefined
                     : undefined,
-                  playKind === 'latihan' && opsMode === 'focus'
-                    ? focusOps
+                  playKind === 'latihan' &&
+                  opsMode === 'focus' &&
+                  level &&
+                  getLevelById(level).operations.length > 1
+                    ? focusOps.filter((op) =>
+                        (getLevelById(level).operations as string[]).includes(op)
+                      )
                     : undefined
                 );
               }}

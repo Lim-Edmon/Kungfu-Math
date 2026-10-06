@@ -220,10 +220,12 @@ export default function Dojo() {
           onClick={() => setBadgesOpen((v) => !v)}
           aria-expanded={badgesOpen}
         >
-          <h3 className="dojo-section-title">
-            {t('badgesTitle')}
+          <h3 className="dojo-section-title dojo-collapse-row">
+            <span>{t('badgesTitle')}</span>
             <span className="dojo-collapse-hint">
               {badgesOpen ? t('badgesToggleHide') : t('badgesToggle')}
+              {' '}
+              {badgesOpen ? '▴' : '▾'}
             </span>
           </h3>
         </button>
