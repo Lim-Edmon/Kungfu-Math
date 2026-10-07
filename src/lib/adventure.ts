@@ -201,8 +201,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Jakarta is Indonesia’s capital and the country’s largest city.',
       'Jakarta’s old town, Kota Tua, still has colonial-era buildings.'
     ],
-    mapX: 76.9,
-    mapY: 58.4,
+    mapX: 79.3,
+    mapY: 66.95,
   },
   {
     id: 'bandung',
@@ -224,8 +224,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Gedung Sate in Bandung is a famous landmark with a skewer-shaped tower.',
       'Bandung sits on a highland plateau, so evenings feel cooler.'
     ],
-    mapX: 77.23,
-    mapY: 58.95,
+    mapX: 79.51,
+    mapY: 67.38,
   },
   {
     id: 'semarang',
@@ -247,8 +247,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Lawang Sewu in Semarang is a historic building with many windows.',
       'Semarang’s old harbor area shows the city’s long trading history.'
     ],
-    mapX: 77.7,
-    mapY: 58.7,
+    mapX: 80.27,
+    mapY: 67.41,
   },
   {
     id: 'yogyakarta',
@@ -270,8 +270,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Yogyakarta Palace (Kraton) is still the heart of local culture.',
       'Malioboro Street in Yogyakarta is a popular walking and shopping area.'
     ],
-    mapX: 77.7,
-    mapY: 59.4,
+    mapX: 80.25,
+    mapY: 67.92,
   },
   {
     id: 'solo',
@@ -293,8 +293,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Mangkunegaran Palace in Solo is an important cultural center.',
       'Solo and Yogyakarta are neighboring royal cities on Java.'
     ],
-    mapX: 77.8,
-    mapY: 59.23,
+    mapX: 80.37,
+    mapY: 67.77,
   },
   {
     id: 'surabaya',
@@ -316,8 +316,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Suramadu Bridge links Surabaya with Madura Island.',
       'Tugu Pahlawan in Surabaya honors the city’s independence struggle.'
     ],
-    mapX: 78.2,
-    mapY: 59.03,
+    mapX: 80.9,
+    mapY: 67.58,
   },
   // —— Sumatera ——
   {
@@ -340,8 +340,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Lake Toba near Medan was formed by a supervolcano about 74,000 years ago.',
       'Samosir Island near Medan, in Lake Toba, is nearly as large as Singapore.'
     ],
-    mapX: 75.28,
-    mapY: 55.28,
+    mapX: 77.09,
+    mapY: 60.96,
   },
   // —— Kalimantan ——
   {
@@ -364,8 +364,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Green turtles often nest on Derawan’s beaches.',
       'The Derawan islands are part of the world’s Coral Triangle.'
     ],
-    mapX: 79.34,
-    mapY: 56.09,
+    mapX: 82.37,
+    mapY: 61.77,
   },
   // —— Sulawesi ——
   {
@@ -388,8 +388,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Losari Beach is a popular waterfront in Makassar.',
       'Makassar has long been a major port of eastern Indonesia.'
     ],
-    mapX: 79.58,
-    mapY: 57.72,
+    mapX: 82.7,
+    mapY: 66.3,
   },
   {
     id: 'manado',
@@ -411,8 +411,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Manado sits by a bay with hills and clear sea views.',
       'North Sulawesi near Manado is known for rich marine life.'
     ],
-    mapX: 80.71,
-    mapY: 53.59,
+    mapX: 84.16,
+    mapY: 62.26,
   },
   // —— Papua / pulau timur ——
   {
@@ -435,8 +435,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The limestone islands of Raja Ampat rise from bright turquoise water.',
       'Raja Ampat is part of West Papua’s spectacular seascape.'
     ],
-    mapX: 81.95,
-    mapY: 54.76,
+    mapX: 85.69,
+    mapY: 63.3,
   },
   {
     id: 'jayapura',
@@ -458,8 +458,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Yos Sudarso Bay frames the coastal city of Jayapura.',
       'Jayapura is a gateway to Papua’s highlands and coast.'
     ],
-    mapX: 83.99,
-    mapY: 56.09,
+    mapX: 88.44,
+    mapY: 64.7,
   },
   // —— Nusa Tenggara ——
   {
@@ -482,8 +482,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Kelimutu on Flores has crater lakes that change color.',
       'Flores is part of East Nusa Tenggara with dramatic volcanic landscapes.'
     ],
-    mapX: 79.93,
-    mapY: 59.84,
+    mapX: 83.3,
+    mapY: 68.55,
   },
   // —— Bali terakhir di Indonesia ——
   {
@@ -506,8 +506,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Tanah Lot and Uluwatu are famous sea temples in Bali.',
       'Balinese culture blends art, dance, and daily offerings.'
     ],
-    mapX: 78.71,
-    mapY: 59.9,
+    mapX: 81.56,
+    mapY: 68.44,
   },
 
   // —— Asia Tenggara (setelah lolos Bali) ——
@@ -532,8 +532,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Dili is the capital of Timor-Leste.',
       'Dili’s waterfront faces a calm tropical bay.'
     ],
-    mapX: 80.85,
-    mapY: 59.85,
+    mapX: 84.35,
+    mapY: 68.38,
   },
   {
     id: 'brunei',
@@ -555,8 +555,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Brunei is a small country on the island of Borneo.',
       'Much of Brunei is covered by rainforest.'
     ],
-    mapX: 78.65,
-    mapY: 51.46,
+    mapX: 81.48,
+    mapY: 60.17,
   },
   {
     id: 'cebu',
@@ -578,8 +578,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Magellan’s Cross in Cebu marks an early colonial landing site.',
       'Cebu’s harbor has long been a busy trading center.'
     ],
-    mapX: 80.51,
-    mapY: 48.09,
+    mapX: 83.9,
+    mapY: 56.86,
   },
   {
     id: 'manila',
@@ -601,8 +601,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Intramuros is the old walled city of Manila.',
       'Manila is one of the densest urban areas in Southeast Asia.'
     ],
-    mapX: 79.91,
-    mapY: 45.42,
+    mapX: 83.11,
+    mapY: 54.25,
   },
   {
     id: 'penang',
@@ -624,8 +624,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Penang is an island state on Malaysia’s northwest coast.',
       'Clan jetties in Penang show historic waterfront settlements.'
     ],
-    mapX: 75.62,
-    mapY: 51.14,
+    mapX: 77.54,
+    mapY: 59.86,
   },
   {
     id: 'kuala-lumpur',
@@ -647,8 +647,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Kuala Lumpur is the capital of Malaysia.',
       'KL is often used as a short name for Kuala Lumpur.'
     ],
-    mapX: 75.91,
-    mapY: 52.56,
+    mapX: 77.91,
+    mapY: 61.24,
   },
   {
     id: 'singapore',
@@ -670,8 +670,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Singapore is a city-state at the tip of the Malay Peninsula.',
       'The Merlion is a well-known symbol of Singapore.'
     ],
-    mapX: 76.35,
-    mapY: 53.67,
+    mapX: 78.48,
+    mapY: 62.34,
   },
   {
     id: 'phuket',
@@ -693,8 +693,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Limestone cliffs and clear water shape Phuket’s coast.',
       'Phuket Town has colorful old shophouses and markets.'
     ],
-    mapX: 75.22,
-    mapY: 49.61,
+    mapX: 77.02,
+    mapY: 58.35,
   },
   {
     id: 'ho-chi-minh',
@@ -716,8 +716,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Notre-Dame Cathedral is a landmark in Ho Chi Minh City.',
       'The city’s busy rivers and canals once shaped its trade.'
     ],
-    mapX: 76.93,
-    mapY: 47.77,
+    mapX: 79.24,
+    mapY: 56.56,
   },
   {
     id: 'bangkok',
@@ -739,8 +739,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Bangkok is the capital of Thailand.',
       'Bangkok’s grand palace complex draws visitors from around the world.'
     ],
-    mapX: 75.66,
-    mapY: 45.94,
+    mapX: 77.59,
+    mapY: 54.77,
   },
   {
     id: 'siem-reap',
@@ -762,8 +762,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Siem Reap is the gateway town to the Angkor temples in Cambodia.',
       'Sunrise over Angkor Wat near Siem Reap is a famous view.'
     ],
-    mapX: 76.35,
-    mapY: 46.19,
+    mapX: 78.49,
+    mapY: 55.0,
   },
   {
     id: 'phnom-penh',
@@ -785,8 +785,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Phnom Penh is the capital of Cambodia on the Mekong River.',
       'The Mekong and Tonle Sap rivers meet near Phnom Penh.'
     ],
-    mapX: 76.58,
-    mapY: 47.32,
+    mapX: 78.78,
+    mapY: 56.11,
   },
   {
     id: 'chiang-mai',
@@ -808,8 +808,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Chiang Mai’s old city is framed by a square moat and walls.',
       'Chiang Mai is a cultural center of northern Thailand.'
     ],
-    mapX: 75.35,
-    mapY: 42.81,
+    mapX: 77.18,
+    mapY: 51.7,
   },
   {
     id: 'luang-prabang',
@@ -831,8 +831,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Mekong and Nam Khan rivers meet at Luang Prabang.',
       'Morning alms-giving is a well-known tradition in Luang Prabang.'
     ],
-    mapX: 76.0,
-    mapY: 42.13,
+    mapX: 78.03,
+    mapY: 51.03,
   },
   {
     id: 'bagan',
@@ -854,8 +854,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Sunrise over the Bagan plain shows countless pagoda silhouettes.',
       'Hot-air balloons often fly over Bagan at dawn.'
     ],
-    mapX: 74.49,
-    mapY: 41.33,
+    mapX: 76.06,
+    mapY: 50.25,
   },
   {
     id: 'hanoi',
@@ -877,8 +877,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Hanoi is the capital of Vietnam.',
       'Hanoi’s Old Quarter has narrow streets and long trading history.'
     ],
-    mapX: 76.76,
-    mapY: 41.41,
+    mapX: 79.03,
+    mapY: 50.33,
   },
 ];
 
