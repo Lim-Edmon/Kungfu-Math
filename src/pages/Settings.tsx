@@ -325,7 +325,7 @@ ${t('waProgressSuffix')}`
       </section>
 
       {message && <p className="settings-message">{message}</p>}
-      <p className="settings-note app-version-line">{t('appVersionLabel')}: 0.1.7</p>
+      <p className="settings-note app-version-line">{t('appVersionLabel')}: 0.1.9</p>
     </div>
   );
 }

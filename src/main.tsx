@@ -25,11 +25,39 @@ function hideBootSplash() {
 // Biarkan splash (logo + judul + ©) sempat terbaca
 window.setTimeout(hideBootSplash, 600);
 
-/** Daftarkan Service Worker (PWA) */
+/**
+ * Service Worker (PWA):
+ * - Cek update saat buka app
+ * - Versi baru aktif → hapus cache lama (di sw.js) + reload sekali
+ * User tidak perlu "Clear site data" manual untuk aset baru (peta, dll.)
+ */
 if ('serviceWorker' in navigator) {
+  let reloading = false;
+  const reloadOnce = () => {
+    if (reloading) return;
+    reloading = true;
+    window.location.reload();
+  };
+
+  navigator.serviceWorker.addEventListener('controllerchange', reloadOnce);
+  navigator.serviceWorker.addEventListener('message', (ev) => {
+    if (ev.data && ev.data.type === 'SW_ACTIVATED') reloadOnce();
+  });
+
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((err) => {
-      console.warn('SW gagal didaftarkan:', err);
-    });
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((reg) => {
+        reg.update().catch(() => {});
+        // Cek update lagi saat tab kembali fokus
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            reg.update().catch(() => {});
+          }
+        });
+      })
+      .catch((err) => {
+        console.warn('SW gagal didaftarkan:', err);
+      });
   });
 }
