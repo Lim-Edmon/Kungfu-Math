@@ -68,7 +68,7 @@ interface AdventureMapProps {
   onTravelDone?: () => void;
 }
 
-const MAP_ASPECT = 2800 / 1527; // world.webp aspect
+const MAP_ASPECT = 5760 / 2880; // world.webp aspect (full world 2:1)
 
 type ViewBox = { minX: number; minY: number; vbW: number; vbH: number };
 

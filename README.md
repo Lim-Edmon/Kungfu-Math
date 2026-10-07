@@ -1,11 +1,11 @@
 # Kungfu Math
 
 Game arcade edukasi matematika untuk anak (dan dewasa).  
-Latihan hitung cepat dengan gaya pendekar China kuno versi imut — mode **Slice** (geser) dan **Tap** (tekan).
+Latihan hitung cepat dengan gaya pendekar kuno versi imut — mode **Slice** (geser) dan **Tap** (tekan).
 
-**Main online:** [https://kungfu-math.vercel.app/](https://kungfu-math.vercel.app/)
+**Main online:** [https://kungfu-math.vercel.app/]
 
-Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di perangkat.
+Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di lokal perangkat.
 
 ## Cara menjalankan (lokal / Codespaces)
 

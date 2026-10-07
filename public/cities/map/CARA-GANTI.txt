@@ -1,21 +1,19 @@
 Peta & pesawat
 ==============
-- world.webp  = gambar peta
+- world.webp  = gambar peta (5760x2880, aspect 2:1) — ganti file ini saja
+- world.jpg   = cadangan resolusi sama (opsional)
 - plane.png   = pesawat top-view, moncong default KE ATAS
 
 Atur koordinat pin (dev)
 ========================
 URL:
-  ?mapdebug=1              → semua kota, zoom longgar, hanya titik + nama (kecil)
-  ?mapdebug=1&mapzoom=2    → lebih zoom OUT (angka besar = lebih jauh)
-  ?mapdebug=1&mapzoom=0.6  → lebih zoom IN
+  ?mapdebug=1
+  ?mapdebug=1&mapfocus=jakarta&mapzoom=0.4
+  ?mapdebug=1&mapzoom=2
 
-Contoh:
-  http://localhost:5173/?mapdebug=1
-  http://localhost:5173/?mapdebug=1&mapzoom=1.5
-
-Edit mapX / mapY di src/lib/adventure.ts
+Klik peta → panel mapX / mapY (0–100, absolut di gambar penuh)
   mapX lebih besar = kanan (timur)
   mapY lebih besar = bawah (selatan)
 
-Hapus query string jika sudah pas.
+Edit field mapX/mapY di src/lib/adventure.ts
+Setelah ganti file peta, koordinat lama biasanya harus di-mapping ulang.
