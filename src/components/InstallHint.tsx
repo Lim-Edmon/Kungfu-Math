@@ -3,13 +3,34 @@
 import { useEffect, useState } from 'react';
 import { t } from '../lib/i18n';
 
+const HIDE_KEY = 'km_install_hint_hide';
+
+function isStandaloneDisplay(): boolean {
+  try {
+    if (window.matchMedia('(display-mode: standalone)').matches) return true;
+    if (window.matchMedia('(display-mode: fullscreen)').matches) return true;
+    if (window.matchMedia('(display-mode: minimal-ui)').matches) return true;
+    const nav = window.navigator as Navigator & { standalone?: boolean };
+    if (nav.standalone === true) return true;
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
+/**
+ * Hanya tampil jika browser benar-benar menawarkan install (beforeinstallprompt).
+ * - Sudah PWA / standalone → sembunyi
+ * - User pilih Nanti / sudah install → sembunyi (localStorage)
+ * - Tanpa event install (iOS, dll.) → tidak spam “cara pasang”
+ */
 export default function InstallHint() {
   const [deferred, setDeferred] = useState<{
     prompt: () => Promise<void>;
   } | null>(null);
   const [hidden, setHidden] = useState(() => {
     try {
-      return localStorage.getItem('km_install_hint_hide') === '1';
+      return localStorage.getItem(HIDE_KEY) === '1';
     } catch {
       return false;
     }
@@ -17,15 +38,11 @@ export default function InstallHint() {
   const [standalone, setStandalone] = useState(false);
 
   useEffect(() => {
-    try {
-      const sw =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-          true;
-      setStandalone(!!sw);
-    } catch {
-      /* ignore */
-    }
+    setStandalone(isStandaloneDisplay());
+
+    const mq = window.matchMedia?.('(display-mode: standalone)');
+    const onMq = () => setStandalone(isStandaloneDisplay());
+    mq?.addEventListener?.('change', onMq);
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -36,28 +53,43 @@ export default function InstallHint() {
       setDeferred({
         prompt: async () => {
           await ev.prompt();
-          const choice = await ev.userChoice;
-          if (choice.outcome === 'accepted') {
-            setHidden(true);
-            try {
-              localStorage.setItem('km_install_hint_hide', '1');
-            } catch {
-              /* ignore */
+          try {
+            const choice = await ev.userChoice;
+            if (choice.outcome === 'accepted') {
+              setHidden(true);
+              localStorage.setItem(HIDE_KEY, '1');
             }
+          } catch {
+            /* ignore */
           }
         },
       });
     };
+
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+
+    window.addEventListener('appinstalled', () => {
+      setHidden(true);
+      setDeferred(null);
+      try {
+        localStorage.setItem(HIDE_KEY, '1');
+      } catch {
+        /* ignore */
+      }
+    });
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      mq?.removeEventListener?.('change', onMq);
+    };
   }, []);
 
-  if (hidden || standalone) return null;
+  if (hidden || standalone || !deferred) return null;
 
   const dismiss = () => {
     setHidden(true);
     try {
-      localStorage.setItem('km_install_hint_hide', '1');
+      localStorage.setItem(HIDE_KEY, '1');
     } catch {
       /* ignore */
     }
@@ -67,19 +99,13 @@ export default function InstallHint() {
     <div className="install-hint">
       <p>{t('installTitle')}</p>
       <div className="install-hint-actions">
-        {deferred ? (
-          <button type="button" className="btn-primary" onClick={() => deferred.prompt()}>
-            {t('installBtn')}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => alert(t('installAlert'))}
-          >
-            {t('installHow')}
-          </button>
-        )}
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => deferred.prompt()}
+        >
+          {t('installBtn')}
+        </button>
         <button type="button" className="btn-ghost" onClick={dismiss}>
           {t('installLater')}
         </button>
