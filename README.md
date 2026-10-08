@@ -110,7 +110,9 @@ Untuk mengatur pin koordinat dan cek file BG/musik **tanpa main**:
 
 Alias: `?advdebug=1` sama dengan `mapdebug=1`.
 
-Tombol **Mulai bermain** dinonaktifkan di mode ini.
+Tombol **Mulai bermain** / Back / Next disembunyikan. Di bawah ada **Selesai debug — kembali bermain** (konfirmasi dulu).
+
+Urutan layar debug: peta → pilih kota → status aset → tombol keluar debug.
 
 Catatan singkat juga di: `public/cities/CARA-DEBUG-PETA.txt`
 

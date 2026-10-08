@@ -142,6 +142,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     Record<string, { bg: boolean; music: boolean; bgPath: string; musicPath: string }>
   >({});
   const [assetAuditDone, setAssetAuditDone] = useState(false);
+  const [exitDebugConfirm, setExitDebugConfirm] = useState(false);
 
   useEffect(() => {
     if (initialPlayKind) {
@@ -334,23 +335,25 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
         </div>
       </header>
 
-      <div className="wizard-progress" aria-label="Langkah">
-        {([1, 2, 3, 4] as WizardStep[]).map((s) => {
-          const reach = canReachStep(s);
-          return (
-            <button
-              key={s}
-              type="button"
-              className={`wizard-dot ${step === s ? 'active' : ''} ${step > s ? 'done' : ''} ${!reach ? 'locked' : ''}`}
-              disabled={!reach}
-              onClick={() => {
-                if (reach) setStep(s);
-              }}
-              aria-label={`Langkah ${s}`}
-            />
-          );
-        })}
-      </div>
+      {!mapDebug && (
+        <div className="wizard-progress" aria-label="Langkah">
+          {([1, 2, 3, 4] as WizardStep[]).map((s) => {
+            const reach = canReachStep(s);
+            return (
+              <button
+                key={s}
+                type="button"
+                className={`wizard-dot ${step === s ? 'active' : ''} ${step > s ? 'done' : ''} ${!reach ? 'locked' : ''}`}
+                disabled={!reach}
+                onClick={() => {
+                  if (reach) setStep(s);
+                }}
+                aria-label={`Langkah ${s}`}
+              />
+            );
+          })}
+        </div>
+      )}
 
       <div className="wizard-body">
         {step === 1 && (
@@ -376,7 +379,189 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
 
-        {step === 2 && (
+        {step === 2 && mapDebug && (
+          <section className="wizard-panel map-debug-panel">
+            <div className="map-debug-banner" role="status">
+              <strong>{t('mapDebugTitle')}</strong>
+              {' — '}
+              {t('mapDebugBanner')}
+              <div className="map-debug-banner-hint">{t('mapDebugUrlHint')}</div>
+            </div>
+
+            {(() => {
+              const unlocked = allCityIds;
+              const wonIds: string[] = [];
+              return (
+                <AdventureMap
+                  unlockedIds={unlocked}
+                  wonIds={wonIds}
+                  activeId={cityId}
+                  travelFromId={null}
+                  travelToId={null}
+                  onSelect={(id) => {
+                    if (id === cityId) return;
+                    setCityId(id);
+                  }}
+                />
+              );
+            })()}
+
+            <h3 className="subsection-title">{t('pickCity')}</h3>
+            <div className="city-region-stack">
+              {ADVENTURE_REGIONS.map((reg) => {
+                const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
+                if (cities.length === 0) return null;
+                const open =
+                  openHomeRegions[reg.id] !== undefined
+                    ? !!openHomeRegions[reg.id]
+                    : true;
+                const label = getLang() === 'en' ? reg.labelEn : reg.labelId;
+                return (
+                  <div key={reg.id} className="city-region-block dojo-region">
+                    <button
+                      type="button"
+                      className="dojo-region-head city-region-label"
+                      aria-expanded={open}
+                      onClick={() =>
+                        setOpenHomeRegions((prev) => ({
+                          ...prev,
+                          [reg.id]: !open,
+                        }))
+                      }
+                    >
+                      <span>
+                        {open ? '▾' : '▸'} {label}
+                      </span>
+                    </button>
+                    {open && (
+                      <div className="city-chip-row" role="list">
+                        {cities.map((c) => {
+                          const country =
+                            getLang() === 'en'
+                              ? getCountryNameEn(c.countryId)
+                              : getCountryNameId(c.countryId);
+                          const order =
+                            ADVENTURE_CITIES.findIndex((x) => x.id === c.id) + 1;
+                          return (
+                            <button
+                              type="button"
+                              key={c.id}
+                              role="listitem"
+                              className={`city-chip ${cityId === c.id ? 'active' : ''}`}
+                              onClick={() => setCityId(c.id)}
+                            >
+                              <span className="city-chip-name">
+                                {order}.{' '}
+                                {getLang() === 'en' ? c.nameEn : c.nameId}
+                              </span>
+                              <span className="city-chip-country">{country}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="map-debug-assets">
+              <h4 className="subsection-title">{t('mapDebugAssetsTitle')}</h4>
+              <p className="wizard-panel-hint">
+                {assetAuditDone ? t('mapDebugAssetsDone') : t('mapDebugAssetsScanning')}
+              </p>
+              <div className="map-debug-asset-list">
+                {ADVENTURE_CITIES.map((c) => {
+                  const a = assetAudit[c.id];
+                  const sel = c.id === cityId;
+                  return (
+                    <button
+                      type="button"
+                      key={c.id}
+                      className={`map-debug-asset-row${sel ? ' is-active' : ''}`}
+                      onClick={() => setCityId(c.id)}
+                    >
+                      <span className="map-debug-asset-name">{c.nameId}</span>
+                      <span
+                        className={a?.bg ? 'map-debug-ok' : 'map-debug-miss'}
+                        title={a?.bgPath || 'bg'}
+                      >
+                        BG {a ? (a.bg ? '✓' : '✗') : '…'}
+                      </span>
+                      <span
+                        className={a?.music ? 'map-debug-ok' : 'map-debug-miss'}
+                        title={a?.musicPath || 'mp3'}
+                      >
+                        {getLang() === 'en' ? 'Music' : 'Musik'}{' '}
+                        {a ? (a.music ? '✓' : '✗') : '…'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {assetAuditDone && (
+                <p className="wizard-panel-hint">
+                  {t('mapDebugMissingBg')}:{' '}
+                  {ADVENTURE_CITIES.filter((c) => !assetAudit[c.id]?.bg)
+                    .map((c) => c.id)
+                    .join(', ') || '—'}
+                  <br />
+                  {t('mapDebugMissingMusic')}:{' '}
+                  {ADVENTURE_CITIES.filter((c) => !assetAudit[c.id]?.music)
+                    .map((c) => c.id)
+                    .join(', ') || '—'}
+                </p>
+              )}
+            </div>
+
+            <div className="map-debug-exit-wrap">
+              {!exitDebugConfirm ? (
+                <button
+                  type="button"
+                  className="btn-primary map-debug-exit-btn"
+                  onClick={() => setExitDebugConfirm(true)}
+                >
+                  {t('mapDebugExit')}
+                </button>
+              ) : (
+                <div className="map-debug-exit-confirm" role="alertdialog" aria-modal="true">
+                  <p>{t('mapDebugExitConfirm')}</p>
+                  <div className="map-debug-exit-confirm-actions">
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setExitDebugConfirm(false)}
+                    >
+                      {t('mapDebugExitNo')}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      onClick={() => {
+                        try {
+                          const u = new URL(window.location.href);
+                          u.searchParams.delete('mapdebug');
+                          u.searchParams.delete('advdebug');
+                          u.searchParams.delete('mapfocus');
+                          u.searchParams.delete('mapzoom');
+                          u.searchParams.delete('mapcenter');
+                          window.location.href =
+                            u.pathname + (u.search || '') + u.hash;
+                        } catch {
+                          window.location.href = '/';
+                        }
+                      }}
+                    >
+                      {t('mapDebugExitYes')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {step === 2 && !mapDebug && (
           <section className="wizard-panel">
             <div className="mode-buttons">
               <button
@@ -492,110 +677,30 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 <h3 className="subsection-title">{t('pickCity')}</h3>
                 {(() => {
                   const prog = loadProgress();
-                  const unlocked = mapDebug
-                    ? allCityIds
-                    : prog.adventureUnlocked || ['jakarta'];
-                  const wonIds = mapDebug
-                    ? []
-                    : ADVENTURE_CITIES.filter((c) => {
-                        const hs = prog.adventureHighScores?.[c.id] ?? 0;
-                        return hs >= c.targetScore;
-                      }).map((c) => c.id);
+                  const unlocked = prog.adventureUnlocked || ['jakarta'];
+                  const wonIds = ADVENTURE_CITIES.filter((c) => {
+                    const hs = prog.adventureHighScores?.[c.id] ?? 0;
+                    return hs >= c.targetScore;
+                  }).map((c) => c.id);
                   return (
-                    <>
-                      {mapDebug && (
-                        <div className="map-debug-banner" role="status">
-                          <strong>Mode debug peta</strong>
-                          {' — '}semua kota terbuka · klik kota = zoom · klik peta = koordinat · tidak bisa main
-                          <div className="map-debug-banner-hint">
-                            URL: <code>?mapdebug=1</code>
-                            {' · '}
-                            zoom: <code>&amp;mapzoom=0.4</code> (kecil = lebih dekat)
-                          </div>
-                        </div>
-                      )}
-                      <AdventureMap
-                        unlockedIds={unlocked}
-                        wonIds={wonIds}
-                        activeId={cityId}
-                        travelFromId={mapDebug ? null : travelFrom}
-                        travelToId={mapDebug ? null : travelTo}
-                        onTravelDone={() => {
-                          setTravelFrom(null);
-                          setTravelTo(null);
-                        }}
-                        onSelect={(id) => {
-                          if (id === cityId) return;
-                          if (mapDebug) {
-                            setCityId(id);
-                            return;
-                          }
-                          setTravelFrom(cityId);
-                          setTravelTo(id);
-                          setCityId(id);
-                          updateProgress({ adventureCityId: id });
-                        }}
-                      />
-                      {mapDebug && (
-                        <div className="map-debug-assets">
-                          <h4 className="subsection-title">Aset kota (BG / musik)</h4>
-                          <p className="wizard-panel-hint">
-                            {assetAuditDone
-                              ? 'Scan selesai. Hijau = ada file, merah = belum.'
-                              : 'Memindai file…'}
-                          </p>
-                          <div className="map-debug-asset-list">
-                            {ADVENTURE_CITIES.map((c) => {
-                              const a = assetAudit[c.id];
-                              const sel = c.id === cityId;
-                              return (
-                                <button
-                                  type="button"
-                                  key={c.id}
-                                  className={`map-debug-asset-row${sel ? ' is-active' : ''}`}
-                                  onClick={() => setCityId(c.id)}
-                                >
-                                  <span className="map-debug-asset-name">
-                                    {c.nameId}
-                                  </span>
-                                  <span
-                                    className={
-                                      a?.bg ? 'map-debug-ok' : 'map-debug-miss'
-                                    }
-                                    title={a?.bgPath || 'bg'}
-                                  >
-                                    BG {a ? (a.bg ? '✓' : '✗') : '…'}
-                                  </span>
-                                  <span
-                                    className={
-                                      a?.music ? 'map-debug-ok' : 'map-debug-miss'
-                                    }
-                                    title={a?.musicPath || 'mp3'}
-                                  >
-                                    Musik {a ? (a.music ? '✓' : '✗') : '…'}
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {assetAuditDone && (
-                            <p className="wizard-panel-hint">
-                              Kurang BG:{' '}
-                              {ADVENTURE_CITIES.filter((c) => !assetAudit[c.id]?.bg)
-                                .map((c) => c.id)
-                                .join(', ') || '—'}
-                              <br />
-                              Kurang musik:{' '}
-                              {ADVENTURE_CITIES.filter(
-                                (c) => !assetAudit[c.id]?.music
-                              )
-                                .map((c) => c.id)
-                                .join(', ') || '—'}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </>
+                    <AdventureMap
+                      unlockedIds={unlocked}
+                      wonIds={wonIds}
+                      activeId={cityId}
+                      travelFromId={travelFrom}
+                      travelToId={travelTo}
+                      onTravelDone={() => {
+                        setTravelFrom(null);
+                        setTravelTo(null);
+                      }}
+                      onSelect={(id) => {
+                        if (id === cityId) return;
+                        setTravelFrom(cityId);
+                        setTravelTo(id);
+                        setCityId(id);
+                        updateProgress({ adventureCityId: id });
+                      }}
+                    />
                   );
                 })()}
                 <div className="city-region-stack">
@@ -636,7 +741,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                 ? prog.adventureUnlocked
                                 : ['jakarta'];
                               const unlocked =
-                                mapDebug ||
                                 c.id === 'jakarta' ||
                                 unlockedList.includes(c.id);
                               const country =
@@ -651,14 +755,10 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                   type="button"
                                   key={c.id}
                                   role="listitem"
-                                  className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked && !mapDebug ? 'disabled' : ''}`}
-                                  disabled={!unlocked && !mapDebug}
+                                  className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
+                                  disabled={!unlocked}
                                   onClick={() => {
-                                    if (!unlocked && !mapDebug) return;
-                                    if (mapDebug) {
-                                      setCityId(c.id);
-                                      return;
-                                    }
+                                    if (!unlocked) return;
                                     if (c.id !== cityId) {
                                       setTravelFrom(cityId);
                                       setTravelTo(c.id);
@@ -813,6 +913,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
         )}
       </div>
 
+      {!mapDebug && (
       <div className="wizard-footer-bar">
         <div className="wizard-nav">
           {step > 1 && (
@@ -841,7 +942,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               type="button"
               className={`btn-primary btn-start ${!canStart || mapDebug ? 'disabled' : ''}`}
               disabled={!canStart || mapDebug}
-              title={mapDebug ? 'Mode debug peta — main dinonaktifkan' : undefined}
+              title={mapDebug ? t('mapDebugBanner') : undefined}
               onClick={() => {
                 if (mapDebug) return;
                 if (
@@ -877,6 +978,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           )}
         </div>
       </div>
+      )}
 
       <InstallHint />
     </div>

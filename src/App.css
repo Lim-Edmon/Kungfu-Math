@@ -3198,3 +3198,43 @@ h1.home-title {
   font-weight: 600;
   white-space: nowrap;
 }
+
+.map-debug-exit-wrap {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+}
+.map-debug-exit-btn {
+  width: 100%;
+  max-width: 28rem;
+}
+.map-debug-panel .adventure-map-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.map-debug-exit-confirm {
+  width: 100%;
+  max-width: 28rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #fff3e0;
+  border: 1px solid #ffb74d;
+  text-align: center;
+}
+.map-debug-exit-confirm p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #5d4037;
+  line-height: 1.4;
+}
+.map-debug-exit-confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.map-debug-exit-confirm-actions .btn-primary,
+.map-debug-exit-confirm-actions .btn-ghost {
+  min-width: 7rem;
+}
