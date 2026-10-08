@@ -388,23 +388,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               <div className="map-debug-banner-hint">{t('mapDebugUrlHint')}</div>
             </div>
 
-            {(() => {
-              const unlocked = allCityIds;
-              const wonIds: string[] = [];
-              return (
-                <AdventureMap
-                  unlockedIds={unlocked}
-                  wonIds={wonIds}
-                  activeId={cityId}
-                  travelFromId={null}
-                  travelToId={null}
-                  onSelect={(id) => {
-                    if (id === cityId) return;
-                    setCityId(id);
-                  }}
-                />
-              );
-            })()}
+            
 
             <h3 className="subsection-title">{t('pickCity')}</h3>
             <div className="city-region-stack">
@@ -465,7 +449,25 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               })}
             </div>
 
-            <div className="map-debug-assets">
+{(() => {
+              const unlocked = allCityIds;
+              const wonIds: string[] = [];
+              return (
+                <AdventureMap
+                  unlockedIds={unlocked}
+                  wonIds={wonIds}
+                  activeId={cityId}
+                  travelFromId={null}
+                  travelToId={null}
+                  onSelect={(id) => {
+                    if (id === cityId) return;
+                    setCityId(id);
+                  }}
+                />
+              );
+            })()}
+
+                        <div className="map-debug-assets">
               <h4 className="subsection-title">{t('mapDebugAssetsTitle')}</h4>
               <p className="wizard-panel-hint">
                 {assetAuditDone ? t('mapDebugAssetsDone') : t('mapDebugAssetsScanning')}
