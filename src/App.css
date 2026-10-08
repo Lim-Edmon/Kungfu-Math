@@ -3238,3 +3238,61 @@ h1.home-title {
 .map-debug-exit-confirm-actions .btn-ghost {
   min-width: 7rem;
 }
+
+.map-debug-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.map-debug-zoom-btn {
+  min-width: 2.25rem;
+  padding: 0.35rem 0.5rem;
+  font-weight: 700;
+}
+.map-debug-zoom-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+.map-debug-zoom-label input {
+  width: 4.2rem;
+  padding: 0.3rem 0.35rem;
+  border: 1px solid #bdbdbd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+.map-debug-meta {
+  font-size: 0.8rem;
+  margin: 0.25rem 0;
+}
+.map-debug-coord {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0.4rem 0;
+}
+.map-debug-snippet {
+  margin: 0;
+  padding: 0.55rem 0.65rem;
+  background: #263238;
+  color: #e0f7fa;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  overflow-x: auto;
+  white-space: pre;
+}
+.map-debug-copy {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+}
+.adventure-map-frame.is-debug {
+  user-select: none;
+}
+.adventure-map-frame.is-debug:active {
+  cursor: grabbing;
+}

@@ -93,9 +93,11 @@ Untuk mengatur pin koordinat dan cek file BG/musik **tanpa main**:
 
 3. **Klik chip kota** atau **pin di peta** → peta zoom ke kota itu (tanpa refresh, tanpa mulai game).
 
-4. **Klik di peta** (bukan pin) → panel `mapX` / `mapY` → salin ke `src/lib/adventure.ts`.
+4. **Klik di peta** (tanpa drag) → snippet `mapX` / `mapY` siap tempel ke `adventure.ts` (tombol salin).
 
-5. Panel **Aset kota** di bawah peta: hijau = file ada, merah = belum.  
+5. **Geser view**: tahan & tarik peta. **Zoom**: tombol + / − (±50%), ketik %, atau scroll mouse. **100%** = zoom standar permainan (>100% lebih dekat).
+
+6. Panel **Aset kota** di bawah peta: hijau = file ada, merah = belum.  
    - BG: `public/cities/bg/{id}.webp` (atau .png / .jpg)  
    - Musik: `public/cities/music/{id}.mp3`
 
