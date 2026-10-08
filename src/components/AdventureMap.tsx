@@ -1,9 +1,34 @@
+/** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ADVENTURE_CITIES } from '../lib/adventure';
+import { t as i18n } from '../lib/i18n';
+
 /**
- * Dev peta — buka: ?mapdebug=1
- *   · Klik kota = fokus
- *   · Klik peta = mapX/mapY (salin format adventure.ts)
- *   · Drag = geser view · scroll = zoom · tombol ±50% / ketik %
- *   · 100% = zoom standar permainan; >100% lebih dekat; <100% lebih jauh
+ * Dev peta — buka di browser (dev / production):
+ *
+ *   ?mapdebug=1
+ *     → semua kota, zoom longgar, klik peta = dapat mapX/mapY
+ *
+ *   ?mapdebug=1&mapzoom=2
+ *     → lebih zoom OUT (angka besar = lebih jauh)
+ *
+ *   ?mapdebug=1&mapzoom=0.5
+ *     → lebih zoom IN
+ *
+ *   ?mapdebug=1&mapfocus=derawan
+ *     → center zoom ke kota itu (id kecil, contoh: jakarta, derawan)
+ *
+ *   ?mapdebug=1&mapcenter=79.34,53.09&mapzoom=0.6
+ *     → center ke koordinat manual + zoom
+ *
+ * Cara rapikan titik (contoh Derawan / Kalimantan):
+ *   1. Buka URL: .../?mapdebug=1  (langsung ke petualangan, semua kota terbuka)
+ *   2. Klik chip kota / pin — peta zoom ke kota itu (tanpa refresh, tanpa main)
+ *   3. Klik di peta tepat di titik yang benar → panel mapX/mapY
+ *   4. Salin ke adventure.ts (field mapX, mapY)
+ *   Opsional: &mapfocus=derawan&mapzoom=0.45  |  &mapcenter=x,y
+ *   Cek aset BG/musik: panel di bawah peta (mode debug)
  */
 
 type MapDebug = {
@@ -17,7 +42,7 @@ function useMapDebug(): MapDebug {
   return useMemo(() => {
     try {
       const q = new URLSearchParams(window.location.search);
-      const on = q.get('mapdebug') === '1';
+      const on = q.get('mapdebug') === '1' || q.get('advdebug') === '1';
       const z = parseFloat(q.get('mapzoom') || '1');
       const zoom = Number.isFinite(z) && z > 0.15 && z < 30 ? z : 1;
       const focusId = (q.get('mapfocus') || '').toLowerCase().trim() || null;
@@ -48,7 +73,7 @@ const MAP_ASPECT = 5760 / 2880; // world.webp aspect (full world 2:1)
 
 type ViewBox = { minX: number; minY: number; vbW: number; vbH: number };
 
-/** Konversi pixel frame → koordinat peta (0–100), perhitungkan letterbox meet */
+/** Konversi pixel frame → koordinat peta (perhitungkan letterbox meet) */
 function clientToMap(
   clientX: number,
   clientY: number,
@@ -81,18 +106,19 @@ function clientToMap(
   };
 }
 
-function viewBoxAround(
-  cx: number,
-  cy: number,
-  zoomPct: number
-): ViewBox {
-  const pct = Math.max(20, Math.min(800, zoomPct));
-  // 100% = span dasar ~6 (sama nuansa zoom default debug fokus kota)
-  let span = 6 * (100 / pct);
-  let minX = cx - span / 2;
-  let maxX = cx + span / 2;
-  let minY = cy - span / 2;
-  let maxY = cy + span / 2;
+/** Zoom %: 100 = standar game; lebih besar = lebih dekat */
+function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
+  const safeCx = Number.isFinite(cx) ? cx : 50;
+  const safeCy = Number.isFinite(cy) ? cy : 50;
+  const pct = Math.max(
+    20,
+    Math.min(800, Number.isFinite(zoomPct) ? zoomPct : 100)
+  );
+  const span = 6 * (100 / pct);
+  let minX = safeCx - span / 2;
+  let maxX = safeCx + span / 2;
+  let minY = safeCy - span / 2;
+  let maxY = safeCy + span / 2;
   let vbW = maxX - minX;
   let vbH = maxY - minY;
   if (vbW / vbH > MAP_ASPECT) {
@@ -207,13 +233,10 @@ export default function AdventureMap({
     y: number;
   } | null>(null);
   const [copied, setCopied] = useState(false);
-  /** Zoom UI: 100 = standar game; lebih besar = lebih dekat */
   const [debugZoomPct, setDebugZoomPct] = useState(() => {
     if (!mapDebug.on) return 100;
-    // URL mapzoom lama: angka besar = jauh → konversi ke %
     const z = mapDebug.zoom || 1;
-    const pct = Math.round(100 / z);
-    return Math.max(20, Math.min(800, pct));
+    return Math.max(20, Math.min(800, Math.round(100 / z)));
   });
   const [debugZoomInput, setDebugZoomInput] = useState('100');
   const [debugCenter, setDebugCenter] = useState<{ x: number; y: number } | null>(
@@ -232,6 +255,20 @@ export default function AdventureMap({
     0,
     ADVENTURE_CITIES.findIndex((c) => c.id === activeId)
   );
+
+  useEffect(() => {
+    if (!mapDebug.on) return;
+    const c = ADVENTURE_CITIES.find((x) => x.id === activeId);
+    if (!c) return;
+    setDebugCenter((prev) => {
+      if (prev && prev.x === c.mapX && prev.y === c.mapY) return prev;
+      return { x: c.mapX, y: c.mapY };
+    });
+  }, [activeId, mapDebug.on]);
+
+  useEffect(() => {
+    setDebugZoomInput(String(Math.round(debugZoomPct)));
+  }, [debugZoomPct]);
 
   /** Index kota terbuka paling jauh di jalur */
   const lastUnlockedIdx = useMemo(() => {
@@ -266,7 +303,7 @@ export default function AdventureMap({
   );
 
   if (mapDebug.on) {
-    zoomCities = ADVENTURE_CITIES; // tampilkan semua pin; view diatur debugCenter
+    zoomCities = ADVENTURE_CITIES;
   }
 
   let minX: number;
@@ -275,18 +312,13 @@ export default function AdventureMap({
   let maxY: number;
 
   if (mapDebug.on) {
+    const focusCity = ADVENTURE_CITIES.find(
+      (c) => c.id === (activeId || mapDebug.focusId || '')
+    );
     const cx =
-      debugCenter?.x ??
-      mapDebug.center?.x ??
-      ADVENTURE_CITIES.find((c) => c.id === (activeId || mapDebug.focusId))
-        ?.mapX ??
-      50;
+      debugCenter?.x ?? mapDebug.center?.x ?? focusCity?.mapX ?? 50;
     const cy =
-      debugCenter?.y ??
-      mapDebug.center?.y ??
-      ADVENTURE_CITIES.find((c) => c.id === (activeId || mapDebug.focusId))
-        ?.mapY ??
-      50;
+      debugCenter?.y ?? mapDebug.center?.y ?? focusCity?.mapY ?? 50;
     const vb = viewBoxAround(cx, cy, debugZoomPct);
     minX = vb.minX;
     maxX = vb.minX + vb.vbW;
@@ -295,13 +327,13 @@ export default function AdventureMap({
   } else {
     const xs = zoomCities.map((c) => c.mapX);
     const ys = zoomCities.map((c) => c.mapY);
-    const pad = mapDebug.on ? 3 * mapDebug.zoom : 0.85;
+    const pad = 0.85;
     minX = Math.min(...xs) - pad;
     maxX = Math.max(...xs) + pad;
     minY = Math.min(...ys) - pad;
     maxY = Math.max(...ys) + pad;
 
-    const minSpan = mapDebug.on ? 10 * mapDebug.zoom : 2.2;
+    const minSpan = 2.2;
     if (maxX - minX < minSpan) {
       const m = (minX + maxX) / 2;
       minX = m - minSpan / 2;
@@ -365,7 +397,17 @@ export default function AdventureMap({
 
   useEffect(() => {
     if (mapDebug.on) {
-      setZoomVB({ minX, minY, vbW, vbH });
+      setZoomVB((prev) => {
+        if (
+          prev.minX === minX &&
+          prev.minY === minY &&
+          prev.vbW === vbW &&
+          prev.vbH === vbH
+        ) {
+          return prev;
+        }
+        return { minX, minY, vbW, vbH };
+      });
       return;
     }
     if (traveling || travelOwnsZoomRef.current) return;
@@ -641,7 +683,6 @@ export default function AdventureMap({
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!mapDebug.on || !frameRef.current) return;
     if ((e.target as HTMLElement).closest('.adventure-map-hit')) return;
-    if ((e.target as HTMLElement).closest('.map-debug-toolbar')) return;
     const center = debugCenter || {
       x: drawMinX + drawVbW / 2,
       y: drawMinY + drawVbH / 2,
@@ -668,8 +709,7 @@ export default function AdventureMap({
     const dy = e.clientY - d.startY;
     if (Math.abs(dx) > 4 || Math.abs(dy) > 4) d.moved = true;
     if (!d.moved) return;
-    const frame = frameRef.current;
-    const rect = frame.getBoundingClientRect();
+    const rect = frameRef.current.getBoundingClientRect();
     const fw = rect.width;
     const fh = rect.height;
     const vbAspect = d.originVB.vbW / Math.max(0.0001, d.originVB.vbH);
@@ -705,28 +745,25 @@ export default function AdventureMap({
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (!mapDebug.on) return;
     e.preventDefault();
-    const factor = e.deltaY > 0 ? 1 / 1.15 : 1.15;
-    applyZoomPct(debugZoomPct * factor);
+    applyZoomPct(debugZoomPct * (e.deltaY > 0 ? 1 / 1.15 : 1.15));
   };
 
-  /** Format siap tempel ke adventure.ts untuk kota aktif */
   const copyCoord = async () => {
     if (!clickCoord) return;
-    const city = ADVENTURE_CITIES.find((c) => c.id === activeId);
-    const id = city?.id || activeId || 'kota';
-    const text = [
-      `    // ${id}`,
-      `    mapX: ${clickCoord.x},`,
-      `    mapY: ${clickCoord.y},`,
-    ].join('\n');
+    const id = activeId || 'kota';
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(
+        [
+          '    // ' + id,
+          '    mapX: ' + clickCoord.x + ',',
+          '    mapY: ' + clickCoord.y + ',',
+        ].join(String.fromCharCode(10))
+      );
       setCopied(true);
     } catch {
       /* ignore */
     }
   };
-
 
   return (
     <div className="adventure-map-wrap" aria-label="Peta jalur petualangan">
@@ -1019,9 +1056,13 @@ export default function AdventureMap({
           </p>
           {clickCoord ? (
             <div className="map-debug-coord">
-              <pre className="map-debug-snippet">{`    // ${activeId}
-    mapX: ${clickCoord.x},
-    mapY: ${clickCoord.y},`}</pre>
+              <pre className="map-debug-snippet">
+                {[
+                  '    // ' + activeId,
+                  '    mapX: ' + clickCoord.x + ',',
+                  '    mapY: ' + clickCoord.y + ',',
+                ].join(String.fromCharCode(10))}
+              </pre>
               <button
                 type="button"
                 className="btn-primary map-debug-copy"

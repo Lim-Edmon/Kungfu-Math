@@ -1,10 +1,10 @@
-/* Service Worker Kungfu Math
- * Cache name memakai versi app — naikkan saat rilis (sinkron package.json version).
- * Author: Lim Edmon
+/* Service Worker
+ * Cache name memakai APP_VERSION — naikkan setiap rilis aset penting (peta, ikon, dll).
+ * Saat versi baru aktif: cache lama dihapus otomatis, klien di-reload.
  */
-const APP_VERSION = '0.1.7';
-const CACHE_STATIC = 'kungfu-math-static-' + APP_VERSION;
-const CACHE_PAGES = 'kungfu-math-pages-' + APP_VERSION;
+const APP_VERSION = '0.1.9';
+const CACHE_STATIC = 'app-static-' + APP_VERSION;
+const CACHE_PAGES = 'app-pages-' + APP_VERSION;
 
 const PRECACHE = [
   '/',
@@ -46,6 +46,14 @@ self.addEventListener('activate', function (event) {
       .then(function () {
         return self.clients.claim();
       })
+      .then(function () {
+        return self.clients.matchAll({ type: 'window' });
+      })
+      .then(function (clients) {
+        clients.forEach(function (client) {
+          client.postMessage({ type: 'SW_ACTIVATED', version: APP_VERSION });
+        });
+      })
   );
 });
 
@@ -56,6 +64,7 @@ self.addEventListener('fetch', function (event) {
   var url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  /* Navigasi: network dulu, offline → index */
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -73,6 +82,7 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
+  /* Bundle JS/CSS hashed: cache-first aman (nama file berubah tiap build) */
   if (url.pathname.indexOf('/assets/') === 0) {
     event.respondWith(
       caches.match(request).then(function (cached) {
@@ -93,6 +103,11 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
+  /*
+   * Gambar peta, karakter, musik kota, dll:
+   * NETWORK-FIRST — update aset (peta baru) langsung terambil online,
+   * offline tetap pakai cache.
+   */
   if (
     url.pathname.indexOf('/cities/') === 0 ||
     url.pathname.indexOf('/sounds/') === 0 ||
@@ -101,17 +116,16 @@ self.addEventListener('fetch', function (event) {
   ) {
     event.respondWith(
       caches.open(CACHE_STATIC).then(function (cache) {
-        return cache.match(request).then(function (cached) {
-          var network = fetch(request)
-            .then(function (res) {
-              if (res && res.status === 200) cache.put(request, res.clone());
-              return res;
-            })
-            .catch(function () {
-              return cached;
-            });
-          return cached || network;
-        });
+        return fetch(request)
+          .then(function (res) {
+            if (res && res.status === 200) {
+              cache.put(request, res.clone());
+            }
+            return res;
+          })
+          .catch(function () {
+            return cache.match(request);
+          });
       })
     );
     return;
