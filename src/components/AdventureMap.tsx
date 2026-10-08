@@ -23,11 +23,12 @@ import { t as i18n } from '../lib/i18n';
  *     → center ke koordinat manual + zoom
  *
  * Cara rapikan titik (contoh Derawan / Kalimantan):
- *   1. Buka URL: .../?mapdebug=1&mapfocus=derawan&mapzoom=0.45
- *   2. Klik di peta tepat di pulau/kota yang benar
- *   3. Salin mapX / mapY yang muncul di panel debug
- *   4. Tempel ke adventure.ts (field mapX, mapY kota itu)
- *   5. Refresh — pin harus tepat di titik klik
+ *   1. Buka URL: .../?mapdebug=1  (langsung ke petualangan, semua kota terbuka)
+ *   2. Klik chip kota / pin — peta zoom ke kota itu (tanpa refresh, tanpa main)
+ *   3. Klik di peta tepat di titik yang benar → panel mapX/mapY
+ *   4. Salin ke adventure.ts (field mapX, mapY)
+ *   Opsional: &mapfocus=derawan&mapzoom=0.45  |  &mapcenter=x,y
+ *   Cek aset BG/musik: panel di bawah peta (mode debug)
  */
 
 type MapDebug = {
@@ -206,14 +207,16 @@ export default function AdventureMap({
   );
 
   if (mapDebug.on) {
-    if (mapDebug.focusId) {
-      const fc = ADVENTURE_CITIES.find((c) => c.id === mapDebug.focusId);
+    if (mapDebug.center && !activeId) {
+      zoomCities = []; // center manual
+    } else {
+      // Fokus ke kota aktif (klik chip/pin) — mapfocus URL hanya default awal
+      const fid = activeId || mapDebug.focusId;
+      const fc = fid
+        ? ADVENTURE_CITIES.find((c) => c.id === fid)
+        : undefined;
       if (fc) zoomCities = [fc];
       else zoomCities = ADVENTURE_CITIES;
-    } else if (mapDebug.center) {
-      zoomCities = []; // pakai center manual di bawah
-    } else {
-      zoomCities = ADVENTURE_CITIES;
     }
   }
 
@@ -228,7 +231,7 @@ export default function AdventureMap({
     maxX = mapDebug.center.x + span / 2;
     minY = mapDebug.center.y - span / 2;
     maxY = mapDebug.center.y + span / 2;
-  } else if (mapDebug.on && mapDebug.focusId && zoomCities.length === 1) {
+  } else if (mapDebug.on && zoomCities.length === 1) {
     const c = zoomCities[0];
     const span = 6 * mapDebug.zoom;
     minX = c.mapX - span / 2;

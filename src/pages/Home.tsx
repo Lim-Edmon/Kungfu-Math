@@ -13,6 +13,8 @@ import {
   ADVENTURE_REGIONS,
   getCountryNameId,
   getCountryNameEn,
+  cityBgCandidates,
+  cityMusicSrc,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS, getLevelById } from '../lib/levels';
@@ -29,6 +31,59 @@ import { t, getLang } from '../lib/i18n';
 import { sfx } from '../lib/sound';
 
 export type PlayKind = 'latihan' | 'petualangan';
+
+function isMapDebug(): boolean {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    return q.get('mapdebug') === '1' || q.get('advdebug') === '1';
+  } catch {
+    return false;
+  }
+}
+
+function mapDebugFocusFromUrl(): string | null {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const f = (q.get('mapfocus') || '').toLowerCase().trim();
+    return f || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Cek file aset ada (HEAD/GET singkat) — hanya mode debug */
+async function probeUrl(url: string): Promise<boolean> {
+  try {
+    const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    if (r.ok) return true;
+  } catch {
+    /* fall through */
+  }
+  try {
+    const r = await fetch(url, { method: 'GET', cache: 'no-store' });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function auditCityAssets(cityId: string): Promise<{ bg: boolean; music: boolean; bgPath: string; musicPath: string }> {
+  const musicPath = cityMusicSrc(cityId);
+  let bgPath = '';
+  let bg = false;
+  for (const cand of cityBgCandidates(cityId)) {
+    if (cand.includes('/default.')) continue;
+    if (await probeUrl(cand)) {
+      bg = true;
+      bgPath = cand;
+      break;
+    }
+  }
+  if (!bgPath) bgPath = cityBgCandidates(cityId)[0] || '';
+  const music = await probeUrl(musicPath);
+  return { bg, music, bgPath, musicPath };
+}
+
 
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -81,6 +136,12 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [displayMode, setDisplayMode] = useState<DisplayMode>('siang');
   const [playerName, setPlayerName] = useState('');
   const [ready, setReady] = useState(false);
+  const mapDebug = isMapDebug();
+  const allCityIds = ADVENTURE_CITIES.map((c) => c.id);
+  const [assetAudit, setAssetAudit] = useState<
+    Record<string, { bg: boolean; music: boolean; bgPath: string; musicPath: string }>
+  >({});
+  const [assetAuditDone, setAssetAuditDone] = useState(false);
 
   useEffect(() => {
     if (initialPlayKind) {
@@ -88,6 +149,42 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       setStep(2);
     }
   }, [initialPlayKind]);
+
+  /** Mode debug peta: langsung step 2 petualangan, fokus URL opsional */
+  useEffect(() => {
+    if (!mapDebug) return;
+    setPlayKind('petualangan');
+    setStep(2);
+    setAdventureDiffId('normal');
+    const f = mapDebugFocusFromUrl();
+    if (f && ADVENTURE_CITIES.some((c) => c.id === f)) {
+      setCityId(f);
+    }
+    // buka semua region
+    const open: Record<string, boolean> = {};
+    ADVENTURE_REGIONS.forEach((r) => {
+      open[r.id] = true;
+    });
+    setOpenHomeRegions(open);
+  }, [mapDebug]);
+
+  /** Audit BG + musik semua kota (debug) */
+  useEffect(() => {
+    if (!mapDebug) return;
+    let cancelled = false;
+    (async () => {
+      const result: typeof assetAudit = {};
+      for (const c of ADVENTURE_CITIES) {
+        if (cancelled) return;
+        result[c.id] = await auditCityAssets(c.id);
+        if (!cancelled) setAssetAudit({ ...result });
+      }
+      if (!cancelled) setAssetAuditDone(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mapDebug]);
 
   useEffect(() => {
     const progress = loadProgress();
@@ -395,30 +492,110 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 <h3 className="subsection-title">{t('pickCity')}</h3>
                 {(() => {
                   const prog = loadProgress();
-                  const unlocked = prog.adventureUnlocked || ['jakarta'];
-                  const wonIds = ADVENTURE_CITIES.filter((c) => {
-                    const hs = prog.adventureHighScores?.[c.id] ?? 0;
-                    return hs >= c.targetScore;
-                  }).map((c) => c.id);
+                  const unlocked = mapDebug
+                    ? allCityIds
+                    : prog.adventureUnlocked || ['jakarta'];
+                  const wonIds = mapDebug
+                    ? []
+                    : ADVENTURE_CITIES.filter((c) => {
+                        const hs = prog.adventureHighScores?.[c.id] ?? 0;
+                        return hs >= c.targetScore;
+                      }).map((c) => c.id);
                   return (
-                    <AdventureMap
-                      unlockedIds={unlocked}
-                      wonIds={wonIds}
-                      activeId={cityId}
-                      travelFromId={travelFrom}
-                      travelToId={travelTo}
-                      onTravelDone={() => {
-                        setTravelFrom(null);
-                        setTravelTo(null);
-                      }}
-                      onSelect={(id) => {
-                        if (id === cityId) return;
-                        setTravelFrom(cityId);
-                        setTravelTo(id);
-                        setCityId(id);
-                        updateProgress({ adventureCityId: id });
-                      }}
-                    />
+                    <>
+                      {mapDebug && (
+                        <div className="map-debug-banner" role="status">
+                          <strong>Mode debug peta</strong>
+                          {' — '}semua kota terbuka · klik kota = zoom · klik peta = koordinat · tidak bisa main
+                          <div className="map-debug-banner-hint">
+                            URL: <code>?mapdebug=1</code>
+                            {' · '}
+                            zoom: <code>&amp;mapzoom=0.4</code> (kecil = lebih dekat)
+                          </div>
+                        </div>
+                      )}
+                      <AdventureMap
+                        unlockedIds={unlocked}
+                        wonIds={wonIds}
+                        activeId={cityId}
+                        travelFromId={mapDebug ? null : travelFrom}
+                        travelToId={mapDebug ? null : travelTo}
+                        onTravelDone={() => {
+                          setTravelFrom(null);
+                          setTravelTo(null);
+                        }}
+                        onSelect={(id) => {
+                          if (id === cityId) return;
+                          if (mapDebug) {
+                            setCityId(id);
+                            return;
+                          }
+                          setTravelFrom(cityId);
+                          setTravelTo(id);
+                          setCityId(id);
+                          updateProgress({ adventureCityId: id });
+                        }}
+                      />
+                      {mapDebug && (
+                        <div className="map-debug-assets">
+                          <h4 className="subsection-title">Aset kota (BG / musik)</h4>
+                          <p className="wizard-panel-hint">
+                            {assetAuditDone
+                              ? 'Scan selesai. Hijau = ada file, merah = belum.'
+                              : 'Memindai file…'}
+                          </p>
+                          <div className="map-debug-asset-list">
+                            {ADVENTURE_CITIES.map((c) => {
+                              const a = assetAudit[c.id];
+                              const sel = c.id === cityId;
+                              return (
+                                <button
+                                  type="button"
+                                  key={c.id}
+                                  className={`map-debug-asset-row${sel ? ' is-active' : ''}`}
+                                  onClick={() => setCityId(c.id)}
+                                >
+                                  <span className="map-debug-asset-name">
+                                    {c.nameId}
+                                  </span>
+                                  <span
+                                    className={
+                                      a?.bg ? 'map-debug-ok' : 'map-debug-miss'
+                                    }
+                                    title={a?.bgPath || 'bg'}
+                                  >
+                                    BG {a ? (a.bg ? '✓' : '✗') : '…'}
+                                  </span>
+                                  <span
+                                    className={
+                                      a?.music ? 'map-debug-ok' : 'map-debug-miss'
+                                    }
+                                    title={a?.musicPath || 'mp3'}
+                                  >
+                                    Musik {a ? (a.music ? '✓' : '✗') : '…'}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {assetAuditDone && (
+                            <p className="wizard-panel-hint">
+                              Kurang BG:{' '}
+                              {ADVENTURE_CITIES.filter((c) => !assetAudit[c.id]?.bg)
+                                .map((c) => c.id)
+                                .join(', ') || '—'}
+                              <br />
+                              Kurang musik:{' '}
+                              {ADVENTURE_CITIES.filter(
+                                (c) => !assetAudit[c.id]?.music
+                              )
+                                .map((c) => c.id)
+                                .join(', ') || '—'}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
                 <div className="city-region-stack">
@@ -459,6 +636,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                 ? prog.adventureUnlocked
                                 : ['jakarta'];
                               const unlocked =
+                                mapDebug ||
                                 c.id === 'jakarta' ||
                                 unlockedList.includes(c.id);
                               const country =
@@ -473,10 +651,14 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                   type="button"
                                   key={c.id}
                                   role="listitem"
-                                  className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
-                                  disabled={!unlocked}
+                                  className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked && !mapDebug ? 'disabled' : ''}`}
+                                  disabled={!unlocked && !mapDebug}
                                   onClick={() => {
-                                    if (!unlocked) return;
+                                    if (!unlocked && !mapDebug) return;
+                                    if (mapDebug) {
+                                      setCityId(c.id);
+                                      return;
+                                    }
                                     if (c.id !== cityId) {
                                       setTravelFrom(cityId);
                                       setTravelTo(c.id);
@@ -657,9 +839,11 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           ) : (
             <button
               type="button"
-              className={`btn-primary btn-start ${!canStart ? 'disabled' : ''}`}
-              disabled={!canStart}
+              className={`btn-primary btn-start ${!canStart || mapDebug ? 'disabled' : ''}`}
+              disabled={!canStart || mapDebug}
+              title={mapDebug ? 'Mode debug peta — main dinonaktifkan' : undefined}
               onClick={() => {
+                if (mapDebug) return;
                 if (
                   !selectedCharacterId ||
                   !mode ||

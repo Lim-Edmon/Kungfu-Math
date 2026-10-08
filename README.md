@@ -1,11 +1,11 @@
 # Kungfu Math
 
 Game arcade edukasi matematika untuk anak (dan dewasa).  
-Latihan hitung cepat dengan gaya pendekar kuno versi imut — mode **Slice** (geser) dan **Tap** (tekan).
+Latihan hitung cepat dengan gaya pendekar China kuno versi imut — mode **Slice** (geser) dan **Tap** (tekan).
 
-**Main online:** [https://kungfu-math.vercel.app/]
+**Main online:** [https://kungfu-math.vercel.app/](https://kungfu-math.vercel.app/)
 
-Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di lokal perangkat.
+Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di perangkat.
 
 ## Cara menjalankan (lokal / Codespaces)
 
@@ -76,6 +76,43 @@ Deploy: push ke GitHub → Vercel otomatis build.
 Prompt musik/BG: file Excel di repo / project notes (`kungfu-math-jalur-musik-kota.xlsx`).
 
 **Polish aset** = mengganti BG/musik/karakter/logo dengan file yang lebih bagus tanpa ubah kode (cukup nama file sama).
+
+
+
+## Debug peta & aset kota (dev)
+
+Untuk mengatur pin koordinat dan cek file BG/musik **tanpa main**:
+
+1. Buka:
+   ```
+   https://kungfu-math.vercel.app/?mapdebug=1
+   ```
+   atau lokal: `http://localhost:5173/?mapdebug=1`
+
+2. App langsung ke **langkah Petualangan**. Semua kota **terbuka** dan bisa diklik.
+
+3. **Klik chip kota** atau **pin di peta** → peta zoom ke kota itu (tanpa refresh, tanpa mulai game).
+
+4. **Klik di peta** (bukan pin) → panel `mapX` / `mapY` → salin ke `src/lib/adventure.ts`.
+
+5. Panel **Aset kota** di bawah peta: hijau = file ada, merah = belum.  
+   - BG: `public/cities/bg/{id}.webp` (atau .png / .jpg)  
+   - Musik: `public/cities/music/{id}.mp3`
+
+**Query opsional**
+
+| Query | Arti |
+|-------|------|
+| `?mapdebug=1` | Mode debug (wajib) |
+| `&mapfocus=jakarta` | Fokus awal ke id kota |
+| `&mapzoom=0.4` | Semakin kecil semakin dekat |
+| `&mapcenter=79.28,67.01` | Center manual (persen peta) |
+
+Alias: `?advdebug=1` sama dengan `mapdebug=1`.
+
+Tombol **Mulai bermain** dinonaktifkan di mode ini.
+
+Catatan singkat juga di: `public/cities/CARA-DEBUG-PETA.txt`
 
 ## Catatan
 

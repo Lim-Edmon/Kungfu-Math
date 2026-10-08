@@ -1,0 +1,20 @@
+Debug peta & aset kota
+======================
+
+Buka di browser:
+  ?mapdebug=1
+  ?mapdebug=1&mapfocus=derawan&mapzoom=0.4
+
+Efek:
+  - Langsung menu Petualangan
+  - Semua kota bisa diklik
+  - Klik kota = zoom peta (tanpa main)
+  - Klik peta = dapat mapX / mapY untuk adventure.ts
+  - Panel daftar BG ✓/✗ dan musik ✓/✗
+
+File:
+  public/cities/bg/{id}.webp|png|jpg
+  public/cities/music/{id}.mp3
+
+Id kota = field id di src/lib/adventure.ts (huruf kecil).
+Dokumentasi penuh: README.md bagian "Debug peta & aset kota".

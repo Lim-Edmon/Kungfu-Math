@@ -3126,3 +3126,75 @@ h1.home-title {
   opacity: 0.75;
   font-size: 0.8rem;
 }
+
+
+/* —— Mode debug peta (?mapdebug=1) —— */
+.map-debug-banner {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  background: #fff8e1;
+  border: 1px solid #ffcc80;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #5d4037;
+}
+.map-debug-banner-hint {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+.map-debug-banner code {
+  font-size: 0.75rem;
+  background: #fff3e0;
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+.map-debug-assets {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.5rem;
+  border-radius: 10px;
+  border: 1px dashed #90a4ae;
+  background: #fafafa;
+}
+.map-debug-asset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.map-debug-asset-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.map-debug-asset-row:hover {
+  background: #eceff1;
+}
+.map-debug-asset-row.is-active {
+  background: #e8f5e9;
+  font-weight: 600;
+}
+.map-debug-asset-name {
+  flex: 1;
+  min-width: 0;
+}
+.map-debug-ok {
+  color: #2e7d32;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.map-debug-miss {
+  color: #c62828;
+  font-weight: 600;
+  white-space: nowrap;
+}
