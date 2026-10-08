@@ -2,7 +2,7 @@
  * Cache name memakai APP_VERSION — naikkan setiap rilis aset penting (peta, ikon, dll).
  * Saat versi baru aktif: cache lama dihapus otomatis, klien di-reload.
  */
-const APP_VERSION = '0.1.18';
+const APP_VERSION = '0.1.19';
 const CACHE_STATIC = 'app-static-' + APP_VERSION;
 const CACHE_PAGES = 'app-pages-' + APP_VERSION;
 

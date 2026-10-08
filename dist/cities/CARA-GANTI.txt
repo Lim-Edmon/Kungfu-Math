@@ -25,3 +25,7 @@ PETA / PIN
 - mapX mapY di src/lib/adventure.ts (persen 0–100 pada peta SVG jalur)
 - Bukan lat-long dunia nyata; posisi relatif jalur MVP
 - Nanti peta dunia: berikan basemap → koordinat bisa dibantu mapping
+
+BG Skandinavia / Nordic (Oslo, Bergen, Stockholm, Helsinki, Reykjavik, dll.):
+  Saat buat gambar, tambahkan aurora borealis (cahaya utara) di langit malam —
+  biar nuansa kutub utara terasa khas.
