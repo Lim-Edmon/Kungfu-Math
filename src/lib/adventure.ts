@@ -388,8 +388,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Losari Beach is a popular waterfront in Makassar.',
       'Makassar has long been a major port of eastern Indonesia.'
     ],
-    mapX: 82.88,
-    mapY: 66.41,
+    mapX: 82.92,
+    mapY: 66.58,
   },
   {
     id: 'manado',
@@ -435,8 +435,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The limestone islands of Raja Ampat rise from bright turquoise water.',
       'Raja Ampat is part of West Papua’s spectacular seascape.'
     ],
-    mapX: 86.05,
-    mapY: 63.64,
+    mapX: 85.99,
+    mapY: 64.03,
   },
   {
     id: 'jayapura',
@@ -506,8 +506,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Tanah Lot and Uluwatu are famous sea temples in Bali.',
       'Balinese culture blends art, dance, and daily offerings.'
     ],
-    mapX: 81.66,
-    mapY: 68.26,
+    mapX: 81.76,
+    mapY: 68.27,
   },
 
   // —— Asia Tenggara (setelah lolos Bali) ——
@@ -532,8 +532,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Dili is the capital of Timor-Leste.',
       'Dili’s waterfront faces a calm tropical bay.'
     ],
-    mapX: 84.63,
-    mapY: 68.34,
+    mapX: 84.68,
+    mapY: 68.48,
   },
   {
     id: 'brunei',
@@ -624,8 +624,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Penang is an island state on Malaysia’s northwest coast.',
       'Clan jetties in Penang show historic waterfront settlements.'
     ],
-    mapX: 77.41,
-    mapY: 60.45,
+    mapX: 77.47,
+    mapY: 60.63,
   },
   {
     id: 'kuala-lumpur',
@@ -670,8 +670,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Singapore is a city-state at the tip of the Malay Peninsula.',
       'The Merlion is a well-known symbol of Singapore.'
     ],
-    mapX: 78.41,
-    mapY: 62.74,
+    mapX: 78.46,
+    mapY: 62.8,
   },
   {
     id: 'phuket',
@@ -693,8 +693,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Limestone cliffs and clear water shape Phuket’s coast.',
       'Phuket Town has colorful old shophouses and markets.'
     ],
-    mapX: 76.86,
-    mapY: 59.06,
+    mapX: 76.88,
+    mapY: 59.16,
   },
   {
     id: 'ho-chi-minh',
@@ -716,8 +716,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Notre-Dame Cathedral is a landmark in Ho Chi Minh City.',
       'The city’s busy rivers and canals once shaped its trade.'
     ],
-    mapX: 79.22,
-    mapY: 57.4,
+    mapX: 79.25,
+    mapY: 57.6,
   },
   {
     id: 'bangkok',
@@ -739,8 +739,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Bangkok is the capital of Thailand.',
       'Bangkok’s grand palace complex draws visitors from around the world.'
     ],
-    mapX: 77.46,
-    mapY: 55.74,
+    mapX: 77.55,
+    mapY: 55.88,
   },
   {
     id: 'siem-reap',
@@ -785,8 +785,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Phnom Penh is the capital of Cambodia on the Mekong River.',
       'The Mekong and Tonle Sap rivers meet near Phnom Penh.'
     ],
-    mapX: 78.73,
-    mapY: 56.98,
+    mapX: 78.76,
+    mapY: 57.19,
   },
   {
     id: 'chiang-mai',
@@ -808,8 +808,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Chiang Mai’s old city is framed by a square moat and walls.',
       'Chiang Mai is a cultural center of northern Thailand.'
     ],
-    mapX: 77.02,
-    mapY: 52.9,
+    mapX: 77.14,
+    mapY: 52.89,
   },
   {
     id: 'luang-prabang',
@@ -831,8 +831,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'The Mekong and Nam Khan rivers meet at Luang Prabang.',
       'Morning alms-giving is a well-known tradition in Luang Prabang.'
     ],
-    mapX: 77.93,
-    mapY: 52.28,
+    mapX: 77.97,
+    mapY: 52.26,
   },
   {
     id: 'bagan',
@@ -854,8 +854,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Sunrise over the Bagan plain shows countless pagoda silhouettes.',
       'Hot-air balloons often fly over Bagan at dawn.'
     ],
-    mapX: 75.85,
-    mapY: 51.55,
+    mapX: 75.92,
+    mapY: 51.59,
   },
   {
     id: 'hanoi',
@@ -877,8 +877,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
       'Hanoi is the capital of Vietnam.',
       'Hanoi’s Old Quarter has narrow streets and long trading history.'
     ],
-    mapX: 78.99,
-    mapY: 51.63,
+    mapX: 79.02,
+    mapY: 51.57,
   },
 ];
 

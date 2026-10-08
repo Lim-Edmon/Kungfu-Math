@@ -2008,10 +2008,10 @@
   background: transparent;
 }
 
-/* Debug: tampilkan area ketuk */
+/* Debug: area ketuk tetap ada tapi TIDAK dilukis biru (menghalangi klik koordinat) */
 .adventure-map-hit.is-debug {
-  background: rgba(33, 150, 243, 0.25);
-  border: 1px solid rgba(33, 150, 243, 0.6);
+  background: transparent;
+  border: none;
 }
 .adventure-map-legend {
   margin: 0;

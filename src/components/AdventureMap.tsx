@@ -750,11 +750,9 @@ export default function AdventureMap({
 
   const copyCoord = async () => {
     if (!clickCoord) return;
-    const id = activeId || 'kota';
     try {
       await navigator.clipboard.writeText(
         [
-          '    // ' + id,
           '    mapX: ' + clickCoord.x + ',',
           '    mapY: ' + clickCoord.y + ',',
         ].join(String.fromCharCode(10))
@@ -1058,7 +1056,6 @@ export default function AdventureMap({
             <div className="map-debug-coord">
               <pre className="map-debug-snippet">
                 {[
-                  '    // ' + activeId,
                   '    mapX: ' + clickCoord.x + ',',
                   '    mapY: ' + clickCoord.y + ',',
                 ].join(String.fromCharCode(10))}
