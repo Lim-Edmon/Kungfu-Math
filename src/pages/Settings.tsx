@@ -6,6 +6,7 @@ import {
   updateProgress,
   exportProgress,
   importProgress,
+  isDevUnlockCode,
   clearAllGameData,
 } from '../lib/storage';
 import { TRAKTEER_URL, buildInviteText } from '../lib/constants';
@@ -112,9 +113,10 @@ ${t('waProgressSuffix')}`
       setMessage(t('msgNeedCode'));
       return;
     }
+    const isUnlock = isDevUnlockCode(importCode);
     const ok = importProgress(importCode);
     if (ok) {
-      setMessage(t('msgImportOk'));
+      setMessage(isUnlock ? t('msgDevUnlockOk') : t('msgImportOk'));
       setImportCode('');
     } else {
       setMessage(t('msgImportFail'));

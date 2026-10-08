@@ -129,3 +129,15 @@ Catatan singkat juga di: `public/cities/CARA-DEBUG-PETA.txt`
 Vite + React + TypeScript · Deploy: Vercel
 
 ---
+
+
+## Akses uji (developer)
+
+Di **Pengaturan → Masukkan Kode Progress**, ketik salah satu (abaikan spasi/kapital):
+
+- `edmon halim the great`
+- `unlock all`
+- `buka semua`
+
+Efek: **semua kota petualangan** + **semua lencana** terbuka. Skor/rekor **tidak** diisi palsu.  
+Untuk kondisi fresh lagi: **Hapus semua data** di Pengaturan.

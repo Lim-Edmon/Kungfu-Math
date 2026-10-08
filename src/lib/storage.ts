@@ -11,6 +11,7 @@ import type {
 import { DEFAULT_PROGRESS } from './types';
 import { getLang, t } from './i18n';
 import { ADVENTURE_CITIES } from './adventure';
+import { BADGE_DEFS } from './badges';
 
 const STORAGE_KEY = 'kungfu-math-progress';
 const CODE_PREFIX = 'KM1.';
@@ -288,9 +289,62 @@ export function exportProgress(): string {
   return CODE_PREFIX + body;
 }
 
+/**
+ * Cheat / dev unlock (bukan progress transfer).
+ * Ketik di "Masukkan Kode Progress" — buka SEMUA kota + lencana.
+ * Tidak mengisi skor/rekor palsu.
+ *
+ * Frasa (abaikan spasi/huruf besar/kecil/tanda baca):
+ *   edmon halim the great
+ *   unlock all
+ *   buka semua
+ */
+function normalizeCheatKey(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+const DEV_UNLOCK_KEYS = new Set([
+  'edmonhalimthegreat',
+  'edmonhalim',
+  'unlockall',
+  'bukasemua',
+  'opensesame',
+]);
+
+export function isDevUnlockCode(encoded: string): boolean {
+  return DEV_UNLOCK_KEYS.has(normalizeCheatKey(encoded || ''));
+}
+
+/** Buka akses uji: semua kota petualangan + semua lencana. Rekor tetap utuh. */
+export function applyDevUnlockAccess(): void {
+  const prog = loadProgress();
+  const allCities = ADVENTURE_CITIES.map((c) => c.id);
+  const allBadges = BADGE_DEFS.map((b) => b.id);
+  saveProgress(
+    normalizeProgress({
+      ...prog,
+      adventureUnlocked: allCities,
+      badges: Array.from(new Set([...(prog.badges || []), ...allBadges])),
+    })
+  );
+}
+
 export function importProgress(encoded: string): boolean {
+  const trimmed = (encoded || '').trim();
+  if (!trimmed) return false;
+
+  // Cheat code dulu (bukan base64 progress)
+  if (DEV_UNLOCK_KEYS.has(normalizeCheatKey(trimmed))) {
+    applyDevUnlockAccess();
+    return true;
+  }
+
   try {
-    let raw = encoded.trim().replace(/\s+/g, '');
+    let raw = trimmed.replace(/\s+/g, '');
     if (raw.startsWith(CODE_PREFIX)) raw = raw.slice(CODE_PREFIX.length);
     const json = decodeURIComponent(escape(atob(raw)));
     const parsed = JSON.parse(json);
