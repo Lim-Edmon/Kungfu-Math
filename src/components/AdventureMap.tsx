@@ -108,14 +108,29 @@ function clientToMap(
 
 /** Zoom %: 100 = standar game; lebih besar = lebih dekat */
 
-/** Jaga viewBox tetap di dalam peta 0–100. Kota di tepi (Honolulu, Fiji, dll.)
- *  tetap di ujung — tidak dipaksa center jika itu menyebabkan area kosong. */
-function clampViewBox(vb: ViewBox): ViewBox {
-  let { minX, minY, vbW, vbH } = vb;
-  // Jangan lebih besar dari seluruh peta
+/**
+ * Jaga viewBox di dalam peta 0–100.
+ * Tiap sumbu diusahakan center ke preferCx/preferCy secara mandiri:
+ * - kalau muat → center
+ * - kalau di tepi (Honolulu X, Fiji X, Reykjavik Y, dll.) → nempel ujung sumbu itu saja
+ *   sumbu lain tetap center jika masih muat.
+ */
+function clampViewBox(
+  vb: ViewBox,
+  preferCx?: number,
+  preferCy?: number
+): ViewBox {
+  let { vbW, vbH } = vb;
   vbW = Math.min(Math.max(vbW, 0.5), 100);
   vbH = Math.min(Math.max(vbH, 0.5), 100);
-  // Geser agar tidak keluar kiri/atas/kanan/bawah
+  const cx = Number.isFinite(preferCx as number)
+    ? (preferCx as number)
+    : vb.minX + vb.vbW / 2;
+  const cy = Number.isFinite(preferCy as number)
+    ? (preferCy as number)
+    : vb.minY + vb.vbH / 2;
+  let minX = cx - vbW / 2;
+  let minY = cy - vbH / 2;
   if (minX < 0) minX = 0;
   if (minY < 0) minY = 0;
   if (minX + vbW > 100) minX = 100 - vbW;
@@ -152,7 +167,7 @@ function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
     maxX += extra / 2;
     vbW = needW;
   }
-  return clampViewBox({ minX, minY, vbW, vbH });
+  return clampViewBox({ minX, minY, vbW, vbH }, safeCx, safeCy);
 }
 
 
@@ -194,7 +209,9 @@ function viewBoxFromPoints(
     maxX += extra / 2;
     vbW = needW;
   }
-  return clampViewBox({ minX, minY, vbW, vbH });
+  const preferCx = minX + vbW / 2;
+  const preferCy = minY + vbH / 2;
+  return clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
 }
 
 function viewBoxForCityIndex(idx: number): ViewBox {
@@ -380,9 +397,11 @@ export default function AdventureMap({
     vbW = needW;
   }
 
-  // Tepi peta: jangan tampilkan area kosong di luar 0–100
+  // Tepi peta: center per-sumbu jika muat; kalau tidak, nempel ujung
   {
-    const clamped = clampViewBox({ minX, minY, vbW, vbH });
+    const preferCx = (minX + maxX) / 2;
+    const preferCy = (minY + maxY) / 2;
+    const clamped = clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
     minX = clamped.minX;
     minY = clamped.minY;
     vbW = clamped.vbW;
@@ -926,19 +945,11 @@ export default function AdventureMap({
                 >
                   {mapDebug.on ? `${c.nameId}` : short}
                 </text>
+                {/* Koordinat hanya hover (PC) — tidak menumpuk label di peta */}
                 {mapDebug.on && (
-                  <text
-                    x={c.mapX}
-                    y={c.mapY + pinR * 2.4}
-                    textAnchor="middle"
-                    fontSize={fontSize * 0.85}
-                    fill="#333"
-                    stroke="#fff"
-                    strokeWidth={fontSize * 0.08}
-                    paintOrder="stroke"
-                  >
-                    {c.mapX.toFixed(1)},{c.mapY.toFixed(1)}
-                  </text>
+                  <title>
+                    {`${c.nameId}: mapX ${c.mapX.toFixed(2)}, mapY ${c.mapY.toFixed(2)}`}
+                  </title>
                 )}
               </g>
             );

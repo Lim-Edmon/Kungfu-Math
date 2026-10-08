@@ -409,61 +409,150 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
             <h3 className="subsection-title">{t('pickCity')}</h3>
             <div className="city-region-stack">
-              {ADVENTURE_REGIONS.map((reg) => {
-                const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
-                if (cities.length === 0) return null;
-                const open = !!openHomeRegions[reg.id];
-                const label = getLang() === 'en' ? reg.labelEn : reg.labelId;
-                return (
-                  <div key={reg.id} className="city-region-block dojo-region">
-                    <button
-                      type="button"
-                      className="dojo-region-head city-region-label"
-                      aria-expanded={open}
-                      onClick={() =>
-                        setOpenHomeRegions(() => {
-                          const next: Record<string, boolean> = {};
-                          ADVENTURE_REGIONS.forEach((r) => {
-                            next[r.id] = r.id === reg.id ? !open : false;
-                          });
-                          return next;
-                        })
-                      }
-                    >
-                      <span>
-                        {open ? '▾' : '▸'} {label}
-                      </span>
-                    </button>
-                    {open && (
-                      <div className="city-chip-row" role="list">
-                        {cities.map((c) => {
-                          const country =
-                            getLang() === 'en'
-                              ? getCountryNameEn(c.countryId)
-                              : getCountryNameId(c.countryId);
-                          const order =
-                            ADVENTURE_CITIES.findIndex((x) => x.id === c.id) + 1;
-                          return (
-                            <button
-                              type="button"
-                              key={c.id}
-                              role="listitem"
-                              className={`city-chip ${cityId === c.id ? 'active' : ''}`}
-                              onClick={() => setCityId(c.id)}
-                            >
-                              <span className="city-chip-name">
-                                {order}.{' '}
-                                {getLang() === 'en' ? c.nameEn : c.nameId}
-                              </span>
-                              <span className="city-chip-country">{country}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+              {(() => {
+                // Mapdebug: semua kota "terbuka"; pola max 3 baris sama seperti main
+                const regionsWithCities = ADVENTURE_REGIONS.map((reg) => {
+                  const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
+                  return { reg, cities };
+                }).filter((x) => x.cities.length > 0);
+                const activeCity =
+                  ADVENTURE_CITIES.find((c) => c.id === cityId) || ADVENTURE_CITIES[0];
+                const curIdx = Math.max(
+                  0,
+                  regionsWithCities.findIndex((x) => x.reg.id === activeCity.regionId)
+                );
+                const prevRegs = regionsWithCities.slice(0, curIdx);
+                const currentPack = regionsWithCities[curIdx];
+                const nextRegs = regionsWithCities.slice(curIdx + 1);
+
+                const chips = (cities: typeof ADVENTURE_CITIES) => (
+                  <div className="city-chip-row" role="list">
+                    {cities.map((c) => {
+                      const country =
+                        getLang() === 'en'
+                          ? getCountryNameEn(c.countryId)
+                          : getCountryNameId(c.countryId);
+                      const order =
+                        ADVENTURE_CITIES.findIndex((x) => x.id === c.id) + 1;
+                      return (
+                        <button
+                          type="button"
+                          key={c.id}
+                          role="listitem"
+                          className={`city-chip ${cityId === c.id ? 'active' : ''}`}
+                          onClick={() => {
+                            setCityId(c.id);
+                            setRegionPanel('current');
+                            setOpenSubRegion(null);
+                          }}
+                        >
+                          <span className="city-chip-name">
+                            {order}. {getLang() === 'en' ? c.nameEn : c.nameId}
+                          </span>
+                          <span className="city-chip-country">{country}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 );
-              })}
+
+                const subRegs = (packs: typeof regionsWithCities) => (
+                  <div className="city-region-locked-list">
+                    {packs.map(({ reg, cities }) => {
+                      const label =
+                        getLang() === 'en' ? reg.labelEn : reg.labelId;
+                      const subOpen = openSubRegion === reg.id;
+                      return (
+                        <div key={reg.id} className="city-region-sub">
+                          <button
+                            type="button"
+                            className="city-region-sub-head"
+                            aria-expanded={subOpen}
+                            onClick={() =>
+                              setOpenSubRegion(subOpen ? null : reg.id)
+                            }
+                          >
+                            {subOpen ? '▾' : '▸'} {label}
+                          </button>
+                          {subOpen && chips(cities)}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+
+                return (
+                  <>
+                    {prevRegs.length > 0 && (
+                      <div className="city-region-block dojo-region is-group-bar">
+                        <button
+                          type="button"
+                          className="dojo-region-head city-region-label city-region-locked-summary"
+                          aria-expanded={regionPanel === 'prev'}
+                          onClick={() => {
+                            setRegionPanel((p) =>
+                              p === 'prev' ? 'current' : 'prev'
+                            );
+                            setOpenSubRegion(null);
+                          }}
+                        >
+                          <span>
+                            {regionPanel === 'prev' ? '▾' : '▸'}{' '}
+                            {getLang() === 'en'
+                              ? `Earlier regions (${prevRegs.length})`
+                              : `Region sebelumnya (${prevRegs.length})`}
+                          </span>
+                        </button>
+                        {regionPanel === 'prev' && subRegs(prevRegs)}
+                      </div>
+                    )}
+                    {currentPack && (
+                      <div className="city-region-block dojo-region is-current-region">
+                        <button
+                          type="button"
+                          className="dojo-region-head city-region-label"
+                          aria-expanded={regionPanel === 'current'}
+                          onClick={() => {
+                            setRegionPanel('current');
+                            setOpenSubRegion(null);
+                          }}
+                        >
+                          <span>
+                            {regionPanel === 'current' ? '▾' : '▸'}{' '}
+                            {getLang() === 'en'
+                              ? currentPack.reg.labelEn
+                              : currentPack.reg.labelId}
+                          </span>
+                        </button>
+                        {regionPanel === 'current' && chips(currentPack.cities)}
+                      </div>
+                    )}
+                    {nextRegs.length > 0 && (
+                      <div className="city-region-block dojo-region is-group-bar">
+                        <button
+                          type="button"
+                          className="dojo-region-head city-region-label city-region-locked-summary"
+                          aria-expanded={regionPanel === 'next'}
+                          onClick={() => {
+                            setRegionPanel((p) =>
+                              p === 'next' ? 'current' : 'next'
+                            );
+                            setOpenSubRegion(null);
+                          }}
+                        >
+                          <span>
+                            {regionPanel === 'next' ? '▾' : '▸'}{' '}
+                            {getLang() === 'en'
+                              ? `Later regions (${nextRegs.length})`
+                              : `Region berikutnya (${nextRegs.length})`}
+                          </span>
+                        </button>
+                        {regionPanel === 'next' && subRegs(nextRegs)}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
 {(() => {

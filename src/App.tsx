@@ -393,7 +393,16 @@ function App() {
     screen === 'settings' ? 'settings' : screen === 'dojo' ? 'dojo' : 'home';
 
   // Sembunyikan menu bawah hanya saat main. Di hasil tetap tampil (fun fact di layer atas).
-  const showChrome = screen !== 'game';
+  const mapDebugMode = (() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      return q.get('mapdebug') === '1' || q.get('advdebug') === '1';
+    } catch {
+      return false;
+    }
+  })();
+  const showChrome = screen !== 'game' && !mapDebugMode;
+  const showBottomNav = showChrome;
   const _lv = getLevelById(selectedLevel);
   const levelLabel = getLang() === 'en' ? _lv.labelEn : _lv.labelId;
 
@@ -688,11 +697,9 @@ function App() {
         />
       )}
 
-      {showChrome && (
-        <>
-          <Footer />
-          <BottomNav key={langTick} active={navActive} onChange={handleNav} />
-        </>
+      {showChrome && <Footer />}
+      {showBottomNav && (
+        <BottomNav key={langTick} active={navActive} onChange={handleNav} />
       )}
     </div>
   );
