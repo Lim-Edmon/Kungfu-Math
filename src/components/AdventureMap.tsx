@@ -107,6 +107,24 @@ function clientToMap(
 }
 
 /** Zoom %: 100 = standar game; lebih besar = lebih dekat */
+
+/** Jaga viewBox tetap di dalam peta 0–100. Kota di tepi (Honolulu, Fiji, dll.)
+ *  tetap di ujung — tidak dipaksa center jika itu menyebabkan area kosong. */
+function clampViewBox(vb: ViewBox): ViewBox {
+  let { minX, minY, vbW, vbH } = vb;
+  // Jangan lebih besar dari seluruh peta
+  vbW = Math.min(Math.max(vbW, 0.5), 100);
+  vbH = Math.min(Math.max(vbH, 0.5), 100);
+  // Geser agar tidak keluar kiri/atas/kanan/bawah
+  if (minX < 0) minX = 0;
+  if (minY < 0) minY = 0;
+  if (minX + vbW > 100) minX = 100 - vbW;
+  if (minY + vbH > 100) minY = 100 - vbH;
+  minX = Math.max(0, Math.min(minX, 100 - vbW));
+  minY = Math.max(0, Math.min(minY, 100 - vbH));
+  return { minX, minY, vbW, vbH };
+}
+
 function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
   const safeCx = Number.isFinite(cx) ? cx : 50;
   const safeCy = Number.isFinite(cy) ? cy : 50;
@@ -134,7 +152,7 @@ function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
     maxX += extra / 2;
     vbW = needW;
   }
-  return { minX, minY, vbW, vbH };
+  return clampViewBox({ minX, minY, vbW, vbH });
 }
 
 
@@ -176,7 +194,7 @@ function viewBoxFromPoints(
     maxX += extra / 2;
     vbW = needW;
   }
-  return { minX, minY, vbW, vbH };
+  return clampViewBox({ minX, minY, vbW, vbH });
 }
 
 function viewBoxForCityIndex(idx: number): ViewBox {
@@ -360,6 +378,17 @@ export default function AdventureMap({
     minX -= extra / 2;
     maxX += extra / 2;
     vbW = needW;
+  }
+
+  // Tepi peta: jangan tampilkan area kosong di luar 0–100
+  {
+    const clamped = clampViewBox({ minX, minY, vbW, vbH });
+    minX = clamped.minX;
+    minY = clamped.minY;
+    vbW = clamped.vbW;
+    vbH = clamped.vbH;
+    maxX = minX + vbW;
+    maxY = minY + vbH;
   }
 
   const viewCenter = {
