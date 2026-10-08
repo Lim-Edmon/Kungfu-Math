@@ -13,8 +13,6 @@ import {
   ADVENTURE_REGIONS,
   getCountryNameId,
   getCountryNameEn,
-  cityBgCandidates,
-  cityMusicSrc,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS, getLevelById } from '../lib/levels';
@@ -52,35 +50,47 @@ function mapDebugFocusFromUrl(): string | null {
 }
 
 /** Cek file aset ada (HEAD/GET singkat) — hanya mode debug */
-async function probeUrl(url: string): Promise<boolean> {
-  try {
-    const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-    if (r.ok) return true;
-  } catch {
-    /* fall through */
-  }
+/** Hanya file khusus kota — default.webp / BGM default tidak dihitung "ada". */
+async function probeDedicatedAsset(url: string, kind: 'image' | 'audio'): Promise<boolean> {
   try {
     const r = await fetch(url, { method: 'GET', cache: 'no-store' });
-    return r.ok;
+    if (!r.ok) return false;
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    // SPA fallback sering balas index.html 200 — tolak text/html
+    if (ct.includes('text/html')) return false;
+    if (kind === 'image' && !(ct.includes('image') || ct.includes('octet-stream') || ct === '')) {
+      // beberapa host tidak kirim CT; cek ekstensi path
+      if (!/\.(webp|png|jpe?g)(\?|$)/i.test(url)) return false;
+    }
+    if (kind === 'audio' && !(ct.includes('audio') || ct.includes('mpeg') || ct.includes('octet-stream') || ct === '')) {
+      if (!/\.mp3(\?|$)/i.test(url)) return false;
+    }
+    // pastikan body tidak kosong HTML
+    if (ct.includes('text/')) return false;
+    return true;
   } catch {
     return false;
   }
 }
 
 async function auditCityAssets(cityId: string): Promise<{ bg: boolean; music: boolean; bgPath: string; musicPath: string }> {
-  const musicPath = cityMusicSrc(cityId);
-  let bgPath = '';
+  const id = (cityId || '').toLowerCase();
+  const bgCandidates = [
+    `/cities/bg/${id}.webp`,
+    `/cities/bg/${id}.png`,
+    `/cities/bg/${id}.jpg`,
+  ];
+  let bgPath = bgCandidates[0];
   let bg = false;
-  for (const cand of cityBgCandidates(cityId)) {
-    if (cand.includes('/default.')) continue;
-    if (await probeUrl(cand)) {
+  for (const cand of bgCandidates) {
+    if (await probeDedicatedAsset(cand, 'image')) {
       bg = true;
       bgPath = cand;
       break;
     }
   }
-  if (!bgPath) bgPath = cityBgCandidates(cityId)[0] || '';
-  const music = await probeUrl(musicPath);
+  const musicPath = `/cities/music/${id}.mp3`;
+  const music = await probeDedicatedAsset(musicPath, 'audio');
   return { bg, music, bgPath, musicPath };
 }
 
@@ -129,6 +139,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [travelTo, setTravelTo] = useState<string | null>(null);
   /** Region list kota di petualangan — default hanya region kota aktif */
   const [openHomeRegions, setOpenHomeRegions] = useState<Record<string, boolean>>({});
+  const [lockedRegionsOpen, setLockedRegionsOpen] = useState(false);
   const [adventureDiffId, setAdventureDiffId] = useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
@@ -161,10 +172,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     if (f && ADVENTURE_CITIES.some((c) => c.id === f)) {
       setCityId(f);
     }
-    // buka semua region
+    // accordion: hanya region kota fokus / jakarta
+    const focusId = (f && ADVENTURE_CITIES.some((c) => c.id === f)) ? f : 'jakarta';
+    const focusCity = ADVENTURE_CITIES.find((c) => c.id === focusId);
+    const regId = focusCity?.regionId || 'id';
     const open: Record<string, boolean> = {};
     ADVENTURE_REGIONS.forEach((r) => {
-      open[r.id] = true;
+      open[r.id] = r.id === regId;
     });
     setOpenHomeRegions(open);
   }, [mapDebug]);
@@ -395,10 +409,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               {ADVENTURE_REGIONS.map((reg) => {
                 const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
                 if (cities.length === 0) return null;
-                const open =
-                  openHomeRegions[reg.id] !== undefined
-                    ? !!openHomeRegions[reg.id]
-                    : true;
+                const open = !!openHomeRegions[reg.id];
                 const label = getLang() === 'en' ? reg.labelEn : reg.labelId;
                 return (
                   <div key={reg.id} className="city-region-block dojo-region">
@@ -407,10 +418,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       className="dojo-region-head city-region-label"
                       aria-expanded={open}
                       onClick={() =>
-                        setOpenHomeRegions((prev) => ({
-                          ...prev,
-                          [reg.id]: !open,
-                        }))
+                        setOpenHomeRegions(() => {
+                          const next: Record<string, boolean> = {};
+                          ADVENTURE_REGIONS.forEach((r) => {
+                            next[r.id] = r.id === reg.id ? !open : false;
+                          });
+                          return next;
+                        })
                       }
                     >
                       <span>
@@ -706,11 +720,26 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                   );
                 })()}
                 <div className="city-region-stack">
-                  {ADVENTURE_REGIONS.map((reg) => {
-                    const cities = ADVENTURE_CITIES.filter(
-                      (c) => c.regionId === reg.id
+                  {(() => {
+                    const prog = loadProgress();
+                    const unlockedList = prog.adventureUnlocked?.length
+                      ? prog.adventureUnlocked
+                      : ['jakarta'];
+                    const isCityOpen = (id: string) =>
+                      id === 'jakarta' || unlockedList.includes(id);
+                    const regionsWithCities = ADVENTURE_REGIONS.map((reg) => {
+                      const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
+                      return { reg, cities };
+                    }).filter((x) => x.cities.length > 0);
+                    const openRegs = regionsWithCities.filter(({ cities }) =>
+                      cities.some((c) => isCityOpen(c.id))
                     );
-                    if (cities.length === 0) return null;
+                    const lockedRegs = regionsWithCities.filter(
+                      ({ cities }) => !cities.some((c) => isCityOpen(c.id))
+                    );
+                    return (
+                      <>
+                  {openRegs.map(({ reg, cities }) => {
                     const activeCity = ADVENTURE_CITIES.find((c) => c.id === cityId);
                     const isActiveReg = (activeCity?.regionId || 'id') === reg.id;
                     const open =
@@ -725,10 +754,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                           className="dojo-region-head city-region-label"
                           aria-expanded={open}
                           onClick={() =>
-                            setOpenHomeRegions((prev) => ({
-                              ...prev,
-                              [reg.id]: !open,
-                            }))
+                            setOpenHomeRegions(() => {
+                              const next: Record<string, boolean> = {};
+                              ADVENTURE_REGIONS.forEach((r) => {
+                                next[r.id] = r.id === reg.id ? !open : false;
+                              });
+                              return next;
+                            })
                           }
                         >
                           <span>
@@ -767,10 +799,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                     }
                                     setCityId(c.id);
                                     updateProgress({ adventureCityId: c.id });
-                                    setOpenHomeRegions((prev) => ({
-                                      ...prev,
-                                      [c.regionId]: true,
-                                    }));
+                                    setOpenHomeRegions(() => {
+                                      const next: Record<string, boolean> = {};
+                                      ADVENTURE_REGIONS.forEach((r) => {
+                                        next[r.id] = r.id === c.regionId;
+                                      });
+                                      return next;
+                                    });
                                   }}
                                 >
                                   <span className="city-chip-name">
@@ -788,6 +823,42 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       </div>
                     );
                   })}
+                  {lockedRegs.length > 0 && (
+                    <div className="city-region-block dojo-region is-locked-group">
+                      <button
+                        type="button"
+                        className="dojo-region-head city-region-label city-region-locked-summary"
+                        aria-expanded={lockedRegionsOpen}
+                        onClick={() => setLockedRegionsOpen((v) => !v)}
+                      >
+                        <span>
+                          {lockedRegionsOpen ? '▾' : '▸'}{' '}
+                          {getLang() === 'en'
+                            ? `Locked regions (${lockedRegs.length})`
+                            : `Region terkunci (${lockedRegs.length})`}
+                        </span>
+                      </button>
+                      {lockedRegionsOpen && (
+                        <div className="city-region-locked-list">
+                          {lockedRegs.map(({ reg }) => {
+                            const label =
+                              getLang() === 'en' ? reg.labelEn : reg.labelId;
+                            return (
+                              <div
+                                key={reg.id}
+                                className="city-region-locked-item"
+                              >
+                                ▸ {label}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             )}

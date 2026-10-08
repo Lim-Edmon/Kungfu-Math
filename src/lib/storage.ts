@@ -291,13 +291,16 @@ export function exportProgress(): string {
 
 /**
  * Cheat / dev unlock (bukan progress transfer).
- * Ketik di "Masukkan Kode Progress" — buka SEMUA kota + lencana.
- * Tidak mengisi skor/rekor palsu.
+ * Ketik di "Masukkan Kode Progress".
  *
- * Frasa (abaikan spasi/huruf besar/kecil/tanda baca):
- *   edmon halim the great
- *   unlock all
- *   buka semua
+ * Buka akses uji (semua kota + lencana, rekor tidak diisi):
+ *   edmon halim the great | unlock all | buka semua
+ *
+ * Kunci lagi (hanya cabut akses cheat; progress main tetap):
+ *   normal | kembali | default | lock all | kunci semua
+ *
+ * Snapshot disimpan terpisah di localStorage (bukan di kode export),
+ * supaya HP keluarga tidak ikut terpengaruh.
  */
 function normalizeCheatKey(s: string): string {
   return s
@@ -315,13 +318,82 @@ const DEV_UNLOCK_KEYS = new Set([
   'opensesame',
 ]);
 
+const DEV_LOCK_KEYS = new Set([
+  'normal',
+  'kembali',
+  'default',
+  'lockall',
+  'kuncisemua',
+  'lock',
+  'resetakses',
+]);
+
+const DEV_SNAP_KEY = 'kungfu-math-dev-snap';
+
+type DevSnap = {
+  adventureUnlocked: string[];
+  badges: string[];
+};
+
+function readDevSnap(): DevSnap | null {
+  try {
+    const raw = localStorage.getItem(DEV_SNAP_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw) as Partial<DevSnap>;
+    if (!Array.isArray(o.adventureUnlocked) || !Array.isArray(o.badges)) return null;
+    return {
+      adventureUnlocked: o.adventureUnlocked.filter((x) => typeof x === 'string'),
+      badges: o.badges.filter((x) => typeof x === 'string'),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeDevSnap(snap: DevSnap | null): void {
+  try {
+    if (!snap) localStorage.removeItem(DEV_SNAP_KEY);
+    else localStorage.setItem(DEV_SNAP_KEY, JSON.stringify(snap));
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Hitung kota terbuka dari skor/lolos nyata (tanpa cheat). */
+function computeUnlockedFromScores(prog: PlayerProgress): string[] {
+  const unlocked: string[] = ['jakarta'];
+  for (let i = 0; i < ADVENTURE_CITIES.length - 1; i++) {
+    const c = ADVENTURE_CITIES[i];
+    const hs = prog.adventureHighScores?.[c.id] ?? 0;
+    if (hs >= c.targetScore) {
+      unlocked.push(ADVENTURE_CITIES[i + 1].id);
+    } else {
+      break;
+    }
+  }
+  // Gabungkan dengan yang sudah di adventureUnlocked sebelum cheat
+  // (jaga-jaga skor tidak sinkron) — dipanggil hanya saat lock tanpa snap
+  return Array.from(new Set(unlocked));
+}
+
 export function isDevUnlockCode(encoded: string): boolean {
   return DEV_UNLOCK_KEYS.has(normalizeCheatKey(encoded || ''));
 }
 
-/** Buka akses uji: semua kota petualangan + semua lencana. Rekor tetap utuh. */
+export function isDevLockCode(encoded: string): boolean {
+  return DEV_LOCK_KEYS.has(normalizeCheatKey(encoded || ''));
+}
+
+/** Buka akses uji: semua kota + semua lencana. Simpan snapshot dulu. */
 export function applyDevUnlockAccess(): void {
   const prog = loadProgress();
+  // Snapshot hanya sekali — jangan overwrite jika sudah unlock
+  if (!readDevSnap()) {
+    writeDevSnap({
+      adventureUnlocked: [...(prog.adventureUnlocked?.length ? prog.adventureUnlocked : ['jakarta'])],
+      badges: [...(prog.badges || [])],
+    });
+  }
   const allCities = ADVENTURE_CITIES.map((c) => c.id);
   const allBadges = BADGE_DEFS.map((b) => b.id);
   saveProgress(
@@ -333,13 +405,55 @@ export function applyDevUnlockAccess(): void {
   );
 }
 
+/**
+ * Cabut akses cheat: kembalikan kota + lencana ke snapshot.
+ * Jika tidak ada snapshot → hitung ulang dari skor lolos.
+ * Rekor / skor tidak disentuh.
+ */
+export function applyDevLockAccess(): void {
+  const prog = loadProgress();
+  const snap = readDevSnap();
+  let unlocked: string[];
+  let badges: string[];
+  if (snap) {
+    unlocked = snap.adventureUnlocked.length ? snap.adventureUnlocked : ['jakarta'];
+    badges = snap.badges || [];
+    writeDevSnap(null);
+  } else {
+    // Tidak pernah unlock lewat cheat di perangkat ini — tetap jaga yang dari skor
+    const fromScores = computeUnlockedFromScores(prog);
+    const current = prog.adventureUnlocked || ['jakarta'];
+    // Ambil irisan: yang ada di current DAN (dari skor ATAU jakarta)
+    // Lebih aman: pakai fromScores saja + pastikan jakarta
+    unlocked = fromScores;
+    // Lencana: biarkan yang sudah ada (tanpa snapshot tidak bisa bedakan cheat badge)
+    badges = prog.badges || [];
+  }
+  if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
+  // Kota aktif harus tetap yang terbuka
+  let cityId = prog.adventureCityId || 'jakarta';
+  if (!unlocked.includes(cityId)) cityId = unlocked[unlocked.length - 1] || 'jakarta';
+  saveProgress(
+    normalizeProgress({
+      ...prog,
+      adventureUnlocked: unlocked,
+      badges,
+      adventureCityId: cityId,
+    })
+  );
+}
+
 export function importProgress(encoded: string): boolean {
   const trimmed = (encoded || '').trim();
   if (!trimmed) return false;
 
-  // Cheat code dulu (bukan base64 progress)
-  if (DEV_UNLOCK_KEYS.has(normalizeCheatKey(trimmed))) {
+  const key = normalizeCheatKey(trimmed);
+  if (DEV_UNLOCK_KEYS.has(key)) {
     applyDevUnlockAccess();
+    return true;
+  }
+  if (DEV_LOCK_KEYS.has(key)) {
+    applyDevLockAccess();
     return true;
   }
 

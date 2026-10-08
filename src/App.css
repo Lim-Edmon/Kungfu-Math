@@ -3296,3 +3296,26 @@ h1.home-title {
 .adventure-map-frame.is-debug:active {
   cursor: grabbing;
 }
+
+
+/* Region terkunci digabung jadi bar tipis */
+.city-region-block.is-locked-group {
+  margin-top: 0.35rem;
+  opacity: 0.85;
+}
+.city-region-locked-summary {
+  padding: 0.35rem 0.65rem !important;
+  font-size: 0.85rem !important;
+  min-height: auto !important;
+}
+.city-region-locked-list {
+  padding: 0.25rem 0.65rem 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.city-region-locked-item {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  line-height: 1.35;
+}
