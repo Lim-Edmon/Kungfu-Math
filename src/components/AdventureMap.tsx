@@ -214,12 +214,46 @@ function viewBoxFromPoints(
   return clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
 }
 
+/** Span maksimum zoom (map %). Tetangga jalur ±2 yang terlalu jauh
+ *  (Honolulu↔Ilulissat, Fiji↔Auckland) tidak boleh bikin zoom setara dunia. */
+const MAP_ZOOM_MAX_SPAN = 14;
+const MAP_ZOOM_MIN_SPAN = 3.5;
+/** Zoom lokal saat tetangga jalur terlalu jarang (≈ viewBoxAround 75%) */
+const MAP_ZOOM_LOCAL_PCT = 75;
+
+/**
+ * Zoom window: usahakan 2 kota sebelum + aktif + 2 sesudah (urutan jalur).
+ * Jika rentang geografis > MAP_ZOOM_MAX_SPAN → jatuh ke frame lokal di kota aktif
+ * (tetangga jauh tidak memaksa peta melebar).
+ */
 function viewBoxForCityIndex(idx: number): ViewBox {
+  const safeIdx = Math.max(0, Math.min(ADVENTURE_CITIES.length - 1, idx));
   const cities = ADVENTURE_CITIES.slice(
-    Math.max(0, idx - 2),
-    Math.min(ADVENTURE_CITIES.length, idx + 3)
+    Math.max(0, safeIdx - 2),
+    Math.min(ADVENTURE_CITIES.length, safeIdx + 3)
   );
-  return viewBoxFromPoints(cities);
+  let vb = viewBoxFromPoints(cities, 0.9, MAP_ZOOM_MIN_SPAN);
+  if (Math.max(vb.vbW, vb.vbH) > MAP_ZOOM_MAX_SPAN) {
+    const c = ADVENTURE_CITIES[safeIdx];
+    if (c) {
+      // Frame lokal di kota aktif; coba tarik tetangga yang masih muat
+      const local = viewBoxAround(c.mapX, c.mapY, MAP_ZOOM_LOCAL_PCT);
+      const near = cities.filter(
+        (p) =>
+          Math.abs(p.mapX - c.mapX) <= local.vbW * 0.45 &&
+          Math.abs(p.mapY - c.mapY) <= local.vbH * 0.45
+      );
+      if (near.length > 1) {
+        vb = viewBoxFromPoints(near, 0.9, MAP_ZOOM_MIN_SPAN);
+        if (Math.max(vb.vbW, vb.vbH) > MAP_ZOOM_MAX_SPAN) {
+          vb = local;
+        }
+      } else {
+        vb = local;
+      }
+    }
+  }
+  return vb;
 }
 
 function spanOf(vb: ViewBox): number {
@@ -295,10 +329,9 @@ export default function AdventureMap({
     if (!mapDebug.on) return;
     const c = ADVENTURE_CITIES.find((x) => x.id === activeId);
     if (!c) return;
-    setDebugCenter((prev) => {
-      if (prev && prev.x === c.mapX && prev.y === c.mapY) return prev;
-      return { x: c.mapX, y: c.mapY };
-    });
+    setDebugCenter({ x: c.mapX, y: c.mapY });
+    // Pilih kota baru → kembali ke zoom jalur ±2 (bukan manual)
+    setDebugZoomPct(100);
   }, [activeId, mapDebug.on]);
 
   useEffect(() => {
@@ -354,36 +387,32 @@ export default function AdventureMap({
       debugCenter?.x ?? mapDebug.center?.x ?? focusCity?.mapX ?? 50;
     const cy =
       debugCenter?.y ?? mapDebug.center?.y ?? focusCity?.mapY ?? 50;
-    const vb = viewBoxAround(cx, cy, debugZoomPct);
+    // Default: sama seperti main (±2 jalur, capped). Manual zoom (≠100) → viewBoxAround.
+    const useManualZoom = Math.abs(debugZoomPct - 100) > 0.5;
+    const vb = useManualZoom
+      ? viewBoxAround(cx, cy, debugZoomPct)
+      : viewBoxForCityIndex(
+          focusCity
+            ? ADVENTURE_CITIES.findIndex((c) => c.id === focusCity.id)
+            : activeIdx
+        );
     minX = vb.minX;
     maxX = vb.minX + vb.vbW;
     minY = vb.minY;
     maxY = vb.minY + vb.vbH;
   } else {
-    const xs = zoomCities.map((c) => c.mapX);
-    const ys = zoomCities.map((c) => c.mapY);
-    const pad = 0.85;
-    minX = Math.min(...xs) - pad;
-    maxX = Math.max(...xs) + pad;
-    minY = Math.min(...ys) - pad;
-    maxY = Math.max(...ys) + pad;
-
-    const minSpan = 2.2;
-    if (maxX - minX < minSpan) {
-      const m = (minX + maxX) / 2;
-      minX = m - minSpan / 2;
-      maxX = m + minSpan / 2;
-    }
-    if (maxY - minY < minSpan) {
-      const m = (minY + maxY) / 2;
-      minY = m - minSpan / 2;
-      maxY = m + minSpan / 2;
-    }
+    const vb = viewBoxForCityIndex(activeIdx);
+    minX = vb.minX;
+    maxX = vb.minX + vb.vbW;
+    minY = vb.minY;
+    maxY = vb.minY + vb.vbH;
   }
 
   let vbW = maxX - minX;
   let vbH = maxY - minY;
-  if (vbW / vbH > MAP_ASPECT) {
+  // Debug manual / path sudah lewat clamp di helper; normal juga.
+  // Pastikan aspect + tepi tetap aman bila sumber belum clamp.
+  if (vbW / Math.max(0.0001, vbH) > MAP_ASPECT) {
     const needH = vbW / MAP_ASPECT;
     const extra = needH - vbH;
     minY -= extra / 2;
@@ -396,8 +425,6 @@ export default function AdventureMap({
     maxX += extra / 2;
     vbW = needW;
   }
-
-  // Tepi peta: center per-sumbu jika muat; kalau tidak, nempel ujung
   {
     const preferCx = (minX + maxX) / 2;
     const preferCy = (minY + maxY) / 2;
