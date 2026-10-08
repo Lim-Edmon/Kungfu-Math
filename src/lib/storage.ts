@@ -144,7 +144,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (Array.isArray(p.adventureUnlocked)) {
     next.adventureUnlocked = p.adventureUnlocked
       .filter((x): x is string => typeof x === 'string' && VALID_CITIES.has(x))
-      .slice(0, 80);
+      .slice(0, Math.max(200, ADVENTURE_CITIES.length + 5));
   }
   // Jakarta SELALU terbuka dari awal (progress lama / import tanpa jakarta)
   if (!next.adventureUnlocked.includes('jakarta')) {

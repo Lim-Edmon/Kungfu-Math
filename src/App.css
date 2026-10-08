@@ -3319,3 +3319,65 @@ h1.home-title {
   opacity: 0.7;
   line-height: 1.35;
 }
+
+
+/* Grup region sebelumnya / berikutnya — max 3 baris */
+.city-region-block.is-group-bar .city-region-locked-summary {
+  padding: 0.4rem 0.7rem !important;
+  font-size: 0.88rem !important;
+}
+.city-region-block.is-current-region .dojo-region-head {
+  font-weight: 700;
+}
+.city-region-sub {
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+  padding: 0.15rem 0;
+}
+.city-region-sub-head {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.28rem 0.5rem;
+  cursor: pointer;
+  opacity: 0.9;
+}
+.city-region-sub-head:hover {
+  opacity: 1;
+}
+.city-region-sub.is-locked .city-region-sub-head {
+  opacity: 0.55;
+}
+.city-region-sub-lock {
+  font-size: 0.75em;
+}
+
+.unlock-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+.unlock-popup-card {
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #222);
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  max-width: 22rem;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+.unlock-popup-text {
+  margin: 0 0 1rem;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}

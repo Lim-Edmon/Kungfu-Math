@@ -139,7 +139,10 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [travelTo, setTravelTo] = useState<string | null>(null);
   /** Region list kota di petualangan — default hanya region kota aktif */
   const [openHomeRegions, setOpenHomeRegions] = useState<Record<string, boolean>>({});
-  const [lockedRegionsOpen, setLockedRegionsOpen] = useState(false);
+  /** Panel region: prev | current | next — max 3 baris */
+  const [regionPanel, setRegionPanel] = useState<'prev' | 'current' | 'next'>('current');
+  /** Sub-region terbuka di dalam panel prev/next */
+  const [openSubRegion, setOpenSubRegion] = useState<string | null>(null);
   const [adventureDiffId, setAdventureDiffId] = useState<string | null>(null);
   const [selectedCharacterId, setSelectedCharacterId] =
     useState<CharacterId | null>(null);
@@ -728,134 +731,181 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     const isCityOpen = (id: string) =>
                       id === 'jakarta' || unlockedList.includes(id);
                     const regionsWithCities = ADVENTURE_REGIONS.map((reg) => {
-                      const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
+                      const cities = ADVENTURE_CITIES.filter(
+                        (c) => c.regionId === reg.id
+                      );
                       return { reg, cities };
                     }).filter((x) => x.cities.length > 0);
-                    const openRegs = regionsWithCities.filter(({ cities }) =>
-                      cities.some((c) => isCityOpen(c.id))
+
+                    const activeCity =
+                      ADVENTURE_CITIES.find((c) => c.id === cityId) ||
+                      ADVENTURE_CITIES[0];
+                    const curIdx = Math.max(
+                      0,
+                      regionsWithCities.findIndex(
+                        (x) => x.reg.id === activeCity.regionId
+                      )
                     );
-                    const lockedRegs = regionsWithCities.filter(
-                      ({ cities }) => !cities.some((c) => isCityOpen(c.id))
-                    );
-                    return (
-                      <>
-                  {openRegs.map(({ reg, cities }) => {
-                    const activeCity = ADVENTURE_CITIES.find((c) => c.id === cityId);
-                    const isActiveReg = (activeCity?.regionId || 'id') === reg.id;
-                    const open =
-                      openHomeRegions[reg.id] !== undefined
-                        ? !!openHomeRegions[reg.id]
-                        : isActiveReg;
-                    const label = getLang() === 'en' ? reg.labelEn : reg.labelId;
-                    return (
-                      <div key={reg.id} className="city-region-block dojo-region">
-                        <button
-                          type="button"
-                          className="dojo-region-head city-region-label"
-                          aria-expanded={open}
-                          onClick={() =>
-                            setOpenHomeRegions(() => {
-                              const next: Record<string, boolean> = {};
-                              ADVENTURE_REGIONS.forEach((r) => {
-                                next[r.id] = r.id === reg.id ? !open : false;
-                              });
-                              return next;
-                            })
-                          }
-                        >
-                          <span>
-                            {open ? '▾' : '▸'} {label}
-                          </span>
-                        </button>
-                        {open && (
-                          <div className="city-chip-row" role="list">
-                            {cities.map((c) => {
-                              const prog = loadProgress();
-                              const unlockedList = prog.adventureUnlocked?.length
-                                ? prog.adventureUnlocked
-                                : ['jakarta'];
-                              const unlocked =
-                                c.id === 'jakarta' ||
-                                unlockedList.includes(c.id);
-                              const country =
-                                getLang() === 'en'
-                                  ? getCountryNameEn(c.countryId)
-                                  : getCountryNameId(c.countryId);
-                              const order =
-                                ADVENTURE_CITIES.findIndex((x) => x.id === c.id) +
-                                1;
-                              return (
-                                <button
-                                  type="button"
-                                  key={c.id}
-                                  role="listitem"
-                                  className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
-                                  disabled={!unlocked}
-                                  onClick={() => {
-                                    if (!unlocked) return;
-                                    if (c.id !== cityId) {
-                                      setTravelFrom(cityId);
-                                      setTravelTo(c.id);
-                                    }
-                                    setCityId(c.id);
-                                    updateProgress({ adventureCityId: c.id });
-                                    setOpenHomeRegions(() => {
-                                      const next: Record<string, boolean> = {};
-                                      ADVENTURE_REGIONS.forEach((r) => {
-                                        next[r.id] = r.id === c.regionId;
-                                      });
-                                      return next;
-                                    });
-                                  }}
-                                >
-                                  <span className="city-chip-name">
-                                    {order}.{' '}
-                                    {getLang() === 'en' ? c.nameEn : c.nameId}
-                                  </span>
-                                  <span className="city-chip-country">
-                                    {country}
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
+                    const prevRegs = regionsWithCities.slice(0, curIdx);
+                    const currentPack = regionsWithCities[curIdx];
+                    const nextRegs = regionsWithCities.slice(curIdx + 1);
+
+                    const renderCityChips = (
+                      cities: typeof ADVENTURE_CITIES
+                    ) => (
+                      <div className="city-chip-row" role="list">
+                        {cities.map((c) => {
+                          const unlocked = isCityOpen(c.id);
+                          const country =
+                            getLang() === 'en'
+                              ? getCountryNameEn(c.countryId)
+                              : getCountryNameId(c.countryId);
+                          const order =
+                            ADVENTURE_CITIES.findIndex((x) => x.id === c.id) + 1;
+                          return (
+                            <button
+                              type="button"
+                              key={c.id}
+                              role="listitem"
+                              className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
+                              disabled={!unlocked}
+                              onClick={() => {
+                                if (!unlocked) return;
+                                if (c.id !== cityId) {
+                                  setTravelFrom(cityId);
+                                  setTravelTo(c.id);
+                                }
+                                setCityId(c.id);
+                                updateProgress({ adventureCityId: c.id });
+                                setRegionPanel('current');
+                                setOpenSubRegion(null);
+                              }}
+                            >
+                              <span className="city-chip-name">
+                                {order}.{' '}
+                                {getLang() === 'en' ? c.nameEn : c.nameId}
+                              </span>
+                              <span className="city-chip-country">
+                                {country}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     );
-                  })}
-                  {lockedRegs.length > 0 && (
-                    <div className="city-region-block dojo-region is-locked-group">
-                      <button
-                        type="button"
-                        className="dojo-region-head city-region-label city-region-locked-summary"
-                        aria-expanded={lockedRegionsOpen}
-                        onClick={() => setLockedRegionsOpen((v) => !v)}
-                      >
-                        <span>
-                          {lockedRegionsOpen ? '▾' : '▸'}{' '}
-                          {getLang() === 'en'
-                            ? `Locked regions (${lockedRegs.length})`
-                            : `Region terkunci (${lockedRegs.length})`}
-                        </span>
-                      </button>
-                      {lockedRegionsOpen && (
-                        <div className="city-region-locked-list">
-                          {lockedRegs.map(({ reg }) => {
-                            const label =
-                              getLang() === 'en' ? reg.labelEn : reg.labelId;
-                            return (
-                              <div
-                                key={reg.id}
-                                className="city-region-locked-item"
+
+                    const renderSubRegions = (
+                      packs: typeof regionsWithCities,
+                      panel: 'prev' | 'next'
+                    ) => (
+                      <div className="city-region-locked-list">
+                        {packs.map(({ reg, cities }) => {
+                          const label =
+                            getLang() === 'en' ? reg.labelEn : reg.labelId;
+                          const subOpen = openSubRegion === reg.id;
+                          const anyOpen = cities.some((c) => isCityOpen(c.id));
+                          return (
+                            <div
+                              key={reg.id}
+                              className={`city-region-sub ${anyOpen ? '' : 'is-locked'}`}
+                            >
+                              <button
+                                type="button"
+                                className="city-region-sub-head"
+                                aria-expanded={subOpen}
+                                onClick={() =>
+                                  setOpenSubRegion(subOpen ? null : reg.id)
+                                }
                               >
-                                ▸ {label}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                                {subOpen ? '▾' : '▸'} {label}
+                                {!anyOpen && (
+                                  <span className="city-region-sub-lock">
+                                    {' '}
+                                    🔒
+                                  </span>
+                                )}
+                              </button>
+                              {subOpen && renderCityChips(cities)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+
+                    return (
+                      <>
+                        {prevRegs.length > 0 && (
+                          <div className="city-region-block dojo-region is-group-bar">
+                            <button
+                              type="button"
+                              className="dojo-region-head city-region-label city-region-locked-summary"
+                              aria-expanded={regionPanel === 'prev'}
+                              onClick={() => {
+                                setRegionPanel((p) =>
+                                  p === 'prev' ? 'current' : 'prev'
+                                );
+                                setOpenSubRegion(null);
+                              }}
+                            >
+                              <span>
+                                {regionPanel === 'prev' ? '▾' : '▸'}{' '}
+                                {getLang() === 'en'
+                                  ? `Earlier regions (${prevRegs.length})`
+                                  : `Region sebelumnya (${prevRegs.length})`}
+                              </span>
+                            </button>
+                            {regionPanel === 'prev' &&
+                              renderSubRegions(prevRegs, 'prev')}
+                          </div>
+                        )}
+
+                        {currentPack && (
+                          <div className="city-region-block dojo-region is-current-region">
+                            <button
+                              type="button"
+                              className="dojo-region-head city-region-label"
+                              aria-expanded={regionPanel === 'current'}
+                              onClick={() => {
+                                setRegionPanel('current');
+                                setOpenSubRegion(null);
+                              }}
+                            >
+                              <span>
+                                {regionPanel === 'current' ? '▾' : '▸'}{' '}
+                                {getLang() === 'en'
+                                  ? currentPack.reg.labelEn
+                                  : currentPack.reg.labelId}
+                              </span>
+                            </button>
+                            {regionPanel === 'current' &&
+                              renderCityChips(currentPack.cities)}
+                          </div>
+                        )}
+
+                        {nextRegs.length > 0 && (
+                          <div className="city-region-block dojo-region is-group-bar">
+                            <button
+                              type="button"
+                              className="dojo-region-head city-region-label city-region-locked-summary"
+                              aria-expanded={regionPanel === 'next'}
+                              onClick={() => {
+                                setRegionPanel((p) =>
+                                  p === 'next' ? 'current' : 'next'
+                                );
+                                setOpenSubRegion(null);
+                              }}
+                            >
+                              <span>
+                                {regionPanel === 'next' ? '▾' : '▸'}{' '}
+                                {getLang() === 'en'
+                                  ? `Later regions (${nextRegs.length})`
+                                  : `Region berikutnya (${nextRegs.length})`}
+                              </span>
+                            </button>
+                            {regionPanel === 'next' &&
+                              renderSubRegions(nextRegs, 'next')}
+                          </div>
+                        )}
                       </>
                     );
                   })()}

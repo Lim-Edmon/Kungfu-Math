@@ -29,6 +29,7 @@ export default function Settings({
   const [exportCode, setExportCode] = useState('');
   const [importCode, setImportCode] = useState('');
   const [message, setMessage] = useState('');
+  const [unlockPopup, setUnlockPopup] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [clearConfirm, setClearConfirm] = useState(false);
@@ -118,13 +119,15 @@ ${t('waProgressSuffix')}`
     const isLock = isDevLockCode(importCode);
     const ok = importProgress(importCode);
     if (ok) {
-      setMessage(
-        isUnlock
-          ? t('msgDevUnlockOk')
-          : isLock
-            ? t('msgDevLockOk')
-            : t('msgImportOk')
-      );
+      const msg = isUnlock
+        ? t('msgDevUnlockOk')
+        : isLock
+          ? t('msgDevLockOk')
+          : t('msgImportOk');
+      setMessage(msg);
+      if (isUnlock || isLock) {
+        setUnlockPopup(msg);
+      }
       setImportCode('');
     } else {
       setMessage(t('msgImportFail'));
@@ -335,6 +338,20 @@ ${t('waProgressSuffix')}`
       </section>
 
       {message && <p className="settings-message">{message}</p>}
+      {unlockPopup && (
+        <div className="unlock-popup-backdrop" role="alertdialog" aria-modal="true">
+          <div className="unlock-popup-card">
+            <p className="unlock-popup-text">{unlockPopup}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setUnlockPopup(null)}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
       <p className="settings-note app-version-line">{t('appVersionLabel')}: 0.1.9</p>
     </div>
   );
