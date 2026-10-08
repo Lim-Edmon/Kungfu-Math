@@ -3381,3 +3381,34 @@ h1.home-title {
   font-size: 0.98rem;
   line-height: 1.45;
 }
+
+
+/* Wizard: field belum diisi */
+.wizard-field.field-error {
+  outline: 2px solid #e53935;
+  outline-offset: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #e53935 8%, transparent);
+}
+.wizard-field.field-shake {
+  animation: fieldShake 0.45s ease;
+}
+@keyframes fieldShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.volume-hint {
+  margin: 0 12px 10px;
+  padding: 8px 14px;
+  max-width: 280px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 999px;
+  line-height: 1.3;
+}

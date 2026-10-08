@@ -230,6 +230,8 @@ export default function Game({
   }, []);
 
   const [countdownLabel, setCountdownLabel] = useState('READY');
+  const [resolvedBgUrl, setResolvedBgUrl] = useState<string>('/cities/bg/dojo.webp');
+  const [showVolumeHint, setShowVolumeHint] = useState(true);
   /** Layer jejak slice — DOM langsung (bukan React setState tiap move) */
   const trailLayerRef = useRef<HTMLDivElement | null>(null);
   const lastTrailTsRef = useRef(0);
@@ -271,6 +273,39 @@ export default function Game({
     return () => stopAllMusic();
   }, [cityId]);
 
+  // Resolve BG: coba file khusus kota → default. Cheat unlock tidak memengaruhi.
+  // Pakai Image() agar SPA yang balas HTML 200 tidak dianggap gambar valid.
+  useEffect(() => {
+    const candidates = cityBgCandidates(cityId ? cityId : 'dojo');
+    let cancelled = false;
+    const probe = (url: string) =>
+      new Promise<boolean>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    (async () => {
+      for (const url of candidates) {
+        const ok = await probe(url);
+        if (cancelled) return;
+        if (ok) {
+          setResolvedBgUrl(url);
+          return;
+        }
+      }
+      if (!cancelled) {
+        setResolvedBgUrl(
+          cityId ? '/cities/bg/default.webp' : '/cities/bg/dojo.webp'
+        );
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cityId]);
+
+
   // Selesai / keluar → musik kota wajib diam (soft-lock anti tabrakan)
   useEffect(() => {
     if (state.status === 'won' || state.status === 'lost') {
@@ -282,7 +317,7 @@ export default function Game({
   useEffect(() => {
     if (state.status !== 'countdown') return;
     const steps: { label: string; ms: number }[] = [
-      { label: 'READY', ms: 700 },
+      { label: 'READY', ms: 900 },
       { label: '3', ms: 700 },
       { label: '2', ms: 700 },
       { label: '1', ms: 700 },
@@ -897,7 +932,7 @@ export default function Game({
           className={`game-arena city-bg ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
           data-city={cityId || 'default'}
           style={{
-            backgroundImage: `linear-gradient(color-mix(in srgb, var(--color-bg) 45%, transparent), color-mix(in srgb, var(--color-bg) 55%, transparent)), url(${cityBgCandidates(cityId ? cityId : 'dojo')[0]})`,
+            backgroundImage: `linear-gradient(color-mix(in srgb, var(--color-bg) 45%, transparent), color-mix(in srgb, var(--color-bg) 55%, transparent)), url(${resolvedBgUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center bottom',
           }}
@@ -909,6 +944,9 @@ export default function Game({
         >
           {state.status === 'countdown' && (
             <div className="countdown-overlay" aria-live="polite">
+              {showVolumeHint && (
+                <p className="volume-hint">{t('volumeHint')}</p>
+              )}
               <span
                 key={countdownLabel}
                 className={`countdown-text ${

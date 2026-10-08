@@ -1,6 +1,6 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useRef} from 'react';
 import type {
   ArenaStyle,
   CharacterId,
@@ -95,7 +95,7 @@ async function auditCityAssets(cityId: string): Promise<{ bg: boolean; music: bo
 }
 
 
-type WizardStep = 1 | 2 | 3 | 4;
+type WizardStep = 1 | 2 | 3;
 
 interface HomeProps {
   onStartGame: (
@@ -157,11 +157,21 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   >({});
   const [assetAuditDone, setAssetAuditDone] = useState(false);
   const [exitDebugConfirm, setExitDebugConfirm] = useState(false);
+  /** Highlight field yang belum diisi (scroll + shake) */
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const fieldRefs = {
+    mode: useRef<HTMLDivElement>(null),
+    character: useRef<HTMLDivElement>(null),
+    arena: useRef<HTMLDivElement>(null),
+    level: useRef<HTMLDivElement>(null),
+    playKind: useRef<HTMLDivElement>(null),
+    tempo: useRef<HTMLDivElement>(null),
+  };
 
   useEffect(() => {
     if (initialPlayKind) {
       setPlayKind(initialPlayKind);
-      setStep(2);
+      setStep(3);
     }
   }, [initialPlayKind]);
 
@@ -169,7 +179,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   useEffect(() => {
     if (!mapDebug) return;
     setPlayKind('petualangan');
-    setStep(2);
+    setStep(3);
     setAdventureDiffId('normal');
     const f = mapDebugFocusFromUrl();
     if (f && ADVENTURE_CITIES.some((c) => c.id === f)) {
@@ -269,27 +279,46 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     sfx.select();
   };
 
-  const canGoNext = (): boolean => {
-    if (step === 1) return level != null;
-    if (step === 2) {
-      if (playKind == null) return false;
-      if (playKind === 'petualangan' && adventureDiffId == null) return false;
-      return true;
+  /** Step 1: slice/tap + karakter. Step 2: diam/gerak + level. Step 3: latihan/petualangan. */
+  const missingOnStep = (s: WizardStep): string | null => {
+    if (s === 1) {
+      if (mode == null) return 'mode';
+      if (selectedCharacterId == null) return 'character';
+      return null;
     }
-    if (step === 3) return arena != null;
-    return false;
+    if (s === 2) {
+      if (arena == null) return 'arena';
+      if (level == null) return 'level';
+      return null;
+    }
+    if (s === 3) {
+      if (playKind == null) return 'playKind';
+      if (playKind === 'petualangan' && adventureDiffId == null) return 'tempo';
+      return null;
+    }
+    return null;
   };
 
+  const canGoNext = (): boolean => missingOnStep(step) == null;
 
-  /** Boleh buka langkah s hanya jika mandatory langkah sebelumnya terpenuhi */
+  const focusMissing = (key: string) => {
+    setFieldError(key);
+    const el = fieldRefs[key as keyof typeof fieldRefs]?.current;
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.remove('field-shake');
+      // reflow agar animasi bisa diputar ulang
+      void el.offsetWidth;
+      el.classList.add('field-shake');
+    }
+    window.setTimeout(() => setFieldError((cur) => (cur === key ? null : cur)), 2200);
+  };
+
+  /** Boleh buka langkah s hanya jika mandatory sebelumnya terpenuhi */
   const canReachStep = (s: WizardStep): boolean => {
     if (s === 1) return true;
-    if (s >= 2 && level == null) return false;
-    if (s >= 3) {
-      if (playKind == null) return false;
-      if (playKind === 'petualangan' && adventureDiffId == null) return false;
-    }
-    if (s >= 4 && arena == null) return false;
+    if (s >= 2 && missingOnStep(1) != null) return false;
+    if (s >= 3 && missingOnStep(2) != null) return false;
     return true;
   };
 
@@ -354,7 +383,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
       {!mapDebug && (
         <div className="wizard-progress" aria-label="Langkah">
-          {([1, 2, 3, 4] as WizardStep[]).map((s) => {
+          {([1, 2, 3] as WizardStep[]).map((s) => {
             const reach = canReachStep(s);
             return (
               <button
@@ -373,30 +402,9 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       )}
 
       <div className="wizard-body">
-        {step === 1 && (
-          <section className="wizard-panel">
-            <h2 className="wizard-panel-title">{t('levelTitle')}</h2>
-            <p className="wizard-panel-hint">{t('levelHint')}</p>
-            <div className="level-list compact-levels">
-              {LEVELS.map((lv) => (
-                <button
-                  type="button"
-                  key={lv.id}
-                  className={`level-btn ${level === lv.id ? 'active' : ''}`}
-                  onClick={() => {
-                    setLevel(lv.id);
-                    updateProgress({ preferredLevel: lv.id });
-                  }}
-                >
-                  <strong>{getLang() === 'en' ? lv.labelEn : lv.labelId}</strong>
-                  <span>{getLang() === 'en' ? lv.descEn : lv.descId}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
 
-        {step === 2 && mapDebug && (
+
+        {step === 3 && mapDebug && (
           <section className="wizard-panel map-debug-panel">
             <div className="map-debug-banner" role="status">
               <strong>{t('mapDebugTitle')}</strong>
@@ -669,13 +677,17 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
 
-        {step === 2 && !mapDebug && (
+        {step === 3 && !mapDebug && (
           <section className="wizard-panel">
+            <div
+              ref={fieldRefs.playKind}
+              className={`wizard-field ${fieldError === 'playKind' ? 'field-error' : ''}`}
+            >
             <div className="mode-buttons">
               <button
                 type="button"
                 className={`mode-btn ${playKind === 'latihan' ? 'active' : ''}`}
-                onClick={() => setPlayKind('latihan')}
+                onClick={() => { setPlayKind('latihan'); setFieldError(null); }}
               >
                 <span className="mode-icon">📚</span>
                 <span className="mode-name">{t('playLatihan')}</span>
@@ -684,12 +696,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               <button
                 type="button"
                 className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''}`}
-                onClick={() => setPlayKind('petualangan')}
+                onClick={() => { setPlayKind('petualangan'); setFieldError(null); }}
               >
                 <span className="mode-icon">🌏</span>
                 <span className="mode-name">{t('playPetualangan')}</span>
                 <span className="mode-desc">{t('playPetualanganDesc')}</span>
               </button>
+            </div>
             </div>
 
             {playKind === 'latihan' && level && getLevelById(level).operations.length > 1 && (
@@ -766,6 +779,10 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
             {playKind === 'petualangan' && (
               <div className="city-pick">
+                <div
+                  ref={fieldRefs.tempo}
+                  className={`wizard-field ${fieldError === 'tempo' ? 'field-error' : ''}`}
+                >
                 <h3 className="subsection-title">{t('tempoTitle')}</h3>
                 <p className="wizard-panel-hint">{t('tempoHint')}</p>
                 <div className="mode-buttons adventure-diff-buttons">
@@ -774,12 +791,16 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       type="button"
                       key={d.id}
                       className={`mode-btn ${adventureDiffId === d.id ? 'active' : ''}`}
-                      onClick={() => setAdventureDiffId(d.id)}
+                      onClick={() => {
+                        setAdventureDiffId(d.id);
+                        setFieldError(null);
+                      }}
                     >
                       <span className="mode-name">{getLang() === 'en' ? d.labelEn : d.labelId}</span>
                       <span className="mode-desc">{getLang() === 'en' ? d.descEn : d.descId}</span>
                     </button>
                   ))}
+                </div>
                 </div>
 
                 <h3 className="subsection-title">{t('pickCity')}</h3>
@@ -1004,46 +1025,80 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <section className="wizard-panel">
-            <h2 className="wizard-panel-title">{t('modeTitle')}</h2>
-            <p className="wizard-panel-hint">{t('modeHint')}</p>
-            <div className="mode-buttons">
-              <button
-                type="button"
-                className={`mode-btn ${arena === 'static' ? 'active' : ''}`}
-                onClick={() => {
-                  setArena('static');
-                  updateProgress({ preferredArena: 'static' });
-                }}
-              >
-                <span className="mode-icon">🎯</span>
-                <span className="mode-name">{t('modeStatic')}</span>
-                <span className="mode-desc">{t('modeStaticDesc')}</span>
-              </button>
-              <button
-                type="button"
-                className={`mode-btn ${arena === 'agility' ? 'active' : ''}`}
-                onClick={() => {
-                  setArena('agility');
-                  updateProgress({ preferredArena: 'agility' });
-                }}
-              >
-                <span className="mode-icon">⚡</span>
-                <span className="mode-name">{t('modeAgility')}</span>
-                <span className="mode-desc">{t('modeAgilityDesc')}</span>
-              </button>
+            <div
+              ref={fieldRefs.arena}
+              className={`wizard-field ${fieldError === 'arena' ? 'field-error' : ''}`}
+            >
+              <h2 className="wizard-panel-title">{t('modeTitle')}</h2>
+              <div className="mode-buttons">
+                <button
+                  type="button"
+                  className={`mode-btn ${arena === 'static' ? 'active' : ''}`}
+                  onClick={() => {
+                    setArena('static');
+                    setFieldError(null);
+                    updateProgress({ preferredArena: 'static' });
+                  }}
+                >
+                  <span className="mode-icon">🎯</span>
+                  <span className="mode-name">{t('modeStatic')}</span>
+                  <span className="mode-desc">{t('modeStaticDesc')}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`mode-btn ${arena === 'agility' ? 'active' : ''}`}
+                  onClick={() => {
+                    setArena('agility');
+                    setFieldError(null);
+                    updateProgress({ preferredArena: 'agility' });
+                  }}
+                >
+                  <span className="mode-icon">⚡</span>
+                  <span className="mode-name">{t('modeAgility')}</span>
+                  <span className="mode-desc">{t('modeAgilityDesc')}</span>
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={fieldRefs.level}
+              className={`wizard-field ${fieldError === 'level' ? 'field-error' : ''}`}
+            >
+              <h3 className="subsection-title">{t('levelTitle')}</h3>
+              <div className="level-list compact-levels">
+              {LEVELS.map((lv) => (
+                <button
+                  type="button"
+                  key={lv.id}
+                  className={`level-btn ${level === lv.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setLevel(lv.id);
+                    setFieldError(null);
+                    updateProgress({ preferredLevel: lv.id });
+                  }}
+                >
+                  <strong>{getLang() === 'en' ? lv.labelEn : lv.labelId}</strong>
+                  <span>{getLang() === 'en' ? lv.descEn : lv.descId}</span>
+                </button>
+              ))}
+            </div>
             </div>
           </section>
         )}
 
-        {step === 4 && (
+        {step === 1 && (
           <section className="wizard-panel step-character">
+            <div
+              ref={fieldRefs.mode}
+              className={`wizard-field ${fieldError === 'mode' ? 'field-error' : ''}`}
+            >
             <div className="mode-buttons">
               <button
                 type="button"
                 className={`mode-btn ${mode === 'slice' ? 'active' : ''}`}
-                onClick={() => handleSelectMode('slice')}
+                onClick={() => { handleSelectMode('slice'); setFieldError(null); }}
               >
                 <span className="mode-icon">⚔️</span>
                 <span className="mode-name">{t('inputSlice')}</span>
@@ -1052,17 +1107,21 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               <button
                 type="button"
                 className={`mode-btn ${mode === 'tap' ? 'active' : ''}`}
-                onClick={() => handleSelectMode('tap')}
+                onClick={() => { handleSelectMode('tap'); setFieldError(null); }}
               >
                 <span className="mode-icon">👊</span>
                 <span className="mode-name">{t('inputTap')}</span>
                 <span className="mode-desc">{t('inputTapDesc')}</span>
               </button>
             </div>
+            </div>
 
             {mode && (
               <>
-                <div className="character-list character-list-spaced">
+                <div
+                  ref={fieldRefs.character}
+                  className={`character-list character-list-spaced wizard-field ${fieldError === 'character' ? 'field-error' : ''}`}
+                >
                   {getCharactersByMode(mode).map((char) => {
                     const isSelected = selectedCharacterId === char.id;
                     return (
@@ -1070,7 +1129,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                         type="button"
                         key={char.id}
                         className={`character-card ${isSelected ? 'selected' : ''}`}
-                        onClick={() => handleSelectCharacter(char.id)}
+                        onClick={() => { handleSelectCharacter(char.id); setFieldError(null); }}
                       >
                         <div
                           className="character-avatar"
@@ -1137,13 +1196,17 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               {t('back')}
             </button>
           )}
-          {step < 4 ? (
+          {step < 3 ? (
             <button
               type="button"
-              className={`btn-primary ${!canGoNext() ? 'disabled' : ''}`}
-              disabled={!canGoNext()}
+              className="btn-primary"
               onClick={() => {
-                if (!canGoNext()) return;
+                const miss = missingOnStep(step);
+                if (miss) {
+                  focusMissing(miss);
+                  return;
+                }
+                setFieldError(null);
                 setStep((s) => (s + 1) as WizardStep);
               }}
             >
@@ -1152,11 +1215,31 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           ) : (
             <button
               type="button"
-              className={`btn-primary btn-start ${!canStart || mapDebug ? 'disabled' : ''}`}
-              disabled={!canStart || mapDebug}
+              className={`btn-primary btn-start ${mapDebug ? 'disabled' : ''}`}
+              disabled={mapDebug}
               title={mapDebug ? t('mapDebugBanner') : undefined}
               onClick={() => {
                 if (mapDebug) return;
+                const miss = missingOnStep(3) || (
+                  !selectedCharacterId || !mode || !level || !arena || !playKind
+                    ? 'playKind'
+                    : null
+                );
+                if (miss) {
+                  // mungkin field di step sebelumnya
+                  if (missingOnStep(1)) {
+                    setStep(1);
+                    window.setTimeout(() => focusMissing(missingOnStep(1)!), 50);
+                    return;
+                  }
+                  if (missingOnStep(2)) {
+                    setStep(2);
+                    window.setTimeout(() => focusMissing(missingOnStep(2)!), 50);
+                    return;
+                  }
+                  focusMissing(miss);
+                  return;
+                }
                 if (
                   !selectedCharacterId ||
                   !mode ||

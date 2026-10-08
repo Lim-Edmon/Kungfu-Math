@@ -697,7 +697,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Litchfield',
     funFacts: ['Darwin adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Darwin lewat peta dan cerita singkat.', 'Landmark di Darwin membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Darwin is an important stop on the Kungfu Math adventure map.', 'Kids learn about Darwin through its landmark: Litchfield.', 'Remembering Darwin helps build a mental map of the world.'],
-    mapX: 85.59,
+    mapX: 85.34,
     mapY: 70.36,
   },
   {
@@ -712,7 +712,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Great Barrier Reef',
     funFacts: ['Cairns adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Cairns lewat peta dan cerita singkat.', 'Landmark di Cairns membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Cairns is an important stop on the Kungfu Math adventure map.', 'Kids learn about Cairns through its landmark: Great Barrier Reef.', 'Remembering Cairns helps build a mental map of the world.'],
-    mapX: 89.78,
+    mapX: 89.44,
     mapY: 72.84,
   },
   {
@@ -832,8 +832,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Taipei 101',
     funFacts: ['Taipei adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Taipei lewat peta dan cerita singkat.', 'Landmark di Taipei membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Taipei is an important stop on the Kungfu Math adventure map.', 'Kids learn about Taipei through its landmark: Taipei 101.', 'Remembering Taipei helps build a mental map of the world.'],
-    mapX: 83.74,
-    mapY: 49.33,
+    mapX: 83.77,
+    mapY: 48.74,
   },
   {
     id: 'okinawa',
@@ -847,8 +847,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Shuri',
     funFacts: ['Okinawa adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Okinawa lewat peta dan cerita singkat.', 'Landmark di Okinawa membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Okinawa is an important stop on the Kungfu Math adventure map.', 'Kids learn about Okinawa through its landmark: Shuri.', 'Remembering Okinawa helps build a mental map of the world.'],
-    mapX: 85.53,
-    mapY: 48.6,
+    mapX: 85.59,
+    mapY: 47.93,
   },
   {
     id: 'osaka',
@@ -862,8 +862,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Dotonbori',
     funFacts: ['Osaka adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Osaka lewat peta dan cerita singkat.', 'Landmark di Osaka membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Osaka is an important stop on the Kungfu Math adventure map.', 'Kids learn about Osaka through its landmark: Dotonbori.', 'Remembering Osaka helps build a mental map of the world.'],
-    mapX: 87.79,
-    mapY: 43.52,
+    mapX: 87.71,
+    mapY: 43.19,
   },
   {
     id: 'kyoto',
@@ -878,7 +878,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     funFacts: ['Kyoto adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Kyoto lewat peta dan cerita singkat.', 'Landmark di Kyoto membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Kyoto is an important stop on the Kungfu Math adventure map.', 'Kids learn about Kyoto through its landmark: Fushimi Inari.', 'Remembering Kyoto helps build a mental map of the world.'],
     mapX: 87.87,
-    mapY: 43.32,
+    mapY: 43.08,
   },
   {
     id: 'tokyo',
@@ -892,8 +892,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Shibuya / Skytree',
     funFacts: ['Tokyo adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Tokyo lewat peta dan cerita singkat.', 'Landmark di Tokyo membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Tokyo is an important stop on the Kungfu Math adventure map.', 'Kids learn about Tokyo through its landmark: Shibuya / Skytree.', 'Remembering Tokyo helps build a mental map of the world.'],
-    mapX: 89.0,
-    mapY: 42.92,
+    mapX: 88.73,
+    mapY: 42.61,
   },
   {
     id: 'jeju',
@@ -907,8 +907,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Hallasan',
     funFacts: ['Jeju adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Jeju lewat peta dan cerita singkat.', 'Landmark di Jeju membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Jeju is an important stop on the Kungfu Math adventure map.', 'Kids learn about Jeju through its landmark: Hallasan.', 'Remembering Jeju helps build a mental map of the world.'],
-    mapX: 85.22,
-    mapY: 44.25,
+    mapX: 84.91,
+    mapY: 44.09,
   },
   {
     id: 'busan',
@@ -922,8 +922,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Haeundae',
     funFacts: ['Busan adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Busan lewat peta dan cerita singkat.', 'Landmark di Busan membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Busan is an important stop on the Kungfu Math adventure map.', 'Kids learn about Busan through its landmark: Haeundae.', 'Remembering Busan helps build a mental map of the world.'],
-    mapX: 85.95,
-    mapY: 43.23,
+    mapX: 85.64,
+    mapY: 42.93,
   },
   {
     id: 'seoul',
@@ -937,8 +937,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Gyeongbokgung',
     funFacts: ['Seoul adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Seoul lewat peta dan cerita singkat.', 'Landmark di Seoul membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Seoul is an important stop on the Kungfu Math adventure map.', 'Kids learn about Seoul through its landmark: Gyeongbokgung.', 'Remembering Seoul helps build a mental map of the world.'],
-    mapX: 85.34,
-    mapY: 41.77,
+    mapX: 85.02,
+    mapY: 41.26,
   },
   {
     id: 'guangzhou',
@@ -1162,8 +1162,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Badshahi Mosque',
     funFacts: ['Lahore adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Lahore lewat peta dan cerita singkat.', 'Landmark di Lahore membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Lahore is an important stop on the Kungfu Math adventure map.', 'Kids learn about Lahore through its landmark: Badshahi Mosque.', 'Remembering Lahore helps build a mental map of the world.'],
-    mapX: 69.85,
-    mapY: 44.23,
+    mapX: 69.87,
+    mapY: 43.31,
   },
   {
     id: 'samarkand',
@@ -1177,8 +1177,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Registan',
     funFacts: ['Samarkand adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Samarkand lewat peta dan cerita singkat.', 'Landmark di Samarkand membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Samarkand is an important stop on the Kungfu Math adventure map.', 'Kids learn about Samarkand through its landmark: Registan.', 'Remembering Samarkand helps build a mental map of the world.'],
-    mapX: 67.58,
-    mapY: 39.19,
+    mapX: 67.94,
+    mapY: 39.91,
   },
   {
     id: 'dubai',
@@ -1357,8 +1357,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Saint Sophia',
     funFacts: ['Kyiv adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Kyiv lewat peta dan cerita singkat.', 'Landmark di Kyiv membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Kyiv is an important stop on the Kungfu Math adventure map.', 'Kids learn about Kyiv through its landmark: Saint Sophia.', 'Remembering Kyiv helps build a mental map of the world.'],
-    mapX: 57.29,
-    mapY: 32.86,
+    mapX: 57.74,
+    mapY: 32.58,
   },
   {
     id: 'krakow',
@@ -1372,7 +1372,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Rynek Główny',
     funFacts: ['Krakow adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Krakow lewat peta dan cerita singkat.', 'Landmark di Krakow membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Kraków is an important stop on the Kungfu Math adventure map.', 'Kids learn about Kraków through its landmark: Rynek Główny.', 'Remembering Kraków helps build a mental map of the world.'],
-    mapX: 54.27,
+    mapX: 54.49,
     mapY: 33.15,
   },
   {
@@ -1387,7 +1387,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Kota Tua',
     funFacts: ['Warsaw adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Warsaw lewat peta dan cerita singkat.', 'Landmark di Warsaw membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Warsaw is an important stop on the Kungfu Math adventure map.', 'Kids learn about Warsaw through its landmark: Kota Tua.', 'Remembering Warsaw helps build a mental map of the world.'],
-    mapX: 54.58,
+    mapX: 54.76,
     mapY: 31.91,
   },
   {
@@ -1402,7 +1402,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Charles Bridge',
     funFacts: ['Prague adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Prague lewat peta dan cerita singkat.', 'Landmark di Prague membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Prague is an important stop on the Kungfu Math adventure map.', 'Kids learn about Prague through its landmark: Charles Bridge.', 'Remembering Prague helps build a mental map of the world.'],
-    mapX: 52.68,
+    mapX: 52.88,
     mapY: 33.22,
   },
   {
@@ -1417,7 +1417,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Parlemen',
     funFacts: ['Budapest adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Budapest lewat peta dan cerita singkat.', 'Landmark di Budapest membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Budapest is an important stop on the Kungfu Math adventure map.', 'Kids learn about Budapest through its landmark: Parlemen.', 'Remembering Budapest helps build a mental map of the world.'],
-    mapX: 53.98,
+    mapX: 54.14,
     mapY: 34.69,
   },
   {
@@ -1432,7 +1432,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Carpathian',
     funFacts: ['Brasov adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Brasov lewat peta dan cerita singkat.', 'Landmark di Brasov membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Brașov is an important stop on the Kungfu Math adventure map.', 'Kids learn about Brașov through its landmark: Carpathian.', 'Remembering Brașov helps build a mental map of the world.'],
-    mapX: 55.88,
+    mapX: 56.03,
     mapY: 35.79,
   },
   {
@@ -1462,8 +1462,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Bryggen',
     funFacts: ['Bergen adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Bergen lewat peta dan cerita singkat.', 'Landmark di Bergen membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Bergen is an important stop on the Kungfu Math adventure map.', 'Kids learn about Bergen through its landmark: Bryggen.', 'Remembering Bergen helps build a mental map of the world.'],
-    mapX: 49.52,
-    mapY: 27.24,
+    mapX: 50.69,
+    mapY: 24.81,
   },
   {
     id: 'oslo',
@@ -1507,8 +1507,8 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     landmarkId: 'Little Mermaid',
     funFacts: ['Copenhagen adalah salah satu kota penting di peta petualangan Kungfu Math.', 'Anak-anak di seluruh dunia belajar tentang Copenhagen lewat peta dan cerita singkat.', 'Landmark di Copenhagen membantu kita mengingat di mana kota itu berada.'],
     funFactsEn: ['Copenhagen is an important stop on the Kungfu Math adventure map.', 'Kids learn about Copenhagen through its landmark: Little Mermaid.', 'Remembering Copenhagen helps build a mental map of the world.'],
-    mapX: 52.79,
-    mapY: 28.22,
+    mapX: 52.71,
+    mapY: 28.62,
   },
   {
     id: 'helsinki',
