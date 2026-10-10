@@ -180,13 +180,11 @@ function App() {
     }
   }, []);
 
-  // Menu / hasil: BGM default volume rendah. Game mengatur musik sendiri.
+  // Menu / hasil: BGM default volume rendah. Jangan stop saat pindah tab (home↔dojo↔settings).
+  // Hanya stop saat masuk game — Game.tsx yang atur musik kota / BGM main.
   useEffect(() => {
     if (screen === 'game') return;
     playMenuBgm();
-    return () => {
-      stopAllMusic();
-    };
   }, [screen]);
 
   // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
@@ -212,6 +210,14 @@ function App() {
     setPlayKind(kind);
     setAdventureDiffId(diffId || 'normal');
     setForceOps(kind === 'latihan' ? opsForce : undefined);
+    // Simpan pilihan terakhir → "Kembali ke peta" bisa isi default lagi
+    updateProgress({
+      preferredMode: mode,
+      preferredCharacter: characterId,
+      preferredLevel: level,
+      preferredArena: arena,
+      preferredAdventureDiff: diffId || 'normal',
+    });
     setScreen('game');
   };
 

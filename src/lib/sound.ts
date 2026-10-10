@@ -242,10 +242,36 @@ function playBgmFile(volume: number, gen: number): void {
   }
 }
 
-/** BGM lembut di menu / setelah game (volume lebih rendah) */
+/** True jika BGM menu default sedang jalan (bukan musik kota). */
+function isMenuBgmPlaying(): boolean {
+  if (!cityAudio) return false;
+  try {
+    const src = cityAudio.currentSrc || cityAudio.src || '';
+    if (!src.includes('bgm.mp3')) return false;
+    return !cityAudio.paused;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * BGM lembut di menu / setelah game (volume lebih rendah).
+ * Tidak di-restart jika sudah bermain — ganti tab bawah tidak mengulang lagu dari awal.
+ */
 export function playMenuBgm(): void {
+  if (isMuted()) {
+    stopAllMusic();
+    return;
+  }
+  if (isMenuBgmPlaying()) {
+    try {
+      cityAudio!.volume = 0.16;
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
   stopAllMusic();
-  if (isMuted()) return;
   const gen = musicGen;
   playBgmFile(0.16, gen);
 }

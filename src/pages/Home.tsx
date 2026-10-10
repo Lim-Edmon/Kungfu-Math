@@ -168,10 +168,33 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     tempo: useRef<HTMLDivElement>(null),
   };
 
+  /**
+   * Kembali ke peta (setelah selesai kota) → langsung step 3 petualangan,
+   * dan isi ulang slice/tap + pendekar + arena + level + tempo dari pilihan terakhir
+   * supaya tidak harus mundur ke langkah 1 lagi.
+   */
   useEffect(() => {
-    if (initialPlayKind) {
-      setPlayKind(initialPlayKind);
-      setStep(3);
+    if (!initialPlayKind) return;
+    setPlayKind(initialPlayKind);
+    setStep(3);
+    const p = loadProgress();
+    if (p.preferredMode === 'slice' || p.preferredMode === 'tap') {
+      setMode(p.preferredMode);
+    }
+    if (p.preferredCharacter) {
+      setSelectedCharacterId(p.preferredCharacter);
+    }
+    if (p.preferredArena === 'static' || p.preferredArena === 'agility') {
+      setArena(p.preferredArena);
+    }
+    if (p.preferredLevel) {
+      setLevel(p.preferredLevel);
+    }
+    const tempo = p.preferredAdventureDiff;
+    if (typeof tempo === 'string' && ADVENTURE_DIFFICULTIES.some((d) => d.id === tempo)) {
+      setAdventureDiffId(tempo);
+    } else if (initialPlayKind === 'petualangan') {
+      setAdventureDiffId('normal');
     }
   }, [initialPlayKind]);
 
@@ -794,6 +817,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       onClick={() => {
                         setAdventureDiffId(d.id);
                         setFieldError(null);
+                        updateProgress({ preferredAdventureDiff: d.id });
                       }}
                     >
                       <span className="mode-name">{getLang() === 'en' ? d.labelEn : d.labelId}</span>

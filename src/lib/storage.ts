@@ -92,6 +92,9 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (typeof p.preferredLevel === 'string' && LEVEL_IDS.has(p.preferredLevel)) {
     next.preferredLevel = p.preferredLevel as PlayerProgress['preferredLevel'];
   }
+  if (typeof p.preferredAdventureDiff === 'string' && p.preferredAdventureDiff.length < 24) {
+    next.preferredAdventureDiff = p.preferredAdventureDiff;
+  }
   if (typeof p.displayMode === 'string' && DISPLAYS.has(p.displayMode as DisplayMode)) {
     next.displayMode = p.displayMode as DisplayMode;
   }

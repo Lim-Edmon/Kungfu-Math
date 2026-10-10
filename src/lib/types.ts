@@ -64,6 +64,8 @@ export interface PlayerProgress {
   preferredArena: ArenaStyle;
   preferredCharacter: CharacterId;
   preferredLevel: import('./levels').DifficultyLevel;
+  /** Tempo petualangan terakhir (mudah/normal/…) */
+  preferredAdventureDiff: string;
   displayMode: DisplayMode;
   isSubscribed: boolean;
   soundMuted: boolean;
@@ -109,6 +111,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   preferredArena: 'static',
   preferredCharacter: 'yu-jin',
   preferredLevel: 'pemula',
+  preferredAdventureDiff: 'normal',
   displayMode: 'siang',
   isSubscribed: false,
   soundMuted: false,
