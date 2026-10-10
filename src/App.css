@@ -644,7 +644,7 @@
   font-size: 1.4rem;
 }
 
-/* Guideline BG kota (Petualangan): cukup keliatan, tidak mengalahkan bola */
+/* BG kota: gambar jelas, wash tipis (bukan samar berlebih) */
 .game-arena.city-bg {
   background-size: cover;
   background-position: center bottom;
@@ -654,7 +654,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  /* dulu 35% — terlalu menutupi; sekarang sangat ringan */
+  background: color-mix(in srgb, var(--color-bg) 10%, transparent);
   pointer-events: none;
   z-index: 0;
 }
@@ -1935,17 +1936,17 @@
   text-align: center;
 }
 
-/* Soft mood per kota (MVP tanpa gambar landmark) */
-.game-arena[data-city="jakarta"] {
+/* Fallback warna lembut HANYA jika gambar BG gagal load — jangan timpa background-image */
+.game-arena[data-city="jakarta"]:not(.city-bg) {
   background: linear-gradient(180deg, #fff3e0 0%, color-mix(in srgb, var(--color-bg) 70%, #ffcc80) 100%);
 }
-.game-arena[data-city="bali"] {
+.game-arena[data-city="bali"]:not(.city-bg) {
   background: linear-gradient(180deg, #e0f7fa 0%, color-mix(in srgb, var(--color-bg) 65%, #80deea) 100%);
 }
-.game-arena[data-city="singapore"] {
+.game-arena[data-city="singapore"]:not(.city-bg) {
   background: linear-gradient(180deg, #e8eaf6 0%, color-mix(in srgb, var(--color-bg) 65%, #9fa8da) 100%);
 }
-.game-arena[data-city="kuala-lumpur"] {
+.game-arena[data-city="kuala-lumpur"]:not(.city-bg) {
   background: linear-gradient(180deg, #fce4ec 0%, color-mix(in srgb, var(--color-bg) 65%, #f48fb1) 100%);
 }
 
