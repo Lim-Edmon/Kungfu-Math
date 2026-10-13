@@ -587,61 +587,86 @@
   z-index: 5;
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  /* Border tegas + ring luar biar terpisah dari BG kota */
+  /* Ring luar + border biar bola “mengambang” di atas BG */
   border: 3px solid var(--color-primary);
-  outline: 2px solid color-mix(in srgb, var(--color-bg) 85%, #fff);
-  outline-offset: 0;
-  /* Sedikit 3D: highlight atas + bayangan bawah */
+  outline: 2px solid color-mix(in srgb, var(--color-bg) 80%, #fff);
+  outline-offset: 1px;
+  /* 3D lebih kuat: specular highlight + volume gradient */
   background:
     radial-gradient(
-      circle at 35% 30%,
-      color-mix(in srgb, #fff 55%, var(--color-card)),
-      var(--color-card) 55%,
-      color-mix(in srgb, var(--color-card) 70%, #000) 100%
+      circle at 32% 26%,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.35) 18%,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 50% 55%,
+      color-mix(in srgb, #fff 20%, var(--color-card)) 0%,
+      var(--color-card) 45%,
+      color-mix(in srgb, var(--color-card) 55%, #1a1a1a) 100%
     );
   color: var(--color-text);
-  font-size: 1.25rem;
+  font-size: 1.28rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
   box-shadow:
-    0 4px 0 color-mix(in srgb, var(--color-primary) 35%, #000),
-    0 6px 12px rgba(0, 0, 0, 0.28),
-    inset 0 2px 3px rgba(255, 255, 255, 0.45);
+    0 5px 0 color-mix(in srgb, var(--color-primary) 40%, #000),
+    0 8px 16px rgba(0, 0, 0, 0.32),
+    0 2px 4px rgba(0, 0, 0, 0.18),
+    inset 0 3px 5px rgba(255, 255, 255, 0.5),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.12);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.1s ease, opacity 0.2s ease;
+  transition: transform 0.1s ease, opacity 0.2s ease, box-shadow 0.1s ease;
   z-index: 5;
 }
 
 .floating-number:active {
-  transform: translate(-50%, -50%) scale(0.92) translateY(2px);
+  transform: translate(-50%, -50%) scale(0.9) translateY(3px);
   box-shadow:
-    0 2px 0 color-mix(in srgb, var(--color-primary) 35%, #000),
-    0 3px 8px rgba(0, 0, 0, 0.25),
+    0 2px 0 color-mix(in srgb, var(--color-primary) 40%, #000),
+    0 3px 8px rgba(0, 0, 0, 0.28),
     inset 0 1px 2px rgba(255, 255, 255, 0.35);
 }
 
 .floating-number.is-bomb {
   border-color: var(--color-danger);
-  outline-color: color-mix(in srgb, var(--color-danger) 25%, #fff);
+  outline-color: color-mix(in srgb, var(--color-danger) 30%, #fff);
   background:
     radial-gradient(
-      circle at 35% 30%,
-      color-mix(in srgb, #fff 40%, var(--color-danger)),
-      color-mix(in srgb, var(--color-danger) 20%, var(--color-card)) 60%,
-      color-mix(in srgb, var(--color-danger) 40%, #000) 100%
+      circle at 32% 26%,
+      rgba(255, 255, 255, 0.75) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 55%,
+      color-mix(in srgb, #fff 30%, var(--color-danger)) 0%,
+      color-mix(in srgb, var(--color-danger) 25%, var(--color-card)) 50%,
+      color-mix(in srgb, var(--color-danger) 55%, #000) 100%
     );
   box-shadow:
-    0 4px 0 color-mix(in srgb, var(--color-danger) 50%, #000),
-    0 6px 12px rgba(0, 0, 0, 0.3),
-    inset 0 2px 3px rgba(255, 255, 255, 0.35);
+    0 5px 0 color-mix(in srgb, var(--color-danger) 55%, #000),
+    0 8px 16px rgba(180, 0, 0, 0.35),
+    inset 0 3px 5px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.15);
   font-size: 1.4rem;
+  animation: bomb-idle 1.6s ease-in-out infinite;
+}
+@keyframes bomb-idle {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.08);
+  }
 }
 
 /* BG kota: gambar jelas, wash tipis (bukan samar berlebih) */
@@ -690,26 +715,28 @@
 
 /* Animasi hit Tap vs Slice */
 .floating-number.hit-tap {
-  animation: hitTap 0.45s ease-out forwards;
+  animation: hitTap 0.5s ease-out forwards;
   pointer-events: none;
   z-index: 20;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--color-accent) 50%, transparent),
+    0 0 18px color-mix(in srgb, var(--color-accent) 55%, transparent);
 }
 
-/* Efek Tap: ripple besar + flash */
+/* Efek Tap: ripple besar + flash inti */
 .floating-number.hit-tap::after {
   content: '';
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
   border-radius: 50%;
   border: 5px solid var(--color-accent);
-  background: color-mix(in srgb, var(--color-accent) 50%, transparent);
-  animation: tapRipple 0.5s ease-out forwards;
+  background: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  animation: tapRipple 0.55s ease-out forwards;
   pointer-events: none;
   z-index: 21;
 }
@@ -718,71 +745,93 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 14px;
-  height: 14px;
-  margin: -7px 0 0 -7px;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
   border-radius: 50%;
   background: #fff;
-  opacity: 0.85;
-  animation: tapFlash 0.35s ease-out forwards;
+  opacity: 0.95;
+  box-shadow: 0 0 12px #fff, 0 0 6px var(--color-accent);
+  animation: tapFlash 0.4s ease-out forwards;
   pointer-events: none;
   z-index: 22;
 }
 
 @keyframes tapRipple {
   0% {
-    transform: scale(0.4);
+    transform: scale(0.35);
     opacity: 1;
   }
   100% {
-    transform: scale(4.2);
+    transform: scale(4.8);
     opacity: 0;
   }
 }
 @keyframes tapFlash {
   0% {
     transform: scale(1);
-    opacity: 0.9;
+    opacity: 1;
   }
   100% {
-    transform: scale(2.2);
+    transform: scale(2.6);
     opacity: 0;
   }
 }
 
 .floating-number.hit-slice {
-  animation: hitSlice 0.34s ease-out forwards;
+  animation: hitSlice 0.38s ease-out forwards;
   pointer-events: none;
   z-index: 5;
+  filter: brightness(1.15);
 }
 
 .floating-number.hit-slice::after {
   content: '';
   position: absolute;
-  left: -15%;
-  top: 42%;
-  width: 130%;
-  height: 4px;
+  left: -20%;
+  top: 40%;
+  width: 140%;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-primary) 70%, #fff) 25%,
+    #fff 50%,
+    color-mix(in srgb, var(--color-primary) 70%, #fff) 75%,
+    transparent 100%
+  );
+  border-radius: 3px;
+  transform: rotate(-28deg);
+  box-shadow:
+    0 0 14px var(--color-accent),
+    0 0 6px #fff,
+    0 0 2px var(--color-primary);
+  animation: sliceFlash 0.38s ease-out forwards;
+}
+.floating-number.hit-slice::before {
+  content: '';
+  position: absolute;
+  left: -10%;
+  top: 46%;
+  width: 120%;
+  height: 2px;
   background: linear-gradient(
     90deg,
     transparent,
-    var(--color-primary),
-    #fff8e7,
-    var(--color-primary),
+    rgba(255, 255, 255, 0.95),
     transparent
   );
-  border-radius: 2px;
   transform: rotate(-28deg);
-  box-shadow: 0 0 10px var(--color-accent), 0 0 4px #fff;
-  animation: sliceFlash 0.34s ease-out forwards;
+  animation: sliceFlash 0.38s ease-out forwards;
+  pointer-events: none;
 }
 @keyframes sliceFlash {
   0% {
     opacity: 1;
-    height: 5px;
+    height: 6px;
   }
   100% {
-    opacity: 0.3;
+    opacity: 0.15;
     height: 2px;
   }
 }
@@ -797,24 +846,31 @@
 }
 .slice-trail-dot {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--color-primary) 70%, #fff);
-  box-shadow: 0 0 8px var(--color-accent);
+  background: radial-gradient(
+    circle at 35% 30%,
+    #fff 0%,
+    color-mix(in srgb, var(--color-primary) 65%, #fff) 55%,
+    var(--color-primary) 100%
+  );
+  box-shadow:
+    0 0 10px var(--color-accent),
+    0 0 4px #fff;
   pointer-events: none;
   z-index: 30;
-  animation: trailFade 0.35s ease-out forwards;
+  animation: trailFade 0.4s ease-out forwards;
 }
 @keyframes trailFade {
   0% {
-    opacity: 0.9;
-    transform: scale(1);
+    opacity: 1;
+    transform: scale(1.15);
   }
   100% {
     opacity: 0;
-    transform: scale(0.2);
+    transform: scale(0.15);
   }
 }
 
@@ -2974,6 +3030,10 @@ h1.home-title {
 /* Fokus operasi + streak/lencana */
 .ops-mode-block {
   margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1.5px solid var(--color-border, #e0d5c0);
+  background: var(--color-card, #fff);
 }
 .focus-ops-row {
   display: flex;
