@@ -18,3 +18,19 @@ File aset:
   public/cities/music/{id}.mp3
 
 Lihat juga README.md bagian "Debug peta & aset kota".
+
+
+=== MODE UJI MAIN (seperti pemain, semua terbuka) ===
+URL (HP/PC/PWA — tempel di address bar):
+  ?playdebug=1
+  ?debug=1
+
+Atau di Pengaturan → Masukkan kode progress:
+  unlock all   /   buka semua   /   edmon halim the great
+Kembali normal:
+  lock all   /   normal   /   kunci semua
+
+Perbedaan:
+  ?mapdebug=1  → editor peta + audit aset (tidak main skor)
+  ?playdebug=1 → main seperti biasa, SEMUA kota bisa dipilih (Indo…USA)
+  Normal play  → hanya sampai ujung konten terbuka (saat ini Port Moresby / Oceania)

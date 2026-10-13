@@ -39,6 +39,18 @@ function isMapDebug(): boolean {
   }
 }
 
+/** Mode uji main: semua kota bisa dipilih & dimainkan (HP/PC). */
+function isPlayDebug(): boolean {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('playdebug') === '1' || q.get('debug') === '1') return true;
+    if (sessionStorage.getItem('kungfu-math-playdebug') === '1') return true;
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
 function mapDebugFocusFromUrl(): string | null {
   try {
     const q = new URLSearchParams(window.location.search);
@@ -151,6 +163,9 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [playerName, setPlayerName] = useState('');
   const [ready, setReady] = useState(false);
   const mapDebug = isMapDebug();
+  const playDebug = isPlayDebug();
+  /** Semua kota terbuka (map debug ATAU play debug) */
+  const fullAccess = mapDebug || playDebug;
   const allCityIds = ADVENTURE_CITIES.map((c) => c.id);
   const [assetAudit, setAssetAudit] = useState<
     Record<string, { bg: boolean; music: boolean; bgPath: string; musicPath: string }>
@@ -708,6 +723,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               ref={fieldRefs.playKind}
               className={`wizard-field ${fieldError === 'playKind' ? 'field-error' : ''}`}
             >
+            <h2 className="wizard-panel-title">{t('arenaTitle')}</h2>
             <div className="mode-buttons">
               <button
                 type="button"
@@ -730,7 +746,10 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
             </div>
             </div>
 
-            {playKind === 'latihan' && level && getLevelById(level).operations.length > 1 && (
+            {/* Pemula = hanya + → Acak/Fokus disembunyikan. Muncul dari Dasar ke atas. */}
+            {playKind === 'latihan' &&
+              level &&
+              getLevelById(level).operations.length > 1 && (
               <div className="ops-mode-block">
                 <h3 className="subsection-title">{t('opsModeTitle')}</h3>
                 <div className="mode-buttons mode-buttons-compact">
@@ -864,7 +883,9 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                       ? prog.adventureUnlocked
                       : ['jakarta'];
                     const isCityOpen = (id: string) =>
-                      id === 'jakarta' || unlockedList.includes(id);
+                      fullAccess ||
+                      id === 'jakarta' ||
+                      unlockedList.includes(id);
                     const regionsWithCities = ADVENTURE_REGIONS.map((reg) => {
                       const cities = ADVENTURE_CITIES.filter(
                         (c) => c.regionId === reg.id

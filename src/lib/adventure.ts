@@ -2595,7 +2595,14 @@ export const MVP_REGION_LAST_CITY_ID = 'bali';
 export const MVP_REGION_UNLOCK_MSG =
   'Kamu sudah berhasil membuka akses ke regional lain — Asia Tenggara! Selamat menikmati petualangan barumu.';
 
-/** Kota terakhir seluruh jalur (ujung Amerika) */
+/**
+ * Ujung konten terbuka untuk pemain (Indo → SEA → Oceania).
+ * Lolos Port Moresby → popup ujung perjalanan; Asia Timur dst tetap terkunci.
+ * Map debug / cheat tetap bisa melihat semua kota di data.
+ */
+export const CONTENT_PATH_LAST_CITY_ID = 'port-moresby';
+
+/** Ujung data penuh (USA) — dipakai nanti saat seluruh jalur dibuka */
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
 
 export const MVP_PATH_COMPLETE_MSG =
@@ -2605,10 +2612,30 @@ export function getCityById(id: string): AdventureCity {
   return ADVENTURE_CITIES.find((c) => c.id === id) ?? ADVENTURE_CITIES[0];
 }
 
+/** Kota berikutnya di data penuh (debug / internal) */
 export function getNextCityId(currentId: string): string | null {
   const i = ADVENTURE_CITIES.findIndex((c) => c.id === currentId);
   if (i < 0 || i >= ADVENTURE_CITIES.length - 1) return null;
   return ADVENTURE_CITIES[i + 1].id;
+}
+
+/** Kota berikutnya yang boleh dibuka di permainan normal */
+export function getNextPlayableCityId(currentId: string): string | null {
+  if (currentId === CONTENT_PATH_LAST_CITY_ID) return null;
+  const next = getNextCityId(currentId);
+  if (!next) return null;
+  const lastIdx = ADVENTURE_CITIES.findIndex((c) => c.id === CONTENT_PATH_LAST_CITY_ID);
+  const nextIdx = ADVENTURE_CITIES.findIndex((c) => c.id === next);
+  if (lastIdx >= 0 && nextIdx > lastIdx) return null;
+  return next;
+}
+
+export function isCityInOpenContent(cityId: string): boolean {
+  const lastIdx = ADVENTURE_CITIES.findIndex((c) => c.id === CONTENT_PATH_LAST_CITY_ID);
+  const i = ADVENTURE_CITIES.findIndex((c) => c.id === cityId);
+  if (i < 0) return false;
+  if (lastIdx < 0) return true;
+  return i <= lastIdx;
 }
 
 /** Path BG kota — fallback default (Unknown Village) */

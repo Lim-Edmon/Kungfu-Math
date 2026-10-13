@@ -40,6 +40,7 @@ import {
   ADVENTURE_CITIES,
   getCityById,
   getNextCityId,
+  getNextPlayableCityId,
   getAdventureDifficulty,
   pickCityFunFact,
   MVP_REGION_LAST_CITY_ID,
@@ -285,7 +286,20 @@ function App() {
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
       if (score >= city.targetScore) {
         passed = true;
-        nextId = getNextCityId(cityId);
+        // playdebug / ?debug=1 → jalur penuh; normal → berhenti di Oceania
+        let playDbg = false;
+        try {
+          const q = new URLSearchParams(window.location.search);
+          playDbg =
+            q.get('playdebug') === '1' ||
+            q.get('debug') === '1' ||
+            sessionStorage.getItem('kungfu-math-playdebug') === '1';
+        } catch {
+          playDbg = false;
+        }
+        nextId = playDbg
+          ? getNextCityId(cityId)
+          : getNextPlayableCityId(cityId);
         if (nextId && !unlocked.includes(nextId)) {
           unlocked = [...unlocked, nextId];
         }
@@ -295,6 +309,7 @@ function App() {
       setNextCityId(nextId);
       const fact = passed ? pickCityFunFact(cityId) : null;
       setFunFact(fact);
+      // Normal: ujung = Port Moresby. Playdebug: ujung = New York (data penuh).
       const atEnd = passed && !nextId;
       setFunFactOpen(!!fact && !atEnd);
       setJourneyEndOpen(atEnd);

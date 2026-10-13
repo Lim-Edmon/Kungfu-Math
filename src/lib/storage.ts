@@ -298,6 +298,9 @@ export function exportProgress(): string {
  *
  * Buka akses uji (semua kota + lencana, rekor tidak diisi):
  *   edmon halim the great | unlock all | buka semua
+ * Mode uji main (URL, tanpa ubah progress permanen):
+ *   ?playdebug=1  atau  ?debug=1
+ *   (HP: tempel di address bar browser / PWA)
  *
  * Kunci lagi (hanya cabut akses cheat; progress main tetap):
  *   normal | kembali | default | lock all | kunci semua
@@ -399,6 +402,11 @@ export function applyDevUnlockAccess(): void {
   }
   const allCities = ADVENTURE_CITIES.map((c) => c.id);
   const allBadges = BADGE_DEFS.map((b) => b.id);
+  try {
+    sessionStorage.setItem('kungfu-math-playdebug', '1');
+  } catch {
+    /* ignore */
+  }
   saveProgress(
     normalizeProgress({
       ...prog,
@@ -414,6 +422,11 @@ export function applyDevUnlockAccess(): void {
  * Rekor / skor tidak disentuh.
  */
 export function applyDevLockAccess(): void {
+  try {
+    sessionStorage.removeItem('kungfu-math-playdebug');
+  } catch {
+    /* ignore */
+  }
   const prog = loadProgress();
   const snap = readDevSnap();
   let unlocked: string[];
