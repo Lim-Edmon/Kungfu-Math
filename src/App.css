@@ -2465,12 +2465,12 @@ a.btn-link-trakteer {
   padding: 0;
 }
 .character-list-spaced {
-  margin-top: 18px;
+  margin-top: 8px;
 }
 .name-after-char {
   display: block;
-  margin-top: 16px;
-  margin-bottom: 4px;
+  margin-top: 8px;
+  margin-bottom: 0;
 }
 .name-after-char span {
   display: block;
@@ -2489,6 +2489,44 @@ a.btn-link-trakteer {
 .step-character .mode-buttons {
   margin-bottom: 4px;
 }
+.step-character .pick-char-title {
+  margin-top: 14px;
+  margin-bottom: 2px;
+}
+.city-locked-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.city-locked-dialog {
+  background: var(--color-bg, #fff8e1);
+  border-radius: 16px;
+  padding: 18px 16px 14px;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.city-locked-title {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+.city-locked-msg {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--color-text, #333);
+}
+.city-locked-ok {
+  width: 100%;
+}
 
 
 /* Tinggi mengikuti konten (jangan flex:1 — itu bikin gap kosong ke footer) */
@@ -2505,8 +2543,15 @@ a.btn-link-trakteer {
   flex: 0 0 auto;
 }
 .home-wizard .wizard-footer-bar {
-  /* ~30% dari gap lama (auto penuh layar) — cukup napas, tidak kosong besar */
-  margin-top: 18px;
+  /* Jarak ke tombol Lanjut/Mulai — ringkas, tidak kosong besar */
+  margin-top: 8px;
+}
+.home-wizard .wizard-panel {
+  padding-bottom: 4px;
+}
+.home-wizard .subsection-title {
+  margin-top: 0.65rem;
+  margin-bottom: 0.25rem;
 }
 .display-chip,
 .display-chip.header-display,

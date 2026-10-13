@@ -159,6 +159,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [exitDebugConfirm, setExitDebugConfirm] = useState(false);
   /** Highlight field yang belum diisi (scroll + shake) */
   const [fieldError, setFieldError] = useState<string | null>(null);
+  /** Popup kota terkunci (chip / pin) */
+  const [lockedCityName, setLockedCityName] = useState<string | null>(null);
   const fieldRefs = {
     mode: useRef<HTMLDivElement>(null),
     character: useRef<HTMLDivElement>(null),
@@ -807,7 +809,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                   className={`wizard-field ${fieldError === 'tempo' ? 'field-error' : ''}`}
                 >
                 <h3 className="subsection-title">{t('tempoTitle')}</h3>
-                <p className="wizard-panel-hint">{t('tempoHint')}</p>
                 <div className="mode-buttons adventure-diff-buttons">
                   {ADVENTURE_DIFFICULTIES.map((d) => (
                     <button
@@ -902,9 +903,14 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                               key={c.id}
                               role="listitem"
                               className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
-                              disabled={!unlocked}
+                              aria-disabled={!unlocked}
                               onClick={() => {
-                                if (!unlocked) return;
+                                if (!unlocked) {
+                                  const nm =
+                                    getLang() === 'en' ? c.nameEn : c.nameId;
+                                  setLockedCityName(nm);
+                                  return;
+                                }
                                 if (c.id !== cityId) {
                                   setTravelFrom(cityId);
                                   setTravelTo(c.id);
@@ -1118,6 +1124,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               ref={fieldRefs.mode}
               className={`wizard-field ${fieldError === 'mode' ? 'field-error' : ''}`}
             >
+            <h2 className="wizard-panel-title">{t('inputTitle')}</h2>
             <div className="mode-buttons">
               <button
                 type="button"
@@ -1142,6 +1149,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
             {mode && (
               <>
+                <h2 className="wizard-panel-title pick-char-title">{t('pickChar')}</h2>
                 <div
                   ref={fieldRefs.character}
                   className={`character-list character-list-spaced wizard-field ${fieldError === 'character' ? 'field-error' : ''}`}
@@ -1207,6 +1215,32 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           </section>
         )}
       </div>
+
+      {lockedCityName && (
+        <div
+          className="city-locked-overlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLockedCityName(null)}
+        >
+          <div
+            className="city-locked-dialog"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <strong className="city-locked-title">{t('cityLockedTitle')}</strong>
+            <p className="city-locked-msg">
+              {t('cityLockedMsg').replace('{city}', lockedCityName)}
+            </p>
+            <button
+              type="button"
+              className="btn-primary city-locked-ok"
+              onClick={() => setLockedCityName(null)}
+            >
+              {t('cityLockedOk')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {!mapDebug && (
       <div className="wizard-footer-bar">
