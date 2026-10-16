@@ -314,10 +314,24 @@ export default function Dojo() {
               const openCount = cities.filter(
                 (c) => c.id === 'jakarta' || unlockedList.includes(c.id)
               ).length;
+              // Region terkunci: hanya nama region, tidak bocorkan daftar kota
+              if (!regionUnlocked) {
+                return (
+                  <div key={reg.id} className="dojo-region is-locked is-secret">
+                    <div
+                      className="dojo-region-head dojo-region-locked-only"
+                      aria-disabled="true"
+                    >
+                      <span>🔒 {label}</span>
+                      <span className="dojo-region-meta">{t('locked')}</span>
+                    </div>
+                  </div>
+                );
+              }
               return (
                 <div
                   key={reg.id}
-                  className={`dojo-region ${regionUnlocked ? '' : 'is-locked'}`}
+                  className="dojo-region"
                 >
                   <button
                     type="button"
@@ -335,7 +349,6 @@ export default function Dojo() {
                     </span>
                     <span className="dojo-region-meta">
                       {openCount}/{cities.length}
-                      {!regionUnlocked ? ` · ${t('locked')}` : ''}
                     </span>
                   </button>
                   {open && (
