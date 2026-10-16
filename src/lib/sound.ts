@@ -159,6 +159,10 @@ let cityAudio: HTMLAudioElement | null = null;
 let cityMissing: Record<string, boolean> = {};
 /** Generasi putar: batalkan async play lama supaya tidak overlap */
 let musicGen = 0;
+/** Soft-pause saat app ke background (menu BGM ikut diam) */
+let softPausedForBg = false;
+let wasToneBgmForBg = false;
+let musicVisInstalled = false;
 
 function stopToneBgm(): void {
   bgmOn = false;
@@ -181,6 +185,8 @@ function stopToneBgm(): void {
 /** Hentikan SEMUA musik (kota + BGM default + tone) — wajib sebelum ganti lagu / keluar */
 export function stopAllMusic(): void {
   musicGen += 1;
+  softPausedForBg = false;
+  wasToneBgmForBg = false;
   if (cityAudio) {
     try {
       cityAudio.onended = null;
@@ -417,3 +423,70 @@ export const sfx = {
     stopAllMusic();
   },
 };
+
+
+/** Soft-pause semua musik saat app ke background (home button / ganti app) */
+
+export function pauseMusicSoft(): void {
+  softPausedForBg = false;
+  wasToneBgmForBg = false;
+  if (cityAudio && !cityAudio.paused) {
+    try {
+      cityAudio.pause();
+      softPausedForBg = true;
+    } catch {
+      /* ignore */
+    }
+  }
+  if (bgmAudio && !bgmAudio.paused) {
+    try {
+      bgmAudio.pause();
+      softPausedForBg = true;
+    } catch {
+      /* ignore */
+    }
+  }
+  if (bgmTimer) {
+    wasToneBgmForBg = true;
+    clearInterval(bgmTimer);
+    bgmTimer = null;
+  }
+}
+
+export function resumeMusicSoft(): void {
+  if (isMuted()) {
+    softPausedForBg = false;
+    wasToneBgmForBg = false;
+    return;
+  }
+  if (softPausedForBg) {
+    if (cityAudio) {
+      void cityAudio.play().catch(() => {
+        /* autoplay block — user harus interaksi lagi */
+      });
+    }
+    if (bgmAudio) {
+      void bgmAudio.play().catch(() => {});
+    }
+    softPausedForBg = false;
+  }
+  if (wasToneBgmForBg && bgmOn) {
+    startFallbackBgm();
+    wasToneBgmForBg = false;
+  }
+}
+
+/** Panggil sekali di boot: musik home/default ikut berhenti saat minimize */
+export function installMusicBackgroundGuard(): void {
+  if (musicVisInstalled || typeof document === 'undefined') return;
+  musicVisInstalled = true;
+  const hide = () => pauseMusicSoft();
+  const show = () => resumeMusicSoft();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') hide();
+    else show();
+  });
+  window.addEventListener('pagehide', hide);
+  window.addEventListener('pageshow', show);
+}
+
