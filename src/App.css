@@ -3553,3 +3553,10 @@ h1.home-title {
   line-height: 1.35;
   text-align: left;
 }
+
+.dojo-region.is-secret .dojo-region-locked-only {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
