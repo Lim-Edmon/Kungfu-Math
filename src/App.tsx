@@ -125,6 +125,8 @@ function App() {
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
   const [adventureDiffId, setAdventureDiffId] = useState('ringan');
   const [passedCity, setPassedCity] = useState(false);
+  /** Gagal tembus target kota beruntun (session) → hint mode lebih sulit */
+  const [cityFailStreak, setCityFailStreak] = useState(0);
   const [funFact, setFunFact] = useState<string | null>(null);
   /** Fun fact: popup manual close (anak sempat baca) */
   const [funFactOpen, setFunFactOpen] = useState(false);
@@ -323,6 +325,8 @@ function App() {
       updateProgress(progressPatch);
       setPassedCity(passed);
       setNextCityId(nextId);
+      if (passed) setCityFailStreak(0);
+      else setCityFailStreak((n) => n + 1);
       const fact = passed ? pickCityFunFact(cityId) : null;
       setFunFact(fact);
       // Normal: ujung = Port Moresby. Playdebug: ujung = New York (data penuh).
@@ -506,6 +510,9 @@ function App() {
             }
             onExit={handleExitGame}
             forceOps={forceOps}
+            tempoId={
+              playKind === 'petualangan' ? adventureDiffId : undefined
+            }
             onFinish={handleFinishGame}
           />
         )}
@@ -637,6 +644,16 @@ function App() {
                       : ''}
                   </p>
                 )}
+
+                {playKind === 'petualangan' &&
+                  city &&
+                  !passedCity &&
+                  cityFailStreak >= 2 && (
+                  <p className="result-fail-hint" role="status">
+                    {t('failHintHarder')}
+                  </p>
+                )}
+
                 {playKind !== 'petualangan' && (
                   <p className="result-high">
                     {t('highScore')}: {lastHighScore}

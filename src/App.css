@@ -3532,3 +3532,24 @@ h1.home-title {
   line-height: 1.35;
   order: -1; /* di atas angka countdown */
 }
+
+.pause-overlay {
+  cursor: pointer;
+}
+.pause-hint {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  max-width: 16rem;
+  text-align: center;
+}
+
+.result-fail-hint {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-accent, #e85d04) 14%, var(--color-card));
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-align: left;
+}
