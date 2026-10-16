@@ -183,7 +183,7 @@ const STRINGS = {
     clearDataPopup: 'Kamu yakin mau hapus SEMUA data permainan ini? Ini tidak dapat dikembalikan.',
     btnCancel: 'Batal',
     inviteText:
-      'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak belajar berhitung sambil main. Gratis, tanpa login.\n\n',
+      'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak (dan dewasa) belajar berhitung sambil main.\n\nNikmati mode Petualangan seru di kota-kota dunia: landscape unik tiap kota, plus musik khas kota/negara tersebut (nyalakan suara biar lebih otentik) — sambil latihan berhitung.\n\nGratis, tanpa login.\n\n',
 
     settingsTutorial: 'Cara main',
     settingsTutorialNote: 'Lihat lagi penjelasan singkat slice, tap, bom, dan petualangan.',
@@ -411,7 +411,7 @@ const STRINGS = {
     clearDataPopup: 'Are you sure you want to delete ALL game data? This cannot be undone.',
     btnCancel: 'Cancel',
     inviteText:
-      'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids learning arithmetic while playing. Free, no login.\n\n',
+      'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids (and adults) practicing arithmetic while playing.\n\nEnjoy Adventure mode across world cities: unique landscapes for each stop, plus music inspired by that city/country (turn the sound on for a more authentic feel) — all while training your math.\n\nFree, no login.\n\n',
 
     settingsTutorial: 'How to play',
     settingsTutorialNote: 'See the short guide for slice, tap, bombs, and adventure again.',

@@ -3463,6 +3463,17 @@ h1.home-title {
 .city-region-sub-lock {
   font-size: 0.75em;
 }
+.city-region-sub.is-secret .city-region-sub-locked-only {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
+.city-region-sub-hint {
+  font-weight: 500;
+  font-size: 0.85em;
+  opacity: 0.85;
+}
 
 .unlock-popup-backdrop {
   position: fixed;

@@ -263,13 +263,15 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       progress.displayMode || 'siang'
     );
     const unlocked = progress.adventureUnlocked || ['jakarta'];
-    setCityId(
+    const focusCity =
       progress.adventureCityId &&
-        (progress.adventureCityId === 'jakarta' ||
-          unlocked.includes(progress.adventureCityId))
+      (progress.adventureCityId === 'jakarta' ||
+        unlocked.includes(progress.adventureCityId))
         ? progress.adventureCityId
-        : lastUnlockedCityId(unlocked)
-    );
+        : lastUnlockedCityId(unlocked);
+    setCityId(focusCity);
+    setRegionPanel('current');
+    setOpenSubRegion(null);
     setPlayerName(progress.playerName ?? '');
     // Level / arena / playKind / mode / karakter: tidak diisi default dari storage
     setReady(true);
@@ -963,8 +965,29 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                         {packs.map(({ reg, cities }) => {
                           const label =
                             getLang() === 'en' ? reg.labelEn : reg.labelId;
-                          const subOpen = openSubRegion === reg.id;
                           const anyOpen = cities.some((c) => isCityOpen(c.id));
+                          // Region terkunci penuh: jangan bocorkan daftar kota
+                          if (!anyOpen && !fullAccess) {
+                            return (
+                              <div
+                                key={reg.id}
+                                className="city-region-sub is-locked is-secret"
+                              >
+                                <div
+                                  className="city-region-sub-head city-region-sub-locked-only"
+                                  aria-disabled="true"
+                                >
+                                  🔒 {label}
+                                  <span className="city-region-sub-hint">
+                                    {' '}
+                                    —{' '}
+                                    {getLang() === 'en' ? 'locked' : 'terkunci'}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          const subOpen = openSubRegion === reg.id;
                           return (
                             <div
                               key={reg.id}
@@ -979,12 +1002,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                                 }
                               >
                                 {subOpen ? '▾' : '▸'} {label}
-                                {!anyOpen && (
-                                  <span className="city-region-sub-lock">
-                                    {' '}
-                                    🔒
-                                  </span>
-                                )}
                               </button>
                               {subOpen && renderCityChips(cities)}
                             </div>

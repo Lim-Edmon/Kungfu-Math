@@ -230,7 +230,12 @@ export default function Game({
   }, []);
 
   const [countdownLabel, setCountdownLabel] = useState('READY');
-  const [resolvedBgUrl, setResolvedBgUrl] = useState<string>('/cities/bg/dojo.webp');
+  /**
+   * BG arena: null dulu sampai Image() onload — cegah flash dojo / file 404.
+   * Latihan → dojo; petualangan → kota (fallback default, BUKAN dojo).
+   */
+  const [resolvedBgUrl, setResolvedBgUrl] = useState<string | null>(null);
+  const [bgReady, setBgReady] = useState(false);
   const [showVolumeHint, setShowVolumeHint] = useState(true);
   /** Layer jejak slice — DOM langsung (bukan React setState tiap move) */
   const trailLayerRef = useRef<HTMLDivElement | null>(null);
@@ -273,10 +278,15 @@ export default function Game({
     return () => stopAllMusic();
   }, [cityId]);
 
-  // Resolve BG: coba file khusus kota → default. Cheat unlock tidak memengaruhi.
-  // Pakai Image() agar SPA yang balas HTML 200 tidak dianggap gambar valid.
+  // Resolve BG: probe dulu, baru tampil (hindari flash dojo / broken image).
   useEffect(() => {
+    setBgReady(false);
+    setResolvedBgUrl(null);
     const candidates = cityBgCandidates(cityId ? cityId : 'dojo');
+    // Petualangan: jangan pernah pakai path dojo
+    const list = cityId
+      ? candidates.filter((u) => !u.includes('/dojo.'))
+      : candidates;
     let cancelled = false;
     const probe = (url: string) =>
       new Promise<boolean>((resolve) => {
@@ -286,18 +296,25 @@ export default function Game({
         img.src = url;
       });
     (async () => {
-      for (const url of candidates) {
+      for (const url of list) {
         const ok = await probe(url);
         if (cancelled) return;
         if (ok) {
           setResolvedBgUrl(url);
+          setBgReady(true);
           return;
         }
       }
       if (!cancelled) {
-        setResolvedBgUrl(
-          cityId ? '/cities/bg/default.webp' : '/cities/bg/dojo.webp'
-        );
+        const fallback = cityId
+          ? '/cities/bg/default.webp'
+          : '/cities/bg/dojo.webp';
+        const okFb = await probe(fallback);
+        if (cancelled) return;
+        if (okFb) setResolvedBgUrl(fallback);
+        else if (cityId) setResolvedBgUrl('/cities/bg/default.jpg');
+        else setResolvedBgUrl('/cities/bg/dojo.jpg');
+        setBgReady(true);
       }
     })();
     return () => {
@@ -932,8 +949,12 @@ export default function Game({
           className={`game-arena city-bg ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
           data-city={cityId || 'default'}
           style={{
-            /* Wash tipis saja biar BG kota tetap jelas, bola tetap kebaca */
-            backgroundImage: `linear-gradient(color-mix(in srgb, var(--color-bg) 12%, transparent), color-mix(in srgb, var(--color-bg) 18%, transparent)), url(${resolvedBgUrl})`,
+            /* Tunggu probe OK — jangan tampil dojo/broken sebentar */
+            backgroundImage:
+              bgReady && resolvedBgUrl
+                ? `linear-gradient(color-mix(in srgb, var(--color-bg) 12%, transparent), color-mix(in srgb, var(--color-bg) 18%, transparent)), url(${resolvedBgUrl})`
+                : undefined,
+            backgroundColor: 'var(--color-bg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center bottom',
           }}

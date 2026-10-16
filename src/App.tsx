@@ -237,7 +237,12 @@ function App() {
   };
 
   const handleBackToAdventureMap = () => {
+    // Kota baru terbuka → peta fokus ke situ (region baru otomatis terbuka)
+    if (passedCity && nextCityId) {
+      updateProgress({ adventureCityId: nextCityId });
+    }
     setHomePlayKind('petualangan');
+    setHomeKey((k) => k + 1);
     setScreen('home');
   };
 
@@ -304,7 +309,18 @@ function App() {
           unlocked = [...unlocked, nextId];
         }
       }
-      updateProgress({ adventureUnlocked: unlocked });
+      // Jika kota berikutnya beda region → simpan fokus ke kota itu (peta buka region baru)
+      const progressPatch: {
+        adventureUnlocked: string[];
+        adventureCityId?: string;
+      } = {
+        adventureUnlocked: unlocked,
+      };
+      // Fokus peta ke kota yang baru terbuka (region baru jadi current)
+      if (passed && nextId) {
+        progressPatch.adventureCityId = nextId;
+      }
+      updateProgress(progressPatch);
       setPassedCity(passed);
       setNextCityId(nextId);
       const fact = passed ? pickCityFunFact(cityId) : null;
