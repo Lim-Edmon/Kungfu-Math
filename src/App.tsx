@@ -26,7 +26,7 @@ import Tutorial from './components/Tutorial';
 import Dojo from './pages/Dojo';
 import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
-import { playMenuBgm, stopAllMusic } from './lib/sound';
+import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
 import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
@@ -181,6 +181,11 @@ function App() {
       setTutorialOpen(true);
       setTutorialFromSettings(false);
     }
+  }, []);
+
+  // Musik ikut pause saat minimize / ganti app (home + in-game)
+  useEffect(() => {
+    installMusicBackgroundGuard();
   }, []);
 
   // Menu / hasil: BGM default volume rendah. Jangan stop saat pindah tab (home↔dojo↔settings).
