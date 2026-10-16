@@ -414,6 +414,7 @@ export default function Dojo() {
             <li>{t('tipAgility')}</li>
             <li>{t('tipAdventure')}</li>
             <li>{t('tipExport')}</li>
+            <li>{t('tipScore')}</li>
           </ul>
         )}
       </section>

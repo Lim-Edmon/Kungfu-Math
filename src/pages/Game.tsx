@@ -14,6 +14,7 @@ import {
   POINTS_PER_SOLVE,
   COMBO_BONUS_STATIC,
   COMBO_BONUS_AGILITY,
+  computeSolvePoints,
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
 import { t } from '../lib/i18n';
@@ -43,6 +44,8 @@ interface GameProps {
   onExit: () => void;
   /** Latihan Fokus: batasi operasi (harus cocok level) */
   forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>;
+  /** Petualangan: id tempo utk pengali skor */
+  tempoId?: string;
   onFinish: (
     score: number,
     grade: string,
@@ -206,10 +209,15 @@ export default function Game({
   targetScore,
   onExit,
   forceOps,
+  tempoId,
   onFinish,
 }: GameProps) {
   const forceOpsRef = useRef(forceOps);
   forceOpsRef.current = forceOps;
+  const tempoIdRef = useRef(tempoId);
+  tempoIdRef.current = tempoId;
+  const levelIdRef = useRef(level);
+  levelIdRef.current = level;
   const mistakesRef = useRef(0);
   const character = getCharacterById(characterId);
   const playerName = loadProgress().playerName?.trim() || '';
@@ -270,6 +278,38 @@ export default function Game({
     questionsSolved: 0,
     stage: 1,
   }));
+
+
+  // Pause total saat tab/PWA tidak terlihat
+  const [bgPaused, setBgPaused] = useState(false);
+  const statusBeforePauseRef = useRef<'playing' | 'countdown' | null>(null);
+  useEffect(() => {
+    const onVis = () => {
+      if (!document.hidden) return;
+      setState((prev) => {
+        if (prev.status !== 'playing' && prev.status !== 'countdown') return prev;
+        statusBeforePauseRef.current = prev.status;
+        return { ...prev, status: 'paused' };
+      });
+      setBgPaused(true);
+      stopAllMusic();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
+  const resumeFromBgPause = () => {
+    const back = statusBeforePauseRef.current || 'playing';
+    statusBeforePauseRef.current = null;
+    setBgPaused(false);
+    setState((prev) =>
+      prev.status === 'paused'
+        ? { ...prev, status: back }
+        : prev
+    );
+    if (cityId) playCityMusic(cityId);
+    else sfx.startBgm();
+  };
 
   // Satu sumber musik saja: kota (petualangan) ATAU BGM default (latihan)
   useEffect(() => {
@@ -591,10 +631,13 @@ export default function Game({
         // Cek jawaban
         if (isValidSelection(prev.question, selectedValues)) {
           const newCombo = prev.combo + 1;
-          const comboBonus = agility ? COMBO_BONUS_AGILITY : COMBO_BONUS_STATIC;
-          const points =
-            POINTS_PER_SOLVE +
-            (newCombo > 1 ? (newCombo - 1) * comboBonus : 0);
+          const points = computeSolvePoints({
+            combo: newCombo,
+            agility,
+            tempoId: tempoIdRef.current,
+            levelId: levelIdRef.current,
+            forceOps: forceOpsRef.current,
+          });
           if (mode === 'slice') sfx.slash();
           if (newCombo > 1) sfx.combo();
           else sfx.correct();
@@ -979,6 +1022,14 @@ export default function Game({
               </span>
             </div>
           )}
+
+          {state.status === 'paused' && bgPaused && (
+            <div className="countdown-overlay pause-overlay" onClick={resumeFromBgPause} role="button" tabIndex={0}>
+              <div className="countdown-label is-ready">{t('pausedTitle')}</div>
+              <p className="pause-hint">{t('pausedHint')}</p>
+            </div>
+          )}
+
           <div
             ref={trailLayerRef}
             className="slice-trail-layer"
