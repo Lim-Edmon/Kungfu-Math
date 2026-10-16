@@ -141,3 +141,7 @@ Di **Pengaturan → Masukkan Kode Progress**, ketik salah satu (abaikan spasi/ka
 
 Efek: **semua kota petualangan** + **semua lencana** terbuka. Skor/rekor **tidak** diisi palsu.  
 Untuk kondisi fresh lagi: **Hapus semua data** di Pengaturan.
+
+## Skor & target kota
+
+Lihat [docs/SCORING.md](docs/SCORING.md) — pengali tempo/level/arena/fokus, combo, soft-reset region (−100), pause saat keluar app.
