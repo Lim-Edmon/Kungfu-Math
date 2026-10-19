@@ -2608,6 +2608,53 @@ export const MVP_PATH_LAST_CITY_ID = 'new-york';
 export const MVP_PATH_COMPLETE_MSG =
   'Luar biasa! Kamu berhasil mencapai ujung perjalanan saat ini. Mohon menunggu — petualangan baru menanti berikutnya.';
 
+
+/** Kota terbuka terjauh di jalur (index terbesar di ADVENTURE_CITIES). */
+export function furthestUnlockedCityId(unlocked: string[]): string {
+  const list = unlocked?.length ? unlocked : ['jakarta'];
+  let best = 'jakarta';
+  let bestI = -1;
+  for (const id of list) {
+    const i = ADVENTURE_CITIES.findIndex((c) => c.id === id);
+    if (i > bestI) {
+      bestI = i;
+      best = id;
+    }
+  }
+  return best;
+}
+
+/** Semua kota jalur konten (sampai CONTENT_PATH_LAST) sudah lolos target. */
+export function isContentPathFullyCleared(
+  highScores: Record<string, number> | undefined
+): boolean {
+  const lastIdx = ADVENTURE_CITIES.findIndex((c) => c.id === CONTENT_PATH_LAST_CITY_ID);
+  const end = lastIdx >= 0 ? lastIdx : ADVENTURE_CITIES.length - 1;
+  for (let i = 0; i <= end; i++) {
+    const c = ADVENTURE_CITIES[i];
+    if ((highScores?.[c.id] ?? 0) < c.targetScore) return false;
+  }
+  return true;
+}
+
+/**
+ * Kota fokus UI: default = terjauh yang terbuka.
+ * Setelah menamatkan seluruh jalur konten → pakai kota terakhir diklik (jika masih valid).
+ */
+export function resolveFocusCityId(
+  unlocked: string[],
+  lastClickedId: string | undefined,
+  highScores?: Record<string, number>
+): string {
+  const list = unlocked?.length ? unlocked : ['jakarta'];
+  if (isContentPathFullyCleared(highScores) && lastClickedId) {
+    if (lastClickedId === 'jakarta' || list.includes(lastClickedId)) {
+      return lastClickedId;
+    }
+  }
+  return furthestUnlockedCityId(list);
+}
+
 export function getCityById(id: string): AdventureCity {
   return ADVENTURE_CITIES.find((c) => c.id === id) ?? ADVENTURE_CITIES[0];
 }
