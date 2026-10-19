@@ -8,11 +8,12 @@ import type {
   InputMode,
 } from '../lib/types';
 import {
-  ADVENTURE_CITIES,
+ADVENTURE_CITIES,
   ADVENTURE_DIFFICULTIES,
   ADVENTURE_REGIONS,
   getCountryNameId,
   getCountryNameEn,
+  resolveFocusCityId,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS, getLevelById } from '../lib/levels';
@@ -263,12 +264,11 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       progress.displayMode || 'siang'
     );
     const unlocked = progress.adventureUnlocked || ['jakarta'];
-    const focusCity =
-      progress.adventureCityId &&
-      (progress.adventureCityId === 'jakarta' ||
-        unlocked.includes(progress.adventureCityId))
-        ? progress.adventureCityId
-        : lastUnlockedCityId(unlocked);
+    const focusCity = resolveFocusCityId(
+      unlocked,
+      progress.adventureCityId,
+      progress.adventureHighScores
+    );
     setCityId(focusCity);
     setRegionPanel('current');
     setOpenSubRegion(null);

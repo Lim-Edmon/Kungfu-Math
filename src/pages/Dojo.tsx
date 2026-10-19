@@ -16,6 +16,7 @@ import {
   getCityById,
   getCountryNameId,
   getCountryNameEn,
+  resolveFocusCityId,
 } from '../lib/adventure';
 import type { ScoreRecord } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
@@ -93,8 +94,13 @@ export default function Dojo() {
     ? progress.adventureUnlocked
     : ['jakarta'];
   const unlockedCount = unlockedList.length;
+  /** Fokus UI: kota terjauh terbuka (bukan terakhir diklik), kecuali jalur konten sudah tamat */
   const currentCity = getCityById(
-    progress.adventureCityId || 'jakarta'
+    resolveFocusCityId(
+      unlockedList,
+      progress.adventureCityId,
+      progress.adventureHighScores
+    )
   );
   const passedCount = ADVENTURE_CITIES.filter((c) => {
     const hs = progress.adventureHighScores?.[c.id] ?? 0;
