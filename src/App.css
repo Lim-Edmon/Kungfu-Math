@@ -1045,7 +1045,7 @@
   padding: 12px 16px 8px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .settings-header {
@@ -1070,18 +1070,18 @@
 
 .settings-section h2 {
   font-size: 1rem;
-  margin-bottom: 8px;
+  margin: 0 0 4px;
 }
 
 .settings-note {
   font-size: 0.8rem;
   color: var(--color-text-muted);
-  margin: 8px 0;
+  margin: 4px 0;
 }
 
 .settings-toggle {
   width: 100%;
-  padding: 12px;
+  padding: 8px 10px;
   border-radius: var(--radius);
   border: 2px solid var(--color-border);
   background: var(--color-card);
@@ -1546,21 +1546,21 @@
 .dojo-sub {
   color: var(--color-text-muted);
   font-size: 0.9rem;
-  margin: 2px 0 12px;
+  margin: 2px 0 6px;
 }
 
 .dojo-card {
   background: var(--color-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
 }
 
 .dojo-hero {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .dojo-hero-emoji {
@@ -1571,7 +1571,7 @@
 .dojo-hero-name {
   font-size: 1.15rem;
   font-weight: 700;
-  margin: 0 0 4px;
+  margin: 0 0 2px;
 }
 
 .dojo-hero-meta {
@@ -1584,7 +1584,7 @@
   font-size: 0.8rem;
 }
 .dojo-adv-summary {
-  margin: 0 0 10px;
+  margin: 0 0 5px;
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
@@ -1594,14 +1594,14 @@
 }
 
 .dojo-section {
-  margin-top: 1.35rem;
+  margin-top: 0.65rem;
 }
 .dojo-section:first-of-type {
   margin-top: 0.5rem;
 }
 .dojo-section h2 {
   font-size: 1rem;
-  margin: 0 0 10px;
+  margin: 0 0 5px;
 }
 
 .dojo-score-list {
@@ -1617,8 +1617,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 7px 10px;
   background: var(--color-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
@@ -1942,8 +1942,8 @@
 
 
 .dojo-tips-section {
-  margin-top: 1.75rem;
-  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .dojo-tips {
@@ -2806,18 +2806,18 @@ a.btn-link-trakteer:hover,
 .settings-section {
   border: 1px solid var(--color-border, #d0d0d0);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 7px 10px;
   background: var(--color-card, rgba(255,255,255,0.55));
 }
 .settings-section + .settings-section {
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 /* Region collapsible di Progres petualangan */
 .dojo-region {
   border: 1px solid var(--color-border, #d0d0d0);
   border-radius: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   overflow: hidden;
   background: var(--color-card, rgba(255,255,255,0.5));
 }
@@ -3057,15 +3057,15 @@ h1.home-title {
   color: var(--color-primary, #c41e3a);
 }
 .dojo-stats-card {
-  margin: 10px 0 14px;
-  padding: 14px 16px;
+  margin: 5px 0 7px;
+  padding: 8px 12px;
   border-radius: 16px;
   border: 2px solid color-mix(in srgb, var(--color-primary, #c41e3a) 35%, #e0d5c0);
   background: var(--color-card, #fff);
   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 }
 .dojo-section-title {
-  margin: 10px 0 6px;
+  margin: 4px 0 3px;
   font-size: 0.95rem;
 }
 .dojo-section-title:first-child {
