@@ -191,6 +191,38 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
    * dan isi ulang slice/tap + pendekar + arena + level + tempo dari pilihan terakhir
    * supaya tidak harus mundur ke langkah 1 lagi.
    */
+  /** Saat masuk Petualangan: fokus ke kota terjauh terbuka (atau terakhir klik jika sudah tamat) */
+  useEffect(() => {
+    if (playKind !== 'petualangan' || mapDebug) return;
+    const p = loadProgress();
+    const focus = resolveFocusCityId(
+      p.adventureUnlocked?.length ? p.adventureUnlocked : ['jakarta'],
+      p.adventureCityId,
+      p.adventureHighScores
+    );
+    setCityId(focus);
+    setRegionPanel('current');
+    const city = ADVENTURE_CITIES.find((c) => c.id === focus);
+    if (city) setOpenSubRegion(city.regionId);
+  }, [playKind, mapDebug]);
+
+  /** Chip kota aktif selalu di-scroll ke tengah baris (jangan tertinggal di kanan) */
+  useEffect(() => {
+    if (playKind !== 'petualangan' || step !== 3) return;
+    const t = window.setTimeout(() => {
+      const active = document.querySelector(
+        '.city-pick .city-chip.active, .city-region-stack .city-chip.active'
+      ) as HTMLElement | null;
+      if (!active) return;
+      active.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [cityId, playKind, step, regionPanel]);
+
   useEffect(() => {
     if (!initialPlayKind) return;
     setPlayKind(initialPlayKind);
@@ -213,6 +245,15 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       setAdventureDiffId(tempo);
     } else if (initialPlayKind === 'petualangan') {
       setAdventureDiffId('normal');
+    }
+    if (initialPlayKind === 'petualangan') {
+      const focus = resolveFocusCityId(
+        p.adventureUnlocked?.length ? p.adventureUnlocked : ['jakarta'],
+        p.adventureCityId,
+        p.adventureHighScores
+      );
+      setCityId(focus);
+      setRegionPanel('current');
     }
   }, [initialPlayKind]);
 
@@ -489,6 +530,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                           type="button"
                           key={c.id}
                           role="listitem"
+                          data-city-id={c.id}
                           className={`city-chip ${cityId === c.id ? 'active' : ''}`}
                           onClick={() => {
                             setCityId(c.id);
@@ -925,6 +967,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                               type="button"
                               key={c.id}
                               role="listitem"
+                              data-city-id={c.id}
                               className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
                               aria-disabled={!unlocked}
                               onClick={() => {
