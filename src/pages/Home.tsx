@@ -177,6 +177,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [fieldError, setFieldError] = useState<string | null>(null);
   /** Popup kota terkunci (chip / pin) */
   const [lockedCityName, setLockedCityName] = useState<string | null>(null);
+  /** Tips skor: default tertutup biar page 1 tetap pendek */
+  const [tipsOpen, setTipsOpen] = useState(false);
   const fieldRefs = {
     mode: useRef<HTMLDivElement>(null),
     character: useRef<HTMLDivElement>(null),
@@ -1201,6 +1203,27 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
         {step === 1 && (
           <section className="wizard-panel step-character">
+            <div className="home-tips-block">
+              <button
+                type="button"
+                className="home-tips-toggle"
+                onClick={() => setTipsOpen((o) => !o)}
+                aria-expanded={tipsOpen}
+              >
+                <span className="home-tips-toggle-left">
+                  <span className="home-tips-info" aria-hidden>i</span>
+                  <span>{t('tipsTitle')}</span>
+                </span>
+                <span className="home-tips-chevron" aria-hidden>
+                  {tipsOpen ? '▾' : '▸'}
+                </span>
+              </button>
+              {tipsOpen && (
+                <ul className="home-tips-list">
+                  <li>{t('tipScore')}</li>
+                </ul>
+              )}
+            </div>
             <div
               ref={fieldRefs.mode}
               className={`wizard-field ${fieldError === 'mode' ? 'field-error' : ''}`}
@@ -1291,12 +1314,6 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     autoComplete="nickname"
                   />
                 </label>
-                <section className="home-tips-block" aria-label={t('tipsTitle')}>
-                  <h3 className="home-tips-title">{t('tipsTitle')}</h3>
-                  <ul className="home-tips-list">
-                    <li>{t('tipScore')}</li>
-                  </ul>
-                </section>
               </>
             )}
           </section>
