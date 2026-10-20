@@ -3648,3 +3648,28 @@ h1.home-title {
     transform: scale(1.04);
   }
 }
+
+
+/* Tips di langkah 1 wizard (bukan di Progres) */
+.home-tips-block {
+  margin: 1rem 0 0.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border, #ddd);
+  background: color-mix(in srgb, var(--color-card, #fff) 92%, var(--color-accent, #e85d04) 8%);
+}
+.home-tips-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.home-tips-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: var(--color-text-muted, #555);
+}
+.home-tips-list li {
+  margin-bottom: 0.25rem;
+}
