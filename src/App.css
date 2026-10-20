@@ -3650,26 +3650,63 @@ h1.home-title {
 }
 
 
-/* Tips di langkah 1 wizard (bukan di Progres) */
+/* Tips skor — collapsible di atas langkah 1 (default tertutup) */
 .home-tips-block {
-  margin: 1rem 0 0.25rem;
-  padding: 0.75rem 0.9rem;
+  margin: 0 0 0.85rem;
+  padding: 0;
   border-radius: 12px;
   border: 1px solid var(--color-border, #ddd);
-  background: color-mix(in srgb, var(--color-card, #fff) 92%, var(--color-accent, #e85d04) 8%);
+  background: color-mix(in srgb, var(--color-card, #fff) 94%, var(--color-accent, #e85d04) 6%);
+  overflow: hidden;
 }
-.home-tips-title {
-  margin: 0 0 0.4rem;
-  font-size: 0.9rem;
-  font-weight: 700;
+.home-tips-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--color-text, #222);
+  cursor: pointer;
+  text-align: left;
+  gap: 0.5rem;
+}
+.home-tips-toggle-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.home-tips-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.home-tips-chevron {
+  opacity: 0.65;
+  font-size: 0.85rem;
 }
 .home-tips-list {
   margin: 0;
-  padding-left: 1.15rem;
+  padding: 0 0.85rem 0.7rem 2.15rem;
   font-size: 0.84rem;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--color-text-muted, #555);
 }
 .home-tips-list li {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
