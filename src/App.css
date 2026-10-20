@@ -3560,3 +3560,53 @@ h1.home-title {
   pointer-events: none;
   user-select: none;
 }
+
+
+/* ===== Transisi lanjut kota (peta full-screen + pesawat) ===== */
+.travel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  background: rgba(15, 12, 10, 0.72);
+  animation: travelOverlayIn 0.42s ease-out forwards;
+}
+.travel-overlay-out {
+  animation: travelOverlayOut 0.55s ease-in forwards;
+}
+.travel-overlay-inner {
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+.travel-overlay-inner .adventure-map-wrap {
+  flex: 1;
+  min-height: min(78vh, 640px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.travel-overlay-inner .adventure-map-frame {
+  flex: 1;
+  min-height: min(70vh, 560px);
+}
+@keyframes travelOverlayIn {
+  0% {
+    opacity: 0;
+    clip-path: inset(38% 32% 38% 32% round 20px);
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 0);
+  }
+}
+@keyframes travelOverlayOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}

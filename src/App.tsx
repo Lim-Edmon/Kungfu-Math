@@ -26,6 +26,7 @@ import Tutorial from './components/Tutorial';
 import Dojo from './pages/Dojo';
 import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
+import AdventureMap from './components/AdventureMap';
 import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
 import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
@@ -131,6 +132,10 @@ function App() {
   /** Fun fact: popup manual close (anak sempat baca) */
   const [funFactOpen, setFunFactOpen] = useState(false);
   const [nextCityId, setNextCityId] = useState<string | null>(null);
+  /** Transisi full-screen peta + pesawat sebelum masuk kota berikutnya */
+  const [travelOverlay, setTravelOverlay] = useState<
+    null | { fromId: string; toId: string; phase: 'in' | 'out' }
+  >(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
@@ -238,9 +243,24 @@ function App() {
 
   const handleContinueNextCity = () => {
     if (!nextCityId || !selectedCharacterId) return;
-    updateProgress({ adventureCityId: nextCityId });
+    const fromId = lastCityId || loadProgress().adventureCityId || 'jakarta';
+    const toId = nextCityId;
+    updateProgress({ adventureCityId: toId });
     setPassedCity(false);
+    // Transisi peta full-screen; fallback timeout jika animasi gagal
+    setTravelOverlay({ fromId, toId, phase: 'in' });
+  };
+
+  const finishTravelToGame = () => {
+    setTravelOverlay(null);
     setScreen('game');
+  };
+
+  const handleTravelOverlayDone = () => {
+    setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
+    window.setTimeout(() => {
+      finishTravelToGame();
+    }, 550);
   };
 
   const handleBackToAdventureMap = () => {
@@ -448,6 +468,16 @@ function App() {
     }
   })();
   const showChrome = screen !== 'game' && !mapDebugMode;
+
+  // Safety: jika animasi pesawat tidak selesai, tetap masuk game
+  useEffect(() => {
+    if (!travelOverlay || travelOverlay.phase !== 'in') return;
+    const safety = window.setTimeout(() => {
+      finishTravelToGame();
+    }, 12000);
+    return () => window.clearTimeout(safety);
+  }, [travelOverlay?.fromId, travelOverlay?.toId, travelOverlay?.phase]);
+
   const showBottomNav = showChrome;
   const _lv = getLevelById(selectedLevel);
   const levelLabel = getLang() === 'en' ? _lv.labelEn : _lv.labelId;
@@ -720,7 +750,9 @@ function App() {
                     className="btn-ghost"
                     onClick={handleBackToAdventureMap}
                   >
-                    {getLang()==='en' ? 'Back to map' : 'Kembali ke peta'}
+                    {passedCity && nextCity
+                      ? t('chooseOtherCity')
+                      : t('backToMap')}
                   </button>
                 ) : (
                   <button
@@ -757,6 +789,34 @@ function App() {
       )}
 
       {showChrome && <Footer />}
+      
+      {travelOverlay && (
+        <div
+          className={`travel-overlay travel-overlay-${travelOverlay.phase}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('continueCity')}
+        >
+          <div className="travel-overlay-inner">
+            <AdventureMap
+              unlockedIds={
+                loadProgress().adventureUnlocked?.length
+                  ? loadProgress().adventureUnlocked
+                  : ['jakarta']
+              }
+              wonIds={ADVENTURE_CITIES.filter((c) => {
+                const hs = loadProgress().adventureHighScores?.[c.id] ?? 0;
+                return hs >= c.targetScore;
+              }).map((c) => c.id)}
+              activeId={travelOverlay.toId}
+              travelFromId={travelOverlay.fromId}
+              travelToId={travelOverlay.toId}
+              onTravelDone={handleTravelOverlayDone}
+            />
+          </div>
+        </div>
+      )}
+
       {showBottomNav && (
         <BottomNav key={langTick} active={navActive} onChange={handleNav} />
       )}
