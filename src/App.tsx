@@ -247,7 +247,6 @@ function App() {
     const toId = nextCityId;
     updateProgress({ adventureCityId: toId });
     setPassedCity(false);
-    // Transisi peta full-screen; fallback timeout jika animasi gagal
     setTravelOverlay({ fromId, toId, phase: 'in' });
   };
 
@@ -260,7 +259,7 @@ function App() {
     setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
     window.setTimeout(() => {
       finishTravelToGame();
-    }, 550);
+    }, 420);
   };
 
   const handleBackToAdventureMap = () => {
@@ -469,7 +468,7 @@ function App() {
   })();
   const showChrome = screen !== 'game' && !mapDebugMode;
 
-  // Safety: jika animasi pesawat tidak selesai, tetap masuk game
+  // Safety: jika animasi tidak selesai, tetap masuk game
   useEffect(() => {
     if (!travelOverlay || travelOverlay.phase !== 'in') return;
     const safety = window.setTimeout(() => {
@@ -789,7 +788,7 @@ function App() {
       )}
 
       {showChrome && <Footer />}
-      
+
       {travelOverlay && (
         <div
           className={`travel-overlay travel-overlay-${travelOverlay.phase}`}
@@ -799,6 +798,7 @@ function App() {
         >
           <div className="travel-overlay-inner">
             <AdventureMap
+              fillViewport
               unlockedIds={
                 loadProgress().adventureUnlocked?.length
                   ? loadProgress().adventureUnlocked
