@@ -511,10 +511,11 @@ export default function AdventureMap({
   const fontSize = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.022 : 0.055);
 
   /**
-   * Transisi pindah kota (selaras pesawat + zoom):
-   * - Mulai: viewBox = aturan peta biasa di kota asal (viewBoxForCityIndex)
-   * - Zoom/center bergerak ke viewBox kota tujuan selama pesawat terbang (satu durasi)
-   * - Pusat kamera mengikuti jalur pesawat agar rute tidak keluar frame
+   * Urutan transisi lanjut kota:
+   * 1) Expand dari titik tengah → full window (CSS), view = aturan zoom kota asal
+   * 2–3) Pesawat terbang; kamera & zoom mengikuti jalur → aturan kota tujuan
+   * 4) Snap soft ke viewBox tujuan
+   * 5) Parent fade-out → masuk permainan
    */
   useEffect(() => {
     if (!traveling || !fromCity || !toCity) {
@@ -533,10 +534,7 @@ export default function AdventureMap({
     const endRuleVB =
       toIdx >= 0 ? viewBoxForCityIndex(toIdx) : { minX, minY, vbW, vbH };
 
-    const startSpan = spanOf(startRuleVB);
-    const endSpan = spanOf(endRuleVB);
-
-    // Mulai persis di frame aturan kota asal
+    // (1) Langsung di frame kota asal — hindari flash view dunia gelap
     setZoomVB(startRuleVB);
     zoomVBRef.current = startRuleVB;
 
@@ -544,65 +542,73 @@ export default function AdventureMap({
       toCity.mapX - fromCity.mapX,
       toCity.mapY - fromCity.mapY
     );
-    const SPEED = 4.2; // unit peta / detik — sama untuk pesawat & zoom
-    const flightDur = Math.max(700, Math.min(8000, (dist / SPEED) * 1000));
+    const SPEED = 4.2;
+    const flightDur = Math.max(800, Math.min(8000, (dist / SPEED) * 1000));
+    /** Tunggu expand CSS selesai sebelum pesawat jalan */
+    const EXPAND_MS = fillViewport ? 720 : 0;
 
     let cancelled = false;
     let raf = 0;
-    const t0 = performance.now();
-    const ease = (x: number) => 1 - Math.pow(1 - x, 2.4);
+    let expandTimer = 0;
 
-    const tick = (now: number) => {
+    const ease = (x: number) => 1 - Math.pow(1 - x, 2.6);
+
+    const runFlight = () => {
       if (cancelled) return;
-      const p = Math.min(1, (now - t0) / flightDur);
-      const e = ease(p);
-      setT(p);
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        if (cancelled) return;
+        const p = Math.min(1, (now - t0) / flightDur);
+        const e = ease(p);
+        setT(p);
 
-      // Pusat mengikuti pesawat; span lerp aturan asal → tujuan
-      const cx =
-        fromCity.mapX + (toCity.mapX - fromCity.mapX) * e;
-      const cy =
-        fromCity.mapY + (toCity.mapY - fromCity.mapY) * e;
-      const span = startSpan + (endSpan - startSpan) * e;
+        const cx = fromCity.mapX + (toCity.mapX - fromCity.mapX) * e;
+        const cy = fromCity.mapY + (toCity.mapY - fromCity.mapY) * e;
+        const ruleW =
+          startRuleVB.vbW + (endRuleVB.vbW - startRuleVB.vbW) * e;
+        const ruleH =
+          startRuleVB.vbH + (endRuleVB.vbH - startRuleVB.vbH) * e;
+        const vb = clampViewBox(
+          {
+            minX: cx - ruleW / 2,
+            minY: cy - ruleH / 2,
+            vbW: ruleW,
+            vbH: ruleH,
+          },
+          cx,
+          cy
+        );
+        setZoomVB(vb);
+        zoomVBRef.current = vb;
 
-      // Bangun viewBox ber-aspect peta di sekitar pusat
-      let vbW = span;
-      let vbH = span;
-      if (vbW / vbH > MAP_ASPECT) {
-        vbH = vbW / MAP_ASPECT;
-      } else {
-        vbW = vbH * MAP_ASPECT;
-      }
-      // Ambil aspect dari end/start rule agar tidak loncat
-      const ruleW =
-        startRuleVB.vbW + (endRuleVB.vbW - startRuleVB.vbW) * e;
-      const ruleH =
-        startRuleVB.vbH + (endRuleVB.vbH - startRuleVB.vbH) * e;
-      vbW = ruleW;
-      vbH = ruleH;
-      const vb = clampViewBox(
-        { minX: cx - vbW / 2, minY: cy - vbH / 2, vbW, vbH },
-        cx,
-        cy
-      );
-      setZoomVB(vb);
-      zoomVBRef.current = vb;
-
-      if (p < 1) {
-        raf = requestAnimationFrame(tick);
-      } else {
-        // Snap ke aturan kota tujuan
-        setZoomVB(endRuleVB);
-        zoomVBRef.current = endRuleVB;
-        travelOwnsZoomRef.current = false;
-        onTravelDone?.();
-      }
+        if (p < 1) {
+          raf = requestAnimationFrame(tick);
+        } else {
+          // (4) ending selaras aturan peta kota tujuan
+          setZoomVB(endRuleVB);
+          zoomVBRef.current = endRuleVB;
+          setT(1);
+          // jeda singkat agar ending terbaca, lalu parent fade-out
+          window.setTimeout(() => {
+            if (cancelled) return;
+            travelOwnsZoomRef.current = false;
+            onTravelDone?.();
+          }, 280);
+        }
+      };
+      raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
+
+    if (EXPAND_MS > 0) {
+      expandTimer = window.setTimeout(runFlight, EXPAND_MS);
+    } else {
+      runFlight();
+    }
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      window.clearTimeout(expandTimer);
       travelOwnsZoomRef.current = false;
     };
   }, [
@@ -616,6 +622,7 @@ export default function AdventureMap({
     minY,
     vbW,
     vbH,
+    fillViewport,
   ]);
 
   const planeX =
