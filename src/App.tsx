@@ -256,10 +256,11 @@ function App() {
   };
 
   const handleTravelOverlayDone = () => {
+    // (5) fade-out pelan, baru masuk permainan
     setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
     window.setTimeout(() => {
       finishTravelToGame();
-    }, 420);
+    }, 650);
   };
 
   const handleBackToAdventureMap = () => {
@@ -473,7 +474,7 @@ function App() {
     if (!travelOverlay || travelOverlay.phase !== 'in') return;
     const safety = window.setTimeout(() => {
       finishTravelToGame();
-    }, 12000);
+    }, 15000);
     return () => window.clearTimeout(safety);
   }, [travelOverlay?.fromId, travelOverlay?.toId, travelOverlay?.phase]);
 
