@@ -1291,6 +1291,12 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     autoComplete="nickname"
                   />
                 </label>
+                <section className="home-tips-block" aria-label={t('tipsTitle')}>
+                  <h3 className="home-tips-title">{t('tipsTitle')}</h3>
+                  <ul className="home-tips-list">
+                    <li>{t('tipScore')}</li>
+                  </ul>
+                </section>
               </>
             )}
           </section>

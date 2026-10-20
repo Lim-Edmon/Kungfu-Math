@@ -72,7 +72,6 @@ export default function Dojo() {
     progress.playerName?.trim() || character?.name || t('playerDefault');
 
   const [tab, setTab] = useState<DojoTab>('level');
-  const [tipsOpen, setTipsOpen] = useState(false);
   const [openRegions, setOpenRegions] = useState<Record<string, boolean>>({});
   const regionListRef = useRef<HTMLDivElement>(null);
 
@@ -413,30 +412,6 @@ export default function Dojo() {
           </div>
         </section>
       )}
-
-      <section className="dojo-tips-section">
-        <button
-          type="button"
-          className="dojo-tips-toggle"
-          onClick={() => setTipsOpen((o) => !o)}
-          aria-expanded={tipsOpen}
-        >
-          <span>{t('tipsTitle')}</span>
-          <span className="dojo-tips-chevron" aria-hidden>
-            {tipsOpen ? '▾' : '▸'}
-          </span>
-        </button>
-        {tipsOpen && (
-          <ul className="dojo-tips">
-            <li>{t('tipSlice')}</li>
-            <li>{t('tipTap')}</li>
-            <li>{t('tipAgility')}</li>
-            <li>{t('tipAdventure')}</li>
-            <li>{t('tipExport')}</li>
-            <li>{t('tipScore')}</li>
-          </ul>
-        )}
-      </section>
 
       
     </div>

@@ -219,6 +219,10 @@ export default function Game({
   const levelIdRef = useRef(level);
   levelIdRef.current = level;
   const mistakesRef = useRef(0);
+  /** Waktu soal saat ini muncul (ms) */
+  const questionShownAtRef = useRef<number>(0);
+  /** Sudah salah di soal berjalan (batalkan bonus cepat) */
+  const questionHadMistakeRef = useRef(false);
   const character = getCharacterById(characterId);
   const playerName = loadProgress().playerName?.trim() || '';
   const displayName = playerName || character?.name || 'Pendekar';
@@ -538,6 +542,14 @@ export default function Game({
     [onFinish, clearNextQuestionTimeout, agility, mode]
   );
 
+
+  // Catat saat soal baru muncul (untuk bonus jawab cepat)
+  useEffect(() => {
+    if (state.status !== 'playing' || !state.question) return;
+    questionShownAtRef.current = performance.now();
+    questionHadMistakeRef.current = false;
+  }, [state.question?.display, state.question?.target, state.status]);
+
   const handleNumberTap = useCallback(
     (num: FloatingNumber) => {
       if (state.status !== 'playing' || num.sliced) return;
@@ -550,6 +562,7 @@ export default function Game({
         // Bom → nyawa −1, bom hilang, SEMUA bola non-bom yang sempat hilang MUNCUL LANGSUNG
         if (num.isBomb) {
           mistakesRef.current += 1;
+          questionHadMistakeRef.current = true;
           sfx.boom();
           clearNextQuestionTimeout();
           const token = Date.now();
@@ -631,12 +644,18 @@ export default function Game({
         // Cek jawaban
         if (isValidSelection(prev.question, selectedValues)) {
           const newCombo = prev.combo + 1;
+          const elapsedMs = performance.now() - questionShownAtRef.current;
+          const fastSolve =
+            !questionHadMistakeRef.current &&
+            elapsedMs > 0 &&
+            elapsedMs < 1000;
           const points = computeSolvePoints({
             combo: newCombo,
             agility,
             tempoId: tempoIdRef.current,
             levelId: levelIdRef.current,
             forceOps: forceOpsRef.current,
+            fastSolve,
           });
           if (mode === 'slice') sfx.slash();
           if (newCombo > 1) sfx.combo();
@@ -663,6 +682,7 @@ export default function Game({
 
         // Salah → nyawa −1, bola muncul lagi, SOAL TETAP; tempo Berani: −waktu
         mistakesRef.current += 1;
+          questionHadMistakeRef.current = true;
         sfx.wrong();
         let withTime = prev;
         if (timePenaltySec > 0) {
