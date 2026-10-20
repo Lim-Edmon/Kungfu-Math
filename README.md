@@ -133,14 +133,10 @@ Vite + React + TypeScript · Deploy: Vercel
 
 ## Akses uji (developer)
 
-Di **Pengaturan → Masukkan Kode Progress**, ketik salah satu (abaikan spasi/kapital):
+Kode buka-semua untuk pengujian **tidak dipublikasikan di README**.  
+Gunakan hanya dari catatan internal / Codespace. Jangan bagikan ke pemain.
 
-- `edmon halim the great`
-- `unlock all`
-- `buka semua`
-
-Efek: **semua kota petualangan** + **semua lencana** terbuka. Skor/rekor **tidak** diisi palsu.  
-Untuk kondisi fresh lagi: **Hapus semua data** di Pengaturan.
+Mode debug peta (koordinat/aset) tetap: `?mapdebug=1` — lihat bagian Debug peta di atas.
 
 ## Skor & target kota
 
