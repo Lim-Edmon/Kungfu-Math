@@ -267,11 +267,11 @@ function App() {
   };
 
   const handleTravelOverlayDone = () => {
-    // (5) fade-out pelan, baru masuk permainan
+    // (5) fade-out pelan (~1.2s), baru masuk permainan — jangan cut mendadak
     setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
     window.setTimeout(() => {
       finishTravelToGame();
-    }, 650);
+    }, 1200);
   };
 
   const handleBackToAdventureMap = () => {

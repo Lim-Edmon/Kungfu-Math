@@ -3637,7 +3637,7 @@ h1.home-title {
   animation: travelOverlayBgIn 0.4s ease-out forwards;
 }
 .travel-overlay-out {
-  animation: travelOverlayBgOut 0.9s ease-in forwards;
+  animation: travelOverlayBgOut 1.2s ease-in forwards;
 }
 .travel-overlay-inner {
   width: 100%;
@@ -3646,10 +3646,10 @@ h1.home-title {
   max-height: 100dvh;
   display: block;
   transform-origin: center center;
-  animation: travelMapExpand 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: travelMapExpand 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .travel-overlay-out .travel-overlay-inner {
-  animation: travelMapFadeOut 0.9s ease-in forwards;
+  animation: travelMapFadeOut 1.2s ease-in forwards;
 }
 .travel-overlay .adventure-map-wrap {
   margin: 0;
@@ -3688,12 +3688,12 @@ h1.home-title {
 }
 @keyframes travelMapExpand {
   0% {
-    opacity: 0.85;
-    transform: scale(0.06);
+    opacity: 0;
+    transform: scale(0.08);
   }
-  55% {
+  40% {
     opacity: 1;
-    transform: scale(1.02);
+    transform: scale(1.015);
   }
   100% {
     opacity: 1;
@@ -3707,7 +3707,7 @@ h1.home-title {
   }
   100% {
     opacity: 0;
-    transform: scale(1.04);
+    transform: scale(1.03);
   }
 }
 
