@@ -334,8 +334,11 @@ export default function AdventureMap({
     ro.observe(el);
     return () => ro.disconnect();
   }, [fillViewport]);
-  /** Fullscreen: aspect layar (isi penuh, tanpa biru). Normal: aspect peta 2:1. */
-  const targetAspect = fillViewport ? frameAspect : MAP_ASPECT;
+  /**
+   * Aspect viewBox = ukuran frame aktual (sama untuk pilih Adventure & transisi).
+   * Pilih kota: frame CSS 2:1. Transisi: full layar. Mentok tepi → clamp, bukan biru.
+   */
+  const targetAspect = frameAspect;
   const [clickCoord, setClickCoord] = useState<{
     x: number;
     y: number;
