@@ -613,13 +613,14 @@ export default function AdventureMap({
     zoomVBRef.current = startRuleVB;
 
     const dist = Math.hypot(toC.mapX - fromC.mapX, toC.mapY - fromC.mapY);
-    /** Lebih pelan → total transisi ~+1 dtk */
-    const SPEED = 3.4;
-    const flightDur = Math.max(1100, Math.min(9000, (dist / SPEED) * 1000));
-    /** Expand CSS ~1s (fullscreen); normal selection singkat */
-    const EXPAND_MS = fillViewport ? 1000 : 0;
+    /** Pelan + ~0.5s ekstra total (expand + terbang + jeda + fade) */
+    const SPEED = 3.0;
+    const flightDur = Math.max(1400, Math.min(10000, (dist / SPEED) * 1000));
+    /** Samakan dengan CSS travelMapExpand (1.2s) */
+    const EXPAND_MS = fillViewport ? 1200 : 0;
 
     let cancelled = false;
+    let started = false; // cegah begin() ganda (onload + timeout = reset pesawat)
     let raf = 0;
     let expandTimer = 0;
     let doneTimer = 0;
@@ -658,23 +659,23 @@ export default function AdventureMap({
         if (p < 1) {
           raf = requestAnimationFrame(tick);
         } else {
-          // (4) ending selaras aturan peta kota tujuan
           setZoomVB(endRuleVB);
           zoomVBRef.current = endRuleVB;
           setT(1);
-          // jeda singkat agar ending terbaca, lalu parent fade-out
+          // Jeda di kota tujuan, lalu parent mulai fade-out
           doneTimer = window.setTimeout(() => {
             if (cancelled) return;
             travelOwnsZoomRef.current = false;
             onTravelDoneRef.current?.();
-          }, 450);
+          }, 700);
         }
       };
       raf = requestAnimationFrame(tick);
     };
 
-    const begin = () => {
-      if (cancelled) return;
+    const beginOnce = () => {
+      if (cancelled || started) return;
+      started = true;
       if (EXPAND_MS > 0) {
         expandTimer = window.setTimeout(runFlight, EXPAND_MS);
       } else {
@@ -682,27 +683,25 @@ export default function AdventureMap({
       }
     };
 
-    const startWhenMapReady = () => {
-      if (cancelled) return;
-      const probe = new Image();
-      probe.src = '/cities/map/world.webp';
-      const ready =
-        mapReady || (probe.complete && probe.naturalWidth > 0);
-      if (!fillViewport || ready) {
-        if (ready && !mapReady) setMapReady(true);
-        begin();
-        return;
-      }
+    // Preload peta — sekali begin saja (bukan onload DAN timeout)
+    const probe = new Image();
+    probe.src = '/cities/map/world.webp';
+    const already =
+      mapReady || (probe.complete && probe.naturalWidth > 0);
+
+    if (!fillViewport || already) {
+      if (already) setMapReady(true);
+      beginOnce();
+    } else {
       const onReady = () => {
         if (cancelled) return;
+        window.clearTimeout(waitMapTimer);
         setMapReady(true);
-        begin();
+        beginOnce();
       };
       probe.onload = onReady;
-      // hard cap
-      waitMapTimer = window.setTimeout(onReady, 1200);
-    };
-    startWhenMapReady();
+      waitMapTimer = window.setTimeout(onReady, 1500);
+    }
 
     return () => {
       cancelled = true;
