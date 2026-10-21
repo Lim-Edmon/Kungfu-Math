@@ -659,10 +659,9 @@ export default function AdventureMap({
         if (p < 1) {
           raf = requestAnimationFrame(tick);
         } else {
-          setZoomVB(endRuleVB);
-          zoomVBRef.current = endRuleVB;
+          // Jangan snap ke endRuleVB (pusat ±2 kota) — itu yang bikin loncat zoom.
+          // Frame terakhir interpolasi sudah di pusat kota tujuan + ukuran akhir.
           setT(1);
-          // Jeda di kota tujuan, lalu parent mulai fade-out
           doneTimer = window.setTimeout(() => {
             if (cancelled) return;
             travelOwnsZoomRef.current = false;
