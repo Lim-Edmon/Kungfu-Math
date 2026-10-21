@@ -142,7 +142,38 @@ function clampViewBox(
   return { minX, minY, vbW, vbH };
 }
 
-function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
+/**
+ * Samakan aspect viewBox ke target (layar / frame), lalu clamp di tepi 0–100.
+ * Mentok → geser center (tahan di sisi itu), bukan letterbox biru, bukan potong isi.
+ */
+function applyAspectAndClamp(
+  minX: number,
+  minY: number,
+  vbW: number,
+  vbH: number,
+  preferCx: number,
+  preferCy: number,
+  targetAspect: number
+): ViewBox {
+  const aspect = Math.max(0.2, Math.min(5, targetAspect || MAP_ASPECT));
+  if (vbW / Math.max(0.0001, vbH) > aspect) {
+    const needH = vbW / aspect;
+    minY -= (needH - vbH) / 2;
+    vbH = needH;
+  } else {
+    const needW = vbH * aspect;
+    minX -= (needW - vbW) / 2;
+    vbW = needW;
+  }
+  return clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
+}
+
+function viewBoxAround(
+  cx: number,
+  cy: number,
+  zoomPct: number,
+  targetAspect: number = MAP_ASPECT
+): ViewBox {
   const safeCx = Number.isFinite(cx) ? cx : 50;
   const safeCy = Number.isFinite(cy) ? cy : 50;
   const pct = Math.max(
@@ -150,34 +181,23 @@ function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
     Math.min(800, Number.isFinite(zoomPct) ? zoomPct : 100)
   );
   const span = 6 * (100 / pct);
-  let minX = safeCx - span / 2;
-  let maxX = safeCx + span / 2;
-  let minY = safeCy - span / 2;
-  let maxY = safeCy + span / 2;
-  let vbW = maxX - minX;
-  let vbH = maxY - minY;
-  if (vbW / vbH > MAP_ASPECT) {
-    const needH = vbW / MAP_ASPECT;
-    const extra = needH - vbH;
-    minY -= extra / 2;
-    maxY += extra / 2;
-    vbH = needH;
-  } else {
-    const needW = vbH * MAP_ASPECT;
-    const extra = needW - vbW;
-    minX -= extra / 2;
-    maxX += extra / 2;
-    vbW = needW;
-  }
-  return clampViewBox({ minX, minY, vbW, vbH }, safeCx, safeCy);
+  return applyAspectAndClamp(
+    safeCx - span / 2,
+    safeCy - span / 2,
+    span,
+    span,
+    safeCx,
+    safeCy,
+    targetAspect
+  );
 }
 
-
-/** Hitung viewBox dari daftar titik (mapX/mapY), jaga aspect peta */
+/** Hitung viewBox dari daftar titik (mapX/mapY), jaga aspect target */
 function viewBoxFromPoints(
   points: { mapX: number; mapY: number }[],
   pad = 0.85,
-  minSpan = 2.2
+  minSpan = 2.2,
+  targetAspect: number = MAP_ASPECT
 ): ViewBox {
   if (!points.length) {
     return { minX: 0, minY: 0, vbW: 100, vbH: 100 };
@@ -196,24 +216,17 @@ function viewBoxFromPoints(
     minY = m - minSpan / 2;
     maxY = m + minSpan / 2;
   }
-  let vbW = maxX - minX;
-  let vbH = maxY - minY;
-  if (vbW / vbH > MAP_ASPECT) {
-    const needH = vbW / MAP_ASPECT;
-    const extra = needH - vbH;
-    minY -= extra / 2;
-    maxY += extra / 2;
-    vbH = needH;
-  } else {
-    const needW = vbH * MAP_ASPECT;
-    const extra = needW - vbW;
-    minX -= extra / 2;
-    maxX += extra / 2;
-    vbW = needW;
-  }
-  const preferCx = minX + vbW / 2;
-  const preferCy = minY + vbH / 2;
-  return clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
+  const vbW = maxX - minX;
+  const vbH = maxY - minY;
+  return applyAspectAndClamp(
+    minX,
+    minY,
+    vbW,
+    vbH,
+    minX + vbW / 2,
+    minY + vbH / 2,
+    targetAspect
+  );
 }
 
 /** Span maksimum zoom (map %). Tetangga jalur ±2 yang terlalu jauh
@@ -228,25 +241,28 @@ const MAP_ZOOM_LOCAL_PCT = 75;
  * Jika rentang geografis > MAP_ZOOM_MAX_SPAN → jatuh ke frame lokal di kota aktif
  * (tetangga jauh tidak memaksa peta melebar).
  */
-function viewBoxForCityIndex(idx: number): ViewBox {
+function viewBoxForCityIndex(
+  idx: number,
+  targetAspect: number = MAP_ASPECT
+): ViewBox {
   const safeIdx = Math.max(0, Math.min(ADVENTURE_CITIES.length - 1, idx));
   const cities = ADVENTURE_CITIES.slice(
     Math.max(0, safeIdx - 2),
     Math.min(ADVENTURE_CITIES.length, safeIdx + 3)
   );
-  let vb = viewBoxFromPoints(cities, 0.9, MAP_ZOOM_MIN_SPAN);
+  let vb = viewBoxFromPoints(cities, 0.9, MAP_ZOOM_MIN_SPAN, targetAspect);
   if (Math.max(vb.vbW, vb.vbH) > MAP_ZOOM_MAX_SPAN) {
     const c = ADVENTURE_CITIES[safeIdx];
     if (c) {
       // Frame lokal di kota aktif; coba tarik tetangga yang masih muat
-      const local = viewBoxAround(c.mapX, c.mapY, MAP_ZOOM_LOCAL_PCT);
+      const local = viewBoxAround(c.mapX, c.mapY, MAP_ZOOM_LOCAL_PCT, targetAspect);
       const near = cities.filter(
         (p) =>
           Math.abs(p.mapX - c.mapX) <= local.vbW * 0.45 &&
           Math.abs(p.mapY - c.mapY) <= local.vbH * 0.45
       );
       if (near.length > 1) {
-        vb = viewBoxFromPoints(near, 0.9, MAP_ZOOM_MIN_SPAN);
+        vb = viewBoxFromPoints(near, 0.9, MAP_ZOOM_MIN_SPAN, targetAspect);
         if (Math.max(vb.vbW, vb.vbH) > MAP_ZOOM_MAX_SPAN) {
           vb = local;
         }
@@ -300,6 +316,26 @@ export default function AdventureMap({
 }: AdventureMapProps) {
   const mapDebug = useMapDebug();
   const frameRef = useRef<HTMLDivElement>(null);
+  /** Rasio frame (lebar/tinggi). Fullscreen → ikut layar; normal → 2:1 peta. */
+  const [frameAspect, setFrameAspect] = useState(MAP_ASPECT);
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w > 0 && h > 0) {
+        const a = w / h;
+        setFrameAspect((prev) => (Math.abs(prev - a) < 0.01 ? prev : a));
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fillViewport]);
+  /** Fullscreen: aspect layar (isi penuh, tanpa biru). Normal: aspect peta 2:1. */
+  const targetAspect = fillViewport ? frameAspect : MAP_ASPECT;
   const [clickCoord, setClickCoord] = useState<{
     x: number;
     y: number;
@@ -393,7 +429,7 @@ export default function AdventureMap({
     // Default: sama seperti main (±2 jalur, capped). Manual zoom (≠100) → viewBoxAround.
     const useManualZoom = Math.abs(debugZoomPct - 100) > 0.5;
     const vb = useManualZoom
-      ? viewBoxAround(cx, cy, debugZoomPct)
+      ? viewBoxAround(cx, cy, debugZoomPct, targetAspect)
       : viewBoxForCityIndex(
           focusCity
             ? ADVENTURE_CITIES.findIndex((c) => c.id === focusCity.id)
@@ -404,7 +440,7 @@ export default function AdventureMap({
     minY = vb.minY;
     maxY = vb.minY + vb.vbH;
   } else {
-    const vb = viewBoxForCityIndex(activeIdx);
+    const vb = viewBoxForCityIndex(activeIdx, targetAspect);
     minX = vb.minX;
     maxX = vb.minX + vb.vbW;
     minY = vb.minY;
@@ -413,29 +449,24 @@ export default function AdventureMap({
 
   let vbW = maxX - minX;
   let vbH = maxY - minY;
-  // Debug manual / path sudah lewat clamp di helper; normal juga.
-  // Pastikan aspect + tepi tetap aman bila sumber belum clamp.
-  if (vbW / Math.max(0.0001, vbH) > MAP_ASPECT) {
-    const needH = vbW / MAP_ASPECT;
-    const extra = needH - vbH;
-    minY -= extra / 2;
-    maxY += extra / 2;
-    vbH = needH;
-  } else {
-    const needW = vbH * MAP_ASPECT;
-    const extra = needW - vbW;
-    minX -= extra / 2;
-    maxX += extra / 2;
-    vbW = needW;
-  }
+  // Samakan aspect ke frame (layar saat fullscreen) → meet mengisi penuh, tanpa biru.
+  // Mentok tepi peta → clamp geser center (bukan potong, bukan letterbox).
   {
     const preferCx = (minX + maxX) / 2;
     const preferCy = (minY + maxY) / 2;
-    const clamped = clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
-    minX = clamped.minX;
-    minY = clamped.minY;
-    vbW = clamped.vbW;
-    vbH = clamped.vbH;
+    const fitted = applyAspectAndClamp(
+      minX,
+      minY,
+      vbW,
+      vbH,
+      preferCx,
+      preferCy,
+      targetAspect
+    );
+    minX = fitted.minX;
+    minY = fitted.minY;
+    vbW = fitted.vbW;
+    vbH = fitted.vbH;
     maxX = minX + vbW;
     maxY = minY + vbH;
   }
@@ -530,9 +561,9 @@ export default function AdventureMap({
     const fromIdx = ADVENTURE_CITIES.findIndex((c) => c.id === fromCity.id);
     const toIdx = ADVENTURE_CITIES.findIndex((c) => c.id === toCity.id);
     const startRuleVB =
-      fromIdx >= 0 ? viewBoxForCityIndex(fromIdx) : { minX, minY, vbW, vbH };
+      fromIdx >= 0 ? viewBoxForCityIndex(fromIdx, targetAspect) : { minX, minY, vbW, vbH };
     const endRuleVB =
-      toIdx >= 0 ? viewBoxForCityIndex(toIdx) : { minX, minY, vbW, vbH };
+      toIdx >= 0 ? viewBoxForCityIndex(toIdx, targetAspect) : { minX, minY, vbW, vbH };
 
     // (1) Langsung di frame kota asal — hindari flash view dunia gelap
     setZoomVB(startRuleVB);
@@ -816,7 +847,7 @@ export default function AdventureMap({
           role="img"
           aria-hidden
         >
-          {/* Koordinat pin 0–100 mengisi kotak ini; rasio visual dijaga frame CSS 2:1 + SVG meet */}
+          {/* Pin 0–100; viewBox aspect = frame → meet isi penuh. Mentok tepi = clamp, bukan biru. */}
           <image
             href="/cities/map/world.webp"
             x={0}
