@@ -506,6 +506,11 @@ export default function AdventureMap({
   zoomVBRef.current = zoomVB;
   /** true = travel effect sedang mengontrol zoom (jangan di-override) */
   const travelOwnsZoomRef = useRef(false);
+  /** Stabil — ganti tempo/parent re-render jangan restart animasi pesawat */
+  const onTravelDoneRef = useRef(onTravelDone);
+  onTravelDoneRef.current = onTravelDone;
+  const targetAspectRef = useRef(targetAspect);
+  targetAspectRef.current = targetAspect;
 
   useEffect(() => {
     if (mapDebug.on) {
@@ -552,7 +557,20 @@ export default function AdventureMap({
    * 5) Parent fade-out → masuk permainan
    */
   useEffect(() => {
-    if (!traveling || !fromCity || !toCity) {
+    // Hanya restart saat pasangan kota asal→tujuan berubah (bukan tempo/re-render parent)
+    if (!travelFromId || !travelToId) {
+      setT(0);
+      travelOwnsZoomRef.current = false;
+      return;
+    }
+    const fromC = ADVENTURE_CITIES.find((c) => c.id === travelFromId);
+    const toC = ADVENTURE_CITIES.find((c) => c.id === travelToId);
+    if (!fromC || !toC) {
+      setT(0);
+      travelOwnsZoomRef.current = false;
+      return;
+    }
+    if (travelFromId === travelToId) {
       setT(0);
       travelOwnsZoomRef.current = false;
       return;
@@ -561,21 +579,23 @@ export default function AdventureMap({
     travelOwnsZoomRef.current = true;
     setT(0);
 
-    const fromIdx = ADVENTURE_CITIES.findIndex((c) => c.id === fromCity.id);
-    const toIdx = ADVENTURE_CITIES.findIndex((c) => c.id === toCity.id);
+    const aspect = targetAspectRef.current;
+    const fromIdx = ADVENTURE_CITIES.findIndex((c) => c.id === fromC.id);
+    const toIdx = ADVENTURE_CITIES.findIndex((c) => c.id === toC.id);
     const startRuleVB =
-      fromIdx >= 0 ? viewBoxForCityIndex(fromIdx, targetAspect) : { minX, minY, vbW, vbH };
+      fromIdx >= 0
+        ? viewBoxForCityIndex(fromIdx, aspect)
+        : { minX: 0, minY: 0, vbW: 100, vbH: 100 };
     const endRuleVB =
-      toIdx >= 0 ? viewBoxForCityIndex(toIdx, targetAspect) : { minX, minY, vbW, vbH };
+      toIdx >= 0
+        ? viewBoxForCityIndex(toIdx, aspect)
+        : { minX: 0, minY: 0, vbW: 100, vbH: 100 };
 
     // (1) Langsung di frame kota asal — hindari flash view dunia gelap
     setZoomVB(startRuleVB);
     zoomVBRef.current = startRuleVB;
 
-    const dist = Math.hypot(
-      toCity.mapX - fromCity.mapX,
-      toCity.mapY - fromCity.mapY
-    );
+    const dist = Math.hypot(toC.mapX - fromC.mapX, toC.mapY - fromC.mapY);
     const SPEED = 4.2;
     const flightDur = Math.max(800, Math.min(8000, (dist / SPEED) * 1000));
     /** Tunggu expand CSS selesai sebelum pesawat jalan */
@@ -584,6 +604,7 @@ export default function AdventureMap({
     let cancelled = false;
     let raf = 0;
     let expandTimer = 0;
+    let doneTimer = 0;
 
     const ease = (x: number) => 1 - Math.pow(1 - x, 2.6);
 
@@ -596,8 +617,8 @@ export default function AdventureMap({
         const e = ease(p);
         setT(p);
 
-        const cx = fromCity.mapX + (toCity.mapX - fromCity.mapX) * e;
-        const cy = fromCity.mapY + (toCity.mapY - fromCity.mapY) * e;
+        const cx = fromC.mapX + (toC.mapX - fromC.mapX) * e;
+        const cy = fromC.mapY + (toC.mapY - fromC.mapY) * e;
         const ruleW =
           startRuleVB.vbW + (endRuleVB.vbW - startRuleVB.vbW) * e;
         const ruleH =
@@ -623,10 +644,10 @@ export default function AdventureMap({
           zoomVBRef.current = endRuleVB;
           setT(1);
           // jeda singkat agar ending terbaca, lalu parent fade-out
-          window.setTimeout(() => {
+          doneTimer = window.setTimeout(() => {
             if (cancelled) return;
             travelOwnsZoomRef.current = false;
-            onTravelDone?.();
+            onTravelDoneRef.current?.();
           }, 280);
         }
       };
@@ -643,21 +664,10 @@ export default function AdventureMap({
       cancelled = true;
       cancelAnimationFrame(raf);
       window.clearTimeout(expandTimer);
+      window.clearTimeout(doneTimer);
       travelOwnsZoomRef.current = false;
     };
-  }, [
-    travelFromId,
-    travelToId,
-    traveling,
-    onTravelDone,
-    fromCity,
-    toCity,
-    minX,
-    minY,
-    vbW,
-    vbH,
-    fillViewport,
-  ]);
+  }, [travelFromId, travelToId, fillViewport]);
 
   const planeX =
     traveling && fromCity && toCity
