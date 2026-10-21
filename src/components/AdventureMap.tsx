@@ -318,6 +318,23 @@ export default function AdventureMap({
   const frameRef = useRef<HTMLDivElement>(null);
   /** Rasio frame (lebar/tinggi). Fullscreen → ikut layar; normal → 2:1 peta. */
   const [frameAspect, setFrameAspect] = useState(MAP_ASPECT);
+  /** Peta siap — hindari pin tanpa gambar di awal transisi */
+  const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const src = '/cities/map/world.webp';
+    const img = new Image();
+    const mark = () => {
+      if (!cancelled) setMapReady(true);
+    };
+    img.onload = mark;
+    img.onerror = mark; // jangan blokir selamanya
+    img.src = src;
+    if (img.complete) mark();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   useEffect(() => {
     const el = frameRef.current;
     if (!el) return;
@@ -596,15 +613,17 @@ export default function AdventureMap({
     zoomVBRef.current = startRuleVB;
 
     const dist = Math.hypot(toC.mapX - fromC.mapX, toC.mapY - fromC.mapY);
-    const SPEED = 4.2;
-    const flightDur = Math.max(800, Math.min(8000, (dist / SPEED) * 1000));
-    /** Tunggu expand CSS selesai sebelum pesawat jalan */
-    const EXPAND_MS = fillViewport ? 720 : 0;
+    /** Lebih pelan → total transisi ~+1 dtk */
+    const SPEED = 3.4;
+    const flightDur = Math.max(1100, Math.min(9000, (dist / SPEED) * 1000));
+    /** Expand CSS ~1s (fullscreen); normal selection singkat */
+    const EXPAND_MS = fillViewport ? 1000 : 0;
 
     let cancelled = false;
     let raf = 0;
     let expandTimer = 0;
     let doneTimer = 0;
+    let waitMapTimer = 0;
 
     const ease = (x: number) => 1 - Math.pow(1 - x, 2.6);
 
@@ -648,23 +667,49 @@ export default function AdventureMap({
             if (cancelled) return;
             travelOwnsZoomRef.current = false;
             onTravelDoneRef.current?.();
-          }, 280);
+          }, 450);
         }
       };
       raf = requestAnimationFrame(tick);
     };
 
-    if (EXPAND_MS > 0) {
-      expandTimer = window.setTimeout(runFlight, EXPAND_MS);
-    } else {
-      runFlight();
-    }
+    const begin = () => {
+      if (cancelled) return;
+      if (EXPAND_MS > 0) {
+        expandTimer = window.setTimeout(runFlight, EXPAND_MS);
+      } else {
+        runFlight();
+      }
+    };
+
+    const startWhenMapReady = () => {
+      if (cancelled) return;
+      const probe = new Image();
+      probe.src = '/cities/map/world.webp';
+      const ready =
+        mapReady || (probe.complete && probe.naturalWidth > 0);
+      if (!fillViewport || ready) {
+        if (ready && !mapReady) setMapReady(true);
+        begin();
+        return;
+      }
+      const onReady = () => {
+        if (cancelled) return;
+        setMapReady(true);
+        begin();
+      };
+      probe.onload = onReady;
+      // hard cap
+      waitMapTimer = window.setTimeout(onReady, 1200);
+    };
+    startWhenMapReady();
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
       window.clearTimeout(expandTimer);
       window.clearTimeout(doneTimer);
+      window.clearTimeout(waitMapTimer);
       travelOwnsZoomRef.current = false;
     };
   }, [travelFromId, travelToId, fillViewport]);
@@ -854,7 +899,7 @@ export default function AdventureMap({
         style={mapDebug.on ? { touchAction: 'none', cursor: 'grab' } : undefined}
       >
         <svg
-          className="adventure-map"
+          className={`adventure-map${mapReady ? ' is-map-ready' : ' is-map-loading'}`}
           viewBox={`${drawMinX} ${drawMinY} ${drawVbW} ${drawVbH}`}
           preserveAspectRatio="xMidYMid meet"
           role="img"
@@ -868,9 +913,11 @@ export default function AdventureMap({
             width={100}
             height={100}
             preserveAspectRatio="none"
+            opacity={mapReady ? 1 : 0}
+            onLoad={() => setMapReady(true)}
           />
 
-          {traveling && fromCity && toCity && (
+          {mapReady && traveling && fromCity && toCity && (
             <line
               x1={fromCity.mapX}
               y1={fromCity.mapY}
@@ -883,7 +930,7 @@ export default function AdventureMap({
             />
           )}
 
-          {renderCities.map((c) => {
+          {mapReady && renderCities.map((c) => {
             const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
             const won = wonIds.includes(c.id);
             const isActive = activeId === c.id;
@@ -1040,8 +1087,9 @@ export default function AdventureMap({
           })()}
         </svg>
 
-        {/* Area ketuk HTML — pusat = pin kota */}
-        {renderCities.map((c) => {
+        {/* Area ketuk HTML — pusat = pin kota (tunggu peta siap) */}
+        {mapReady &&
+          renderCities.map((c) => {
           const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
           if (!open || !onSelect) return null;
           const pos = pct(c.mapX, c.mapY);
