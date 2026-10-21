@@ -3623,7 +3623,7 @@ h1.home-title {
 }
 
 
-/* ===== Transisi lanjut kota: expand tengah → full → terbang → fade ===== */
+/* ===== Transisi lanjut kota: expand → full layar (cover, tanpa bilah biru) ===== */
 .travel-overlay {
   position: fixed;
   inset: 0;
@@ -3631,8 +3631,8 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Jangan hitam pekat — ikut nuansa peta (air/langit) */
-  background: rgba(129, 212, 250, 0.35);
+  /* Transparan — jangan isi biru blank */
+  background: transparent;
   padding: 0;
   animation: travelOverlayBgIn 0.4s ease-out forwards;
 }
@@ -3644,11 +3644,8 @@ h1.home-title {
   height: 100%;
   max-width: 100vw;
   max-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   transform-origin: center center;
-  /* (1) dari setitik di tengah → full layar */
   animation: travelMapExpand 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .travel-overlay-out .travel-overlay-inner {
@@ -3661,26 +3658,21 @@ h1.home-title {
   width: 100%;
   height: 100%;
   max-width: none;
-  background: #b3e5fc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  max-height: none;
+  background: transparent;
+  display: block;
 }
-/* Full-screen travel: tetap 2:1 di tengah jendela — jangan gepeng ikut portrait */
+/* Cover penuh layar: rasio peta tetap, sisi mentok dipotong (bukan letterbox biru) */
 .travel-overlay .adventure-map-frame,
 .adventure-map-frame.is-fill-viewport {
-  width: min(100vw, calc(100dvh * 2));
-  height: auto;
-  max-width: 100vw;
-  max-height: min(100dvh, 50vw);
-  aspect-ratio: 2 / 1;
-  margin: auto;
-  background: #b3e5fc;
-}
-.travel-overlay .adventure-map-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
 }
 .travel-overlay .adventure-map-legend,
 .travel-overlay .adventure-map-hit {
