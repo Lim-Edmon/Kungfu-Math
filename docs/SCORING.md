@@ -25,9 +25,11 @@
 | Fokus campur (+/− dan ×/÷) | ×1.05 |
 | Fokus hanya × / ÷ | ×1.10 |
 | Latihan acak / tanpa fokus | ×1.00 |
+| Slice (tebas) | ×1.00 |
+| Tap (tangan kosong) | ×1.05 |
 
 **Rumus:**  
-`poin = round( (100 + bonus_combo) × tempo × level × arena × ops × speed )`
+`poin = round( (100 + bonus_combo) × tempo × level × arena × ops × speed × input )`
 
 - **speed** = 1.1 jika jawab benar dalam < 1 detik sejak soal muncul **dan** belum salah di soal itu; selain itu 1.0
 
