@@ -816,6 +816,7 @@ export default function AdventureMap({
           role="img"
           aria-hidden
         >
+          {/* Koordinat pin 0–100 mengisi kotak ini; rasio visual dijaga frame CSS 2:1 + SVG meet */}
           <image
             href="/cities/map/world.webp"
             x={0}
