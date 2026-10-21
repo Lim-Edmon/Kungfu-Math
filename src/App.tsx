@@ -214,7 +214,8 @@ function App() {
     arena: ArenaStyle = 'static',
     kind: PlayKind = 'latihan',
     diffId: string = 'normal',
-    opsForce?: Array<'add' | 'sub' | 'mul' | 'div'>
+    opsForce?: Array<'add' | 'sub' | 'mul' | 'div'>,
+    adventureCityIdArg?: string
   ) => {
     setSelectedMode(mode);
     setSelectedArena(arena);
@@ -223,6 +224,15 @@ function App() {
     setPlayKind(kind);
     setAdventureDiffId(diffId || 'normal');
     setForceOps(kind === 'latihan' ? opsForce : undefined);
+    // Kota petualangan: pakai yang terlihat di UI (cityId), jangan andalkan storage lama
+    const cityForRun =
+      kind === 'petualangan'
+        ? adventureCityIdArg || loadProgress().adventureCityId || 'jakarta'
+        : undefined;
+    if (cityForRun) {
+      setLastCityId(cityForRun);
+      updateProgress({ adventureCityId: cityForRun });
+    }
     // Simpan pilihan terakhir → "Kembali ke peta" bisa isi default lagi
     updateProgress({
       preferredMode: mode,
@@ -230,6 +240,7 @@ function App() {
       preferredLevel: level,
       preferredArena: arena,
       preferredAdventureDiff: diffId || 'normal',
+      ...(cityForRun ? { adventureCityId: cityForRun } : {}),
     });
     setScreen('game');
   };
@@ -529,18 +540,19 @@ function App() {
             }
             cityName={
               playKind === 'petualangan'
-                ? (getLang()==='en' ? getCityById(loadProgress().adventureCityId || 'jakarta').nameEn : getCityById(loadProgress().adventureCityId || 'jakarta').nameId)
+                ? (getLang()==='en'
+                    ? getCityById(lastCityId || 'jakarta').nameEn
+                    : getCityById(lastCityId || 'jakarta').nameId)
                 : undefined
             }
             cityId={
               playKind === 'petualangan'
-                ? loadProgress().adventureCityId || 'jakarta'
+                ? lastCityId || 'jakarta'
                 : undefined
             }
             targetScore={
               playKind === 'petualangan'
-                ? getCityById(loadProgress().adventureCityId || 'jakarta')
-                    .targetScore
+                ? getCityById(lastCityId || 'jakarta').targetScore
                 : undefined
             }
             onExit={handleExitGame}
