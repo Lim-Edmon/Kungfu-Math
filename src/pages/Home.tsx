@@ -118,7 +118,9 @@ interface HomeProps {
     arena: ArenaStyle,
     playKind: PlayKind,
     adventureDiffId?: string,
-    forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>
+    forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>,
+    /** Kota petualangan yang terlihat aktif di UI — wajib disimpan saat start */
+    adventureCityId?: string
   ) => void;
   initialPlayKind?: PlayKind;
 }
@@ -203,6 +205,10 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       p.adventureHighScores
     );
     setCityId(focus);
+    // Samakan storage dengan UI — hindari game baca kota lama (mis. Manado vs Singapura)
+    if (focus && focus !== (loadProgress().adventureCityId || 'jakarta')) {
+      updateProgress({ adventureCityId: focus });
+    }
     setRegionPanel('current');
     const city = ADVENTURE_CITIES.find((c) => c.id === focus);
     if (city) setOpenSubRegion(city.regionId);
@@ -313,6 +319,9 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       progress.adventureHighScores
     );
     setCityId(focusCity);
+    if (focusCity && focusCity !== (loadProgress().adventureCityId || 'jakarta')) {
+      updateProgress({ adventureCityId: focusCity });
+    }
     setRegionPanel('current');
     setOpenSubRegion(null);
     setPlayerName(progress.playerName ?? '');
@@ -1426,7 +1435,8 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                     ? focusOps.filter((op) =>
                         (getLevelById(level).operations as string[]).includes(op)
                       )
-                    : undefined
+                    : undefined,
+                  playKind === 'petualangan' ? cityId : undefined
                 );
               }}
             >
