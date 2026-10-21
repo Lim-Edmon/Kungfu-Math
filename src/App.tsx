@@ -260,28 +260,28 @@ function App() {
     const fromId = lastCityId || loadProgress().adventureCityId || 'jakarta';
     const toId = nextCityId;
     updateProgress({ adventureCityId: toId });
-    // Kota game berikutnya = tujuan (jangan pakai kota lama)
     setLastCityId(toId);
     setPassedCity(false);
     setNextCityId(null);
     setFunFact(null);
     setFunFactOpen(false);
-    // Overlay di atas — result disembunyikan selama travelOverlay aktif
+    // Game kota tujuan mount di belakang peta (holdStart) — BG/HUD ready
+    setScreen('game');
     setTravelOverlay({ fromId, toId, phase: 'in' });
   };
 
   const finishTravelToGame = () => {
-    // Hapus overlay + masuk game dalam satu batch → tidak flash layar result
+    // Lepas peta → countdown game mulai (sudah ready di belakang)
     setTravelOverlay(null);
     setScreen('game');
   };
 
   const handleTravelOverlayDone = () => {
-    // (5) fade-out pelan, backdrop tetap menutupi agar result tidak kelihatan
+    // Dipanggil setelah pesawat landed + 0.5s — fade peta singkat
     setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
     window.setTimeout(() => {
       finishTravelToGame();
-    }, 1200);
+    }, 700);
   };
 
   const handleBackToAdventureMap = () => {
@@ -574,9 +574,11 @@ function App() {
 
         {screen === 'game' && selectedCharacterId && (
           <Game
+            key={`game-${lastCityId}-${playKind}`}
             mode={selectedMode}
             characterId={selectedCharacterId}
             level={selectedLevel}
+            holdStart={!!travelOverlay}
             agility={selectedArena === 'agility'}
             timeBonusSec={
               playKind === 'petualangan'
@@ -859,15 +861,6 @@ function App() {
           aria-modal="true"
           aria-label={t('continueCity')}
         >
-          <div
-            className="travel-overlay-city-bg"
-            style={
-              travelCityBg
-                ? { backgroundImage: `url(${travelCityBg})` }
-                : undefined
-            }
-            aria-hidden
-          />
           <div className="travel-overlay-inner">
             <AdventureMap
               fillViewport

@@ -3631,30 +3631,13 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Cadangan lembut sampai BG kota tujuan load */
-  background: #c5e8f5;
+  /* Transparan: di belakang = Game kota tujuan yang sudah mount */
+  background: transparent;
   padding: 0;
-  animation: travelOverlayBgIn 0.35s ease-out forwards;
+  pointer-events: auto;
 }
-/* Jangan fade seluruh overlay — hanya peta; BG kota tetap terlihat */
 .travel-overlay-out {
   animation: none;
-}
-.travel-overlay-city-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-color: #c5e8f5;
-  background-size: cover;
-  background-position: center bottom;
-  background-repeat: no-repeat;
-  pointer-events: none;
-}
-.travel-overlay-city-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, #1a2332 12%, transparent);
   pointer-events: none;
 }
 .travel-overlay-inner {
@@ -3666,10 +3649,12 @@ h1.home-title {
   max-height: 100dvh;
   display: block;
   transform-origin: center center;
-  animation: travelMapExpand 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: travelMapExpand 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  /* Peta solid menutupi game sampai fade */
+  background: #c5e8f5;
 }
 .travel-overlay-out .travel-overlay-inner {
-  animation: travelMapFadeOut 1.2s ease-in forwards;
+  animation: travelMapFadeOut 0.7s ease-in forwards;
 }
 .travel-overlay .adventure-map-wrap {
   margin: 0;
