@@ -63,6 +63,10 @@ export const LEVEL_SCORE_MULT: Record<string, number> = {
 export const AGILITY_SCORE_MULT = 1.1;
 export const STATIC_SCORE_MULT = 1.0;
 
+/** Tap (tangan kosong) sedikit lebih tinggi dari slice */
+export const TAP_SCORE_MULT = 1.05;
+export const SLICE_SCORE_MULT = 1.0;
+
 /** Jawab benar < 1 detik sejak soal muncul, tanpa salah di soal itu */
 export const SPEED_SCORE_MULT = 1.1;
 export const SPEED_BONUS_MS = 1000;
@@ -88,6 +92,8 @@ export function computeSolvePoints(opts: {
   forceOps?: Array<'add' | 'sub' | 'mul' | 'div'> | null;
   /** true = jawab benar < SPEED_BONUS_MS tanpa salah di soal ini */
   fastSolve?: boolean;
+  /** slice | tap — tap ×1.05 */
+  inputMode?: 'slice' | 'tap' | null;
 }): number {
   const comboBonus = opts.agility ? COMBO_BONUS_AGILITY : COMBO_BONUS_STATIC;
   const raw =
@@ -98,5 +104,9 @@ export function computeSolvePoints(opts: {
   const arenaMul = opts.agility ? AGILITY_SCORE_MULT : STATIC_SCORE_MULT;
   const opsMul = opsScoreMultiplier(opts.forceOps);
   const speedMul = opts.fastSolve ? SPEED_SCORE_MULT : 1.0;
-  return Math.round(raw * tempoMul * levelMul * arenaMul * opsMul * speedMul);
+  const inputMul =
+    opts.inputMode === 'tap' ? TAP_SCORE_MULT : SLICE_SCORE_MULT;
+  return Math.round(
+    raw * tempoMul * levelMul * arenaMul * opsMul * speedMul * inputMul
+  );
 }
