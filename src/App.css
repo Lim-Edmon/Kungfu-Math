@@ -3631,15 +3631,35 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Backdrop solid — saat fade jangan tembus ke layar result */
-  background: #1a2332;
+  /* Cadangan lembut sampai BG kota tujuan load */
+  background: #c5e8f5;
   padding: 0;
-  animation: travelOverlayBgIn 0.4s ease-out forwards;
+  animation: travelOverlayBgIn 0.35s ease-out forwards;
 }
+/* Jangan fade seluruh overlay — hanya peta; BG kota tetap terlihat */
 .travel-overlay-out {
-  animation: travelOverlayBgOut 1.2s ease-in forwards;
+  animation: none;
+}
+.travel-overlay-city-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: #c5e8f5;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+.travel-overlay-city-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, #1a2332 12%, transparent);
+  pointer-events: none;
 }
 .travel-overlay-inner {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
   max-width: 100vw;

@@ -44,6 +44,7 @@ import {
   getNextPlayableCityId,
   getAdventureDifficulty,
   pickCityFunFact,
+  cityBgCandidates,
   MVP_REGION_LAST_CITY_ID,
   MVP_REGION_UNLOCK_MSG,
 } from './lib/adventure';
@@ -136,6 +137,8 @@ function App() {
   const [travelOverlay, setTravelOverlay] = useState<
     null | { fromId: string; toId: string; phase: 'in' | 'out' }
   >(null);
+  /** BG kota tujuan — standby di belakang peta saat transisi */
+  const [travelCityBg, setTravelCityBg] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
@@ -496,6 +499,46 @@ function App() {
     return () => window.clearTimeout(safety);
   }, [travelOverlay?.fromId, travelOverlay?.toId, travelOverlay?.phase]);
 
+  // Preload + set BG kota tujuan di belakang peta (siap sebelum fade)
+  useEffect(() => {
+    if (!travelOverlay?.toId) {
+      setTravelCityBg(null);
+      return;
+    }
+    let cancelled = false;
+    const list = cityBgCandidates(travelOverlay.toId).filter(
+      (u) => !u.includes('/dojo.')
+    );
+    const probe = (url: string) =>
+      new Promise<boolean>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    (async () => {
+      for (const url of list) {
+        if (cancelled) return;
+        if (await probe(url)) {
+          if (!cancelled) setTravelCityBg(url);
+          return;
+        }
+      }
+      if (!cancelled) {
+        for (const fb of ['/cities/bg/default.webp', '/cities/bg/default.jpg']) {
+          if (await probe(fb)) {
+            if (!cancelled) setTravelCityBg(fb);
+            return;
+          }
+        }
+        if (!cancelled) setTravelCityBg(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [travelOverlay?.toId]);
+
   const showBottomNav = showChrome;
   const _lv = getLevelById(selectedLevel);
   const levelLabel = getLang() === 'en' ? _lv.labelEn : _lv.labelId;
@@ -816,6 +859,15 @@ function App() {
           aria-modal="true"
           aria-label={t('continueCity')}
         >
+          <div
+            className="travel-overlay-city-bg"
+            style={
+              travelCityBg
+                ? { backgroundImage: `url(${travelCityBg})` }
+                : undefined
+            }
+            aria-hidden
+          />
           <div className="travel-overlay-inner">
             <AdventureMap
               fillViewport
