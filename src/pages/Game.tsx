@@ -251,7 +251,12 @@ export default function Game({
   const [showVolumeHint, setShowVolumeHint] = useState(true);
   /** Layer jejak slice — DOM langsung (bukan React setState tiap move) */
   const trailLayerRef = useRef<HTMLDivElement | null>(null);
+  /** Layer efek benturan tap (kena / miss) */
+  const impactLayerRef = useRef<HTMLDivElement | null>(null);
   const lastTrailTsRef = useRef(0);
+  /** Animasi avatar HUD: idle | attack | miss */
+  const [avatarPose, setAvatarPose] = useState<'idle' | 'attack' | 'miss'>('idle');
+  const avatarPoseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [soundMuted, setSoundMuted] = useState(
     () => loadProgress().soundMuted === true
   );
@@ -550,11 +555,72 @@ export default function Game({
     questionHadMistakeRef.current = false;
   }, [state.question?.display, state.question?.target, state.status]);
 
+  const arenaRef = useRef<HTMLDivElement | null>(null);
+  const isSlicingRef = useRef(false);
+  const slicedThisGestureRef = useRef<Set<string>>(new Set());
+
+  /** Gaya serang dari data karakter (weapon / style) */
+  const attackStyle =
+    (character as { weapon?: string; style?: string } | undefined)?.weapon ||
+    (character as { style?: string } | undefined)?.style ||
+    (mode === 'slice' ? 'tongkat' : 'shaolin');
+
+  const pulseAvatar = useCallback((pose: 'attack' | 'miss') => {
+    if (avatarPoseTimerRef.current) clearTimeout(avatarPoseTimerRef.current);
+    setAvatarPose(pose);
+    avatarPoseTimerRef.current = setTimeout(() => {
+      setAvatarPose('idle');
+      avatarPoseTimerRef.current = null;
+    }, pose === 'miss' ? 320 : 420);
+  }, []);
+
+  /** Efek benturan anime-style di arena (tap kena / miss) */
+  const spawnImpact = useCallback((clientX: number, clientY: number, kind: 'hit' | 'miss') => {
+    const arena = arenaRef.current;
+    const layer = impactLayerRef.current;
+    if (!arena || !layer) return;
+    const r = arena.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return;
+    const x = ((clientX - r.left) / r.width) * 100;
+    const y = ((clientY - r.top) / r.height) * 100;
+    const el = document.createElement('span');
+    el.className = `tap-impact ${kind === 'hit' ? 'is-hit' : 'is-miss'}`;
+    el.style.left = `${x}%`;
+    el.style.top = `${y}%`;
+    el.innerHTML =
+      '<i class="tap-impact-core"></i>' +
+      '<i class="tap-impact-ring"></i>' +
+      '<i class="tap-impact-ring delay"></i>' +
+      '<i class="tap-impact-spark s1"></i>' +
+      '<i class="tap-impact-spark s2"></i>' +
+      '<i class="tap-impact-spark s3"></i>' +
+      '<i class="tap-impact-spark s4"></i>';
+    layer.appendChild(el);
+    while (layer.childElementCount > 8) {
+      layer.removeChild(layer.firstElementChild as Node);
+    }
+    window.setTimeout(() => {
+      if (el.parentNode === layer) layer.removeChild(el);
+    }, 480);
+  }, []);
+
   const handleNumberTap = useCallback(
     (num: FloatingNumber) => {
       if (state.status !== 'playing' || num.sliced) return;
       if (!state.question) return;
       // countdown selesai dulu baru boleh aksi
+
+      // Avatar + efek benturan di posisi bola
+      pulseAvatar(num.isBomb ? 'miss' : 'attack');
+      if (mode === 'tap' && arenaRef.current) {
+        const btn = arenaRef.current.querySelector(
+          `[data-num-id="${num.id}"]`
+        ) as HTMLElement | null;
+        if (btn) {
+          const br = btn.getBoundingClientRect();
+          spawnImpact(br.left + br.width / 2, br.top + br.height / 2, num.isBomb ? 'miss' : 'hit');
+        }
+      }
 
       setState((prev) => {
         if (!prev.question) return prev;
@@ -729,6 +795,8 @@ export default function Game({
       timePenaltySec,
       mode,
       targetScore,
+      pulseAvatar,
+      spawnImpact,
     ]
   );
 
@@ -826,10 +894,6 @@ export default function Game({
     ? fillDisplay(state.question.display, selectedValues)
     : '...';
   const levelLabel = getLevelById(level).labelId;
-  const arenaRef = useRef<HTMLDivElement | null>(null);
-  const isSlicingRef = useRef(false);
-  const slicedThisGestureRef = useRef<Set<string>>(new Set());
-
   /**
    * Mode Slice: hit-test geometri.
    * Jika beberapa bola tumpuk di titik yang sama → hanya 1 bola
@@ -886,13 +950,39 @@ export default function Game({
   );
 
   const onArenaPointerDown = (e: React.PointerEvent) => {
-    if (mode !== 'slice' || state.status !== 'playing') return;
-    // Jangan mulai drag dari tombol keluar dll.
+    if (state.status !== 'playing') return;
+    // Tap mode: ketuk area kosong → efek “nonjok miss” + avatar
+    if (mode === 'tap') {
+      // Kalau target adalah bola, event sudah di-stop di tombol bola
+      e.preventDefault();
+      pulseAvatar('miss');
+      spawnImpact(e.clientX, e.clientY, 'miss');
+      sfx.tap();
+      return;
+    }
+    if (mode !== 'slice') return;
+    // Slice: mulai drag — jejak tetap mengalir meski belum kena bola
     e.preventDefault();
     isSlicingRef.current = true;
     slicedThisGestureRef.current = new Set();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     handleSliceMove(e.clientX, e.clientY);
+    // titik awal jejak
+    const arena = arenaRef.current;
+    const layer = trailLayerRef.current;
+    if (arena && layer) {
+      const r = arena.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      const dot = document.createElement('span');
+      dot.className = 'slice-trail-dot';
+      dot.style.left = `${x}%`;
+      dot.style.top = `${y}%`;
+      layer.appendChild(dot);
+      window.setTimeout(() => {
+        if (dot.parentNode === layer) layer.removeChild(dot);
+      }, 360);
+    }
   };
 
   const onArenaPointerMove = (e: React.PointerEvent) => {
@@ -939,16 +1029,19 @@ export default function Game({
         <div className="game-hud">
           <div className="hud-left">
             <div className="hud-identity">
-              {character?.imageCloseSrc || character?.imageSrc ? (
+              {character?.imageSrc || character?.imageCloseSrc ? (
                 <img
-                  src={character.imageCloseSrc || character.imageSrc}
+                  src={character.imageSrc || character.imageCloseSrc}
                   alt=""
-                  className="hud-avatar"
-                  width={40}
-                  height={40}
+                  className={`hud-avatar hud-avatar-full pose-${avatarPose} style-${attackStyle}`}
+                  width={72}
+                  height={90}
                 />
               ) : (
-                <span className="hud-avatar-emoji" aria-hidden>
+                <span
+                  className={`hud-avatar-emoji pose-${avatarPose} style-${attackStyle}`}
+                  aria-hidden
+                >
                   {character?.emoji ?? '🥋'}
                 </span>
               )}
@@ -1053,6 +1146,11 @@ export default function Game({
           <div
             ref={trailLayerRef}
             className="slice-trail-layer"
+            aria-hidden
+          />
+          <div
+            ref={impactLayerRef}
+            className="tap-impact-layer"
             aria-hidden
           />
           {state.combo >= 2 && state.status === 'playing' && (
