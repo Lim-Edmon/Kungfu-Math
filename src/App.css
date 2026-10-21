@@ -3631,8 +3631,8 @@ h1.home-title {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Transparan — jangan isi biru blank */
-  background: transparent;
+  /* Backdrop solid — saat fade jangan tembus ke layar result */
+  background: #1a2332;
   padding: 0;
   animation: travelOverlayBgIn 0.4s ease-out forwards;
 }

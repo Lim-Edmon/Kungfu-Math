@@ -257,17 +257,24 @@ function App() {
     const fromId = lastCityId || loadProgress().adventureCityId || 'jakarta';
     const toId = nextCityId;
     updateProgress({ adventureCityId: toId });
+    // Kota game berikutnya = tujuan (jangan pakai kota lama)
+    setLastCityId(toId);
     setPassedCity(false);
+    setNextCityId(null);
+    setFunFact(null);
+    setFunFactOpen(false);
+    // Overlay di atas — result disembunyikan selama travelOverlay aktif
     setTravelOverlay({ fromId, toId, phase: 'in' });
   };
 
   const finishTravelToGame = () => {
+    // Hapus overlay + masuk game dalam satu batch → tidak flash layar result
     setTravelOverlay(null);
     setScreen('game');
   };
 
   const handleTravelOverlayDone = () => {
-    // (5) fade-out pelan (~1.2s), baru masuk permainan — jangan cut mendadak
+    // (5) fade-out pelan, backdrop tetap menutupi agar result tidak kelihatan
     setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
     window.setTimeout(() => {
       finishTravelToGame();
@@ -564,7 +571,7 @@ function App() {
           />
         )}
 
-        {screen === 'result' && (() => {
+        {screen === 'result' && !travelOverlay && (() => {
           const city =
             playKind === 'petualangan' ? getCityById(lastCityId) : null;
           const nextCity = nextCityId ? getCityById(nextCityId) : null;
