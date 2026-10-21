@@ -722,6 +722,7 @@ export default function Game({
             levelId: levelIdRef.current,
             forceOps: forceOpsRef.current,
             fastSolve,
+            inputMode: mode,
           });
           if (mode === 'slice') sfx.slash();
           if (newCombo > 1) sfx.combo();
