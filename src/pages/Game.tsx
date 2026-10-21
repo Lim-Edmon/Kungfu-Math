@@ -46,6 +46,11 @@ interface GameProps {
   forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>;
   /** Petualangan: id tempo utk pengali skor */
   tempoId?: string;
+  /**
+   * true = jangan mulai countdown dulu (transisi peta masih di depan).
+   * BG + HUD sudah siap di belakang.
+   */
+  holdStart?: boolean;
   onFinish: (
     score: number,
     grade: string,
@@ -210,6 +215,7 @@ export default function Game({
   onExit,
   forceOps,
   tempoId,
+  holdStart = false,
   onFinish,
 }: GameProps) {
   const forceOpsRef = useRef(forceOps);
@@ -320,12 +326,16 @@ export default function Game({
     else sfx.startBgm();
   };
 
-  // Satu sumber musik saja: kota (petualangan) ATAU BGM default (latihan)
+  // Musik: tahan selama holdStart (transisi peta), baru mulai saat overlay hilang
   useEffect(() => {
+    if (holdStart) {
+      stopAllMusic();
+      return;
+    }
     if (cityId) playCityMusic(cityId);
     else sfx.startBgm();
     return () => stopAllMusic();
-  }, [cityId]);
+  }, [cityId, holdStart]);
 
   // Resolve BG: probe dulu, baru tampil (hindari flash dojo / broken image).
   useEffect(() => {
@@ -379,15 +389,19 @@ export default function Game({
     }
   }, [state.status]);
 
-  // READY → 3 → 2 → 1 → GO → main
+  // READY → 3 → 2 → 1 → GO → main (tunggu holdStart selesai = peta sudah land)
   useEffect(() => {
     if (state.status !== 'countdown') return;
+    if (holdStart) {
+      setCountdownLabel('READY');
+      return;
+    }
     const steps: { label: string; ms: number }[] = [
-      { label: 'READY', ms: 900 },
-      { label: '3', ms: 700 },
-      { label: '2', ms: 700 },
-      { label: '1', ms: 700 },
-      { label: 'GO!', ms: 500 },
+      { label: 'READY', ms: 700 },
+      { label: '3', ms: 650 },
+      { label: '2', ms: 650 },
+      { label: '1', ms: 650 },
+      { label: 'GO!', ms: 450 },
     ];
     let i = 0;
     setCountdownLabel(steps[0].label);
@@ -414,7 +428,7 @@ export default function Game({
     };
     timer = setTimeout(next, steps[0].ms);
     return () => clearTimeout(timer);
-  }, [state.status, agility, mode]);
+  }, [state.status, agility, mode, holdStart]);
 
   // Timer hitung mundur
   useEffect(() => {
