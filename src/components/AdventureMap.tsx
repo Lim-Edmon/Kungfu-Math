@@ -616,8 +616,8 @@ export default function AdventureMap({
     /** Pelan + ~0.5s ekstra total (expand + terbang + jeda + fade) */
     const SPEED = 3.0;
     const flightDur = Math.max(1400, Math.min(10000, (dist / SPEED) * 1000));
-    /** Samakan dengan CSS travelMapExpand (1.2s) */
-    const EXPAND_MS = fillViewport ? 1200 : 0;
+    /** Samakan dengan CSS travelMapExpand */
+    const EXPAND_MS = fillViewport ? 900 : 0;
 
     let cancelled = false;
     let started = false; // cegah begin() ganda (onload + timeout = reset pesawat)
@@ -662,11 +662,12 @@ export default function AdventureMap({
           // Jangan snap ke endRuleVB (pusat ±2 kota) — itu yang bikin loncat zoom.
           // Frame terakhir interpolasi sudah di pusat kota tujuan + ukuran akhir.
           setT(1);
+          // Setelah landed: jeda singkat, lalu parent fade peta (bukan timer fix panjang)
           doneTimer = window.setTimeout(() => {
             if (cancelled) return;
             travelOwnsZoomRef.current = false;
             onTravelDoneRef.current?.();
-          }, 700);
+          }, 500);
         }
       };
       raf = requestAnimationFrame(tick);
