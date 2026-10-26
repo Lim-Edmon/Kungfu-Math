@@ -3986,3 +3986,106 @@ a.is-offline-locked {
 .game-arena-plain::before {
   display: none;
 }
+
+
+/* ——— Soal: simbol operasi jelas ——— */
+.game-question {
+  position: relative;
+  gap: 4px;
+}
+.op-chip {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.op-chip-add {
+  background: color-mix(in srgb, #16a34a 22%, transparent);
+  color: #15803d;
+}
+.op-chip-sub {
+  background: color-mix(in srgb, #2563eb 22%, transparent);
+  color: #1d4ed8;
+}
+.op-chip-mul {
+  background: color-mix(in srgb, #ea580c 22%, transparent);
+  color: #c2410c;
+}
+.op-chip-div {
+  background: color-mix(in srgb, #7c3aed 22%, transparent);
+  color: #6d28d9;
+}
+.question-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em 0.18em;
+  font-size: clamp(1.55rem, 6vw, 2.15rem);
+}
+.q-num {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+.q-eq {
+  font-weight: 800;
+  opacity: 0.75;
+  margin: 0 0.08em;
+}
+.q-op {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15em;
+  font-size: 1.25em;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0 0.08em;
+}
+.q-op-add { color: #16a34a; }
+.q-op-sub { color: #2563eb; }
+.q-op-mul { color: #ea580c; }
+.q-op-div { color: #7c3aed; }
+
+/* Mode malam / nyaman: tetap kontras */
+[data-theme="malam"] .q-op-add,
+[data-theme="nyaman"] .q-op-add { color: #4ade80; }
+[data-theme="malam"] .q-op-sub,
+[data-theme="nyaman"] .q-op-sub { color: #60a5fa; }
+[data-theme="malam"] .q-op-mul,
+[data-theme="nyaman"] .q-op-mul { color: #fb923c; }
+[data-theme="malam"] .q-op-div,
+[data-theme="nyaman"] .q-op-div { color: #c4b5fd; }
+
+[data-theme="malam"] .op-chip-add,
+[data-theme="nyaman"] .op-chip-add { color: #4ade80; }
+[data-theme="malam"] .op-chip-sub,
+[data-theme="nyaman"] .op-chip-sub { color: #93c5fd; }
+[data-theme="malam"] .op-chip-mul,
+[data-theme="nyaman"] .op-chip-mul { color: #fdba74; }
+[data-theme="malam"] .op-chip-div,
+[data-theme="nyaman"] .op-chip-div { color: #ddd6fe; }
+
+.game-question.op-flash {
+  animation: op-flash-pulse 0.38s ease-out;
+}
+@keyframes op-flash-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent);
+    transform: scale(1);
+  }
+  40% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: var(--shadow);
+    transform: scale(1);
+  }
+}
