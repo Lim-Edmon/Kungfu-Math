@@ -242,7 +242,8 @@ ${t('waProgressSuffix')}`
         </div>
       </section>
 
-      {/* 4. Pindah progres */}
+      {/* 4. Pindah progres — hanya online (offline tidak menyimpan rekor) */}
+      {!offline && (
       <section className="settings-section">
         <h2>{t('settingsProgress')}</h2>
         <p className="settings-note">{t('settingsProgressNote')}</p>
@@ -269,8 +270,10 @@ ${t('waProgressSuffix')}`
           </div>
         )}
       </section>
+      )}
 
       {/* 5. Masukan kode */}
+      {!offline && (
       <section className="settings-section">
         <h2>{t('settingsImport')}</h2>
         <p className="settings-note">{t('settingsImportNote')}</p>
@@ -285,25 +288,20 @@ ${t('waProgressSuffix')}`
           {t('btnImport')}
         </button>
       </section>
+      )}
 
       {/* 6. Saran & dukungan */}
       <section className="settings-section">
         <h2>{t('settingsSupport')}</h2>
         <p className="settings-note">{t('settingsSupportNote')}</p>
-        {offline ? (
-          <button type="button" className="btn-trakteer btn-trakteer-full is-offline-locked" disabled>
-            {t('btnTrakteer')} — {t('offlineNeedNet')}
-          </button>
-        ) : (
-          <a
-            href={TRAKTEER_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-trakteer btn-trakteer-full"
-          >
-            {t('btnTrakteer')}
-          </a>
-        )}
+        <a
+          href={TRAKTEER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-trakteer btn-trakteer-full"
+        >
+          {t('btnTrakteer')}
+        </a>
       </section>
 
       {/* 7. Ajak keluarga */}

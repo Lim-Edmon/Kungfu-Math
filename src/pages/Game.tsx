@@ -365,15 +365,37 @@ export default function Game({
         }
       }
       if (!cancelled) {
-        const fallback = cityId
-          ? '/cities/bg/default.webp'
-          : '/cities/bg/dojo.webp';
-        const okFb = await probe(fallback);
-        if (cancelled) return;
-        if (okFb) setResolvedBgUrl(fallback);
-        else if (cityId) setResolvedBgUrl('/cities/bg/default.jpg');
-        else setResolvedBgUrl('/cities/bg/dojo.jpg');
-        setBgReady(true);
+        if (cityId) {
+          for (const fb of ['/cities/bg/default.webp', '/cities/bg/default.jpg', '/cities/bg/default.png']) {
+            if (await probe(fb)) {
+              if (!cancelled) {
+                setResolvedBgUrl(fb);
+                setBgReady(true);
+              }
+              return;
+            }
+          }
+          // Kota tanpa aset: arena polos (bukan dojo)
+          if (!cancelled) {
+            setResolvedBgUrl(null);
+            setBgReady(true);
+          }
+          return;
+        }
+        // Latihan / offline: coba dojo, jika belum ter-cache → arena polos
+        for (const fb of ['/cities/bg/dojo.webp', '/cities/bg/dojo.jpg', '/cities/bg/dojo.png']) {
+          if (await probe(fb)) {
+            if (!cancelled) {
+              setResolvedBgUrl(fb);
+              setBgReady(true);
+            }
+            return;
+          }
+        }
+        if (!cancelled) {
+          setResolvedBgUrl(null);
+          setBgReady(true);
+        }
       }
     })();
     return () => {
@@ -1117,7 +1139,7 @@ export default function Game({
         </div>
 
         <div
-          className={`game-arena city-bg ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
+          className={`game-arena city-bg ${!resolvedBgUrl && bgReady ? 'game-arena-plain' : ''} ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
           data-city={cityId || 'default'}
           style={{
             /* Tunggu probe OK — jangan tampil dojo/broken sebentar */

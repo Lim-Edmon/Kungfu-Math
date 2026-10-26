@@ -179,6 +179,7 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
   const [exitDebugConfirm, setExitDebugConfirm] = useState(false);
   /** Highlight field yang belum diisi (scroll + shake) */
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [offlinePopupOpen, setOfflinePopupOpen] = useState(false);
   /** Popup kota terkunci (chip / pin) */
   const [lockedCityName, setLockedCityName] = useState<string | null>(null);
   /** Tips skor: default tertutup biar page 1 tetap pendek */
@@ -803,10 +804,11 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
               <button
                 type="button"
                 className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
-                disabled={offline}
-                aria-disabled={offline}
                 onClick={() => {
-                  if (offline) return;
+                  if (offline) {
+                    setOfflinePopupOpen(true);
+                    return;
+                  }
                   setPlayKind('petualangan');
                   setFieldError(null);
                 }}
@@ -1190,10 +1192,11 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                 <button
                   type="button"
                   className={`mode-btn ${arena === 'agility' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
-                  disabled={offline}
-                  aria-disabled={offline}
                   onClick={() => {
-                    if (offline) return;
+                    if (offline) {
+                      setOfflinePopupOpen(true);
+                      return;
+                    }
                     setArena('agility');
                     setFieldError(null);
                     updateProgress({ preferredArena: 'agility' });
@@ -1473,6 +1476,33 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
           )}
         </div>
       </div>
+      )}
+
+      {offlinePopupOpen && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="offline-need-net-title"
+          onClick={() => setOfflinePopupOpen(false)}
+        >
+          <div
+            className="offline-need-net-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p id="offline-need-net-title" className="offline-need-net-title">
+              {t('offlineTitle')}
+            </p>
+            <p className="offline-need-net-body">{t('offlinePopup')}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setOfflinePopupOpen(false)}
+            >
+              {t('offlinePopupOk')}
+            </button>
+          </div>
+        </div>
       )}
 
       <InstallHint />
