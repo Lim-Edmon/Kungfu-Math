@@ -185,6 +185,16 @@ const STRINGS = {
     clearDataDone: 'Semua data game dihapus. Mulai dari awal.',
     clearDataConfirm: 'Ya, hapus semua',
     clearDataPopup: 'Kamu yakin mau hapus SEMUA data permainan ini? Ini tidak dapat dikembalikan.',
+
+    offlineTitle: 'Sedang offline',
+    offlineBody:
+      'Hanya Latihan Dojo (bola diam). Petualangan, bola bergerak, dan penyimpanan rekor tidak tersedia. Skor sesi ini tidak disimpan.',
+    offlinePlayOnly: 'Offline: hanya latihan dojo · bola diam · tanpa rekor',
+    offlineLockedAdventure: 'Perlu internet',
+    offlineLockedAgility: 'Perlu internet',
+    offlineNoRecord: 'Mode offline — skor tidak disimpan',
+    offlineNeedNet: 'Fitur ini perlu koneksi internet',
+    offlineResultHint: 'Latihan offline selesai. Hubungkan internet untuk menyimpan rekor & petualangan.',
     btnCancel: 'Batal',
     inviteText:
       'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak (dan dewasa) belajar berhitung sambil main.\n\nNikmati mode Petualangan seru di kota-kota dunia: landscape unik tiap kota, plus musik khas kota/negara tersebut (nyalakan suara biar lebih otentik) — sambil latihan berhitung.\n\nGratis, tanpa login.\n\n',
@@ -419,6 +429,16 @@ const STRINGS = {
     clearDataDone: 'All game data cleared. Starting fresh.',
     clearDataConfirm: 'Yes, clear all',
     clearDataPopup: 'Are you sure you want to delete ALL game data? This cannot be undone.',
+
+    offlineTitle: 'You are offline',
+    offlineBody:
+      'Only Dojo practice (static balls). Adventure, moving balls, and saving records are unavailable. This session is not saved.',
+    offlinePlayOnly: 'Offline: dojo practice · static balls · no records',
+    offlineLockedAdventure: 'Needs internet',
+    offlineLockedAgility: 'Needs internet',
+    offlineNoRecord: 'Offline mode — score not saved',
+    offlineNeedNet: 'This feature needs an internet connection',
+    offlineResultHint: 'Offline practice done. Go online to save records & play adventure.',
     btnCancel: 'Cancel',
     inviteText:
       'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids (and adults) practicing arithmetic while playing.\n\nEnjoy Adventure mode across world cities: unique landscapes for each stop, plus music inspired by that city/country (turn the sound on for a more authentic feel) — all while training your math.\n\nFree, no login.\n\n',
