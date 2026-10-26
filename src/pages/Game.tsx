@@ -1,12 +1,12 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { CharacterId, InputMode } from '../lib/types';
 import type { DifficultyLevel } from '../lib/levels';
 import { getLevelById } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
 import { generateQuestion } from '../lib/mathGenerator';
-import type { MathQuestion } from '../lib/mathGenerator';
+import type { MathQuestion, OperationType } from '../lib/mathGenerator';
 import type { FloatingNumber, GameState } from '../lib/gameTypes';
 import {
   INITIAL_LIVES,
@@ -136,6 +136,61 @@ function fillDisplay(display: string, selectedValues: number[]): string {
   return result;
 }
 
+/** Pecah teks soal jadi angka + simbol berwarna (supaya + vs × jelas). */
+function renderQuestionParts(
+  text: string,
+  operation: OperationType | undefined
+): ReactNode {
+  const tokens = text.split(/(\d+|\?|[+\-−×÷=]|\s+)/).filter((t) => t !== '');
+  return tokens.map((tok, i) => {
+    const t = tok.trim();
+    if (t === '') return <span key={i}>{tok}</span>;
+    if (/^\d+$/.test(t) || t === '?') {
+      return (
+        <span key={i} className="q-num">
+          {t}
+        </span>
+      );
+    }
+    if (t === '=' ) {
+      return (
+        <span key={i} className="q-eq">
+          =
+        </span>
+      );
+    }
+    if (t === '+' || t === '−' || t === '-' || t === '×' || t === '÷') {
+      let kind = 'add';
+      if (t === '−' || t === '-') kind = 'sub';
+      else if (t === '×') kind = 'mul';
+      else if (t === '÷') kind = 'div';
+      else kind = 'add';
+      // Prefer question.operation if available for consistent color
+      if (operation === 'add') kind = 'add';
+      if (operation === 'sub') kind = 'sub';
+      if (operation === 'mul') kind = 'mul';
+      if (operation === 'div') kind = 'div';
+      const symbol =
+        kind === 'add' ? '+' : kind === 'sub' ? '−' : kind === 'mul' ? '×' : '÷';
+      return (
+        <span key={i} className={`q-op q-op-${kind}`} aria-hidden={false}>
+          {symbol}
+        </span>
+      );
+    }
+    return <span key={i}>{tok}</span>;
+  });
+}
+
+function opChipLabel(op: OperationType | undefined): string {
+  if (!op) return '';
+  if (op === 'add') return t('opChipAdd');
+  if (op === 'sub') return t('opChipSub');
+  if (op === 'mul') return t('opChipMul');
+  return t('opChipDiv');
+}
+
+
 /** Berapa angka yang harus dipilih untuk soal ini */
 function getNeededCount(question: MathQuestion): number {
   // Satu tanda tanya → 1 angka; dua tanda tanya → 2 angka
@@ -253,6 +308,8 @@ export default function Game({
    * Latihan → dojo; petualangan → kota (fallback default, BUKAN dojo).
    */
   const [resolvedBgUrl, setResolvedBgUrl] = useState<string | null>(null);
+  const [opFlash, setOpFlash] = useState(false);
+  const prevOpRef = useRef<OperationType | null>(null);
   const [bgReady, setBgReady] = useState(false);
   const [showVolumeHint, setShowVolumeHint] = useState(true);
   /** Layer jejak slice — DOM langsung (bukan React setState tiap move) */
@@ -930,6 +987,20 @@ export default function Game({
   const displayText = state.question
     ? fillDisplay(state.question.display, selectedValues)
     : '...';
+
+  // Flash kotak soal saat jenis operasi berganti (mata "reset")
+  useEffect(() => {
+    const op = state.question?.operation;
+    if (!op || state.status !== 'playing') return;
+    if (prevOpRef.current != null && prevOpRef.current !== op) {
+      setOpFlash(true);
+      const tid = window.setTimeout(() => setOpFlash(false), 380);
+      prevOpRef.current = op;
+      return () => window.clearTimeout(tid);
+    }
+    prevOpRef.current = op;
+  }, [state.question?.operation, state.question?.display, state.status]);
+
   const levelLabel = getLevelById(level).labelId;
   /**
    * Mode Slice: hit-test geometri.
@@ -1129,8 +1200,20 @@ export default function Game({
           </div>
         </div>
 
-        <div className="game-question">
-          <p className="question-text">{displayText}</p>
+        <div className={`game-question ${opFlash ? 'op-flash' : ''}`}>
+          {state.question?.operation && (
+            <span
+              className={`op-chip op-chip-${state.question.operation}`}
+              aria-label={opChipLabel(state.question.operation)}
+            >
+              {opChipLabel(state.question.operation)}
+            </span>
+          )}
+          <p className="question-text">
+            {state.question
+              ? renderQuestionParts(displayText, state.question.operation)
+              : displayText}
+          </p>
           <p className="question-hint">
             {mode === 'tap'
               ? t('hintTap')
