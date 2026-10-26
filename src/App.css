@@ -3876,3 +3876,66 @@ h1.home-title {
 .adventure-map.is-map-loading {
   background: #c5e8f5;
 }
+
+
+/* ——— Offline mode ——— */
+.offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: linear-gradient(180deg, #3d4a5c 0%, #2c3645 100%);
+  color: #f5f7fa;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.offline-banner-inner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.offline-banner-icon {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+.offline-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.offline-banner-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.offline-banner-body {
+  opacity: 0.92;
+}
+.mode-btn:disabled,
+.mode-btn.is-offline-locked,
+button.is-offline-locked:disabled,
+a.is-offline-locked {
+  opacity: 0.45;
+  filter: grayscale(0.35);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.offline-settings-note,
+.offline-dojo-note,
+.offline-result-hint {
+  margin: 8px 0 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #5c6b7a 18%, var(--color-bg, #fff));
+  border: 1px solid color-mix(in srgb, #5c6b7a 35%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text, #222);
+}
+.offline-result-hint {
+  text-align: center;
+  margin-bottom: 10px;
+}

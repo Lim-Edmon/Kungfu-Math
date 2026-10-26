@@ -49,6 +49,8 @@ import {
   MVP_REGION_UNLOCK_MSG,
 } from './lib/adventure';
 import { setLang, detectLangFromDevice, t, getLang } from './lib/i18n';
+import { useOnline, getIsOnline } from './lib/offline';
+import OfflineBanner from './components/OfflineBanner';
 import {
   nextDailyStreak,
   evaluateNewBadges,
@@ -140,6 +142,9 @@ function App() {
   /** BG kota tujuan — standby di belakang peta saat transisi */
   const [travelCityBg, setTravelCityBg] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
+  /** Sesi dimulai saat offline → jangan rekam rekor/badge/streak */
+  const [offlineSession, setOfflineSession] = useState(false);
+  const online = useOnline();
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
@@ -245,6 +250,7 @@ function App() {
       preferredAdventureDiff: diffId || 'normal',
       ...(cityForRun ? { adventureCityId: cityForRun } : {}),
     });
+    setOfflineSession(!getIsOnline());
     setScreen('game');
   };
 
@@ -300,6 +306,26 @@ function App() {
     runMeta?: { maxCombo: number; perfect: boolean }
   ) => {
     const prog0 = loadProgress();
+    const maxCombo = runMeta?.maxCombo ?? 0;
+    setLastMaxCombo(maxCombo);
+
+    // Offline session: latihan murni, tidak ubah progress / rekor / badge
+    if (offlineSession) {
+      setLastScore(score);
+      setLastGrade(grade);
+      setLastHighScore(prog0.highScores?.[selectedLevel] ?? 0);
+      setIsNewRecord(false);
+      setPassedCity(false);
+      setNextCityId(null);
+      setFunFact(null);
+      setFunFactOpen(false);
+      setJourneyEndOpen(false);
+      setNewBadges([]);
+      setCelebrateOpen(false);
+      setScreen('result');
+      return;
+    }
+
     const meta = {
       playerName: prog0.playerName,
       inputMode: selectedMode,
@@ -322,8 +348,6 @@ function App() {
     setJourneyEndOpen(false);
     setNewBadges([]);
 
-    const maxCombo = runMeta?.maxCombo ?? 0;
-    setLastMaxCombo(maxCombo);
     const perfect = !!runMeta?.perfect;
     let passed = false;
     let nextId: string | null = null;
@@ -549,16 +573,18 @@ function App() {
         showChrome ? 'has-bottom-nav' : ''
       }`}
     >
+      <OfflineBanner online={online} />
       <main className="app-main">
         {screen === 'home' && (
           <Home
             key={`${homeKey}-${langTick}`}
             onStartGame={handleStartGame}
             initialPlayKind={homePlayKind}
+            offline={!online}
           />
         )}
 
-        {screen === 'dojo' && <Dojo key={langTick} />}
+        {screen === 'dojo' && <Dojo key={langTick} offline={!online} />}
 
         {screen === 'settings' && (
           <Settings
@@ -569,6 +595,7 @@ function App() {
             key={langTick}
             onBack={() => setScreen('home')}
             onLangChange={() => setLangTick((n) => n + 1)}
+            offline={!online}
           />
         )}
 
@@ -716,6 +743,11 @@ function App() {
                     ? `${t('playPetualangan')} · ${getLang()==='en' ? city.nameEn : city.nameId}`
                     : `${t('levelTitle')}: ${levelLabel}`}
                 </p>
+                {offlineSession && (
+                  <p className="offline-result-hint" role="status">
+                    {t('offlineResultHint')}
+                  </p>
+                )}
                 <p className="result-score-line">
                   <strong>{t('score')} {lastScore}</strong>
                   <span> · {lastGrade}</span>
