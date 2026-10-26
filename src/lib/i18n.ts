@@ -144,7 +144,7 @@ const STRINGS = {
     wellDone: 'Kerja bagus!',
     knowTitle: 'Tahukah kamu?',
     playAgain: 'Main lagi',
-    backToPractice: 'Kembali ke Bermain',
+    backToPractice: 'Kembali ke beranda',
     continueCity: 'Lanjut ke',
     chooseOtherCity: 'Pilih kota lain',
     backToMap: 'Kembali ke peta',
@@ -198,6 +198,13 @@ const STRINGS = {
     offlinePopup:
       'Kamu sedang offline. Jika mau memainkan mode ini, pastikan ada koneksi internet.',
     offlinePopupOk: 'Mengerti',
+    offlineMidTitle: 'Koneksi terputus',
+    offlineMidBody:
+      'Internet putus di tengah permainan. Ronde ini tetap bisa diselesaikan. Aset kota/musik baru mungkin tidak muncul. Rekor tetap disimpan di HP ini.',
+    offlineMidBodyAdventure:
+      'Internet putus. Selesaikan ronde ini dulu. Petualangan berikutnya dan unduh aset kota butuh koneksi lagi.',
+    offlineMidOk: 'Lanjut main',
+
     btnCancel: 'Batal',
     inviteText:
       'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak (dan dewasa) belajar berhitung sambil main.\n\nNikmati mode Petualangan seru di kota-kota dunia: landscape unik tiap kota, plus musik khas kota/negara tersebut (nyalakan suara biar lebih otentik) — sambil latihan berhitung.\n\nGratis, tanpa login.\n\n',
@@ -395,7 +402,7 @@ const STRINGS = {
     wellDone: 'Well done!',
     knowTitle: 'Did you know?',
     playAgain: 'Play again',
-    backToPractice: 'Back to Play',
+    backToPractice: 'Back to home',
     continueCity: 'Continue to',
     chooseOtherCity: 'Choose another city',
     backToMap: 'Back to map',
@@ -449,6 +456,13 @@ const STRINGS = {
     offlinePopup:
       'You are offline. To play this mode, make sure you have an internet connection.',
     offlinePopupOk: 'Got it',
+    offlineMidTitle: 'Connection lost',
+    offlineMidBody:
+      'You went offline during the run. You can finish this round. New city art/music may not load. Your score is still saved on this phone.',
+    offlineMidBodyAdventure:
+      'You went offline. Finish this round first. The next adventure city and downloads need a connection again.',
+    offlineMidOk: 'Keep playing',
+
     btnCancel: 'Cancel',
     inviteText:
       'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids (and adults) practicing arithmetic while playing.\n\nEnjoy Adventure mode across world cities: unique landscapes for each stop, plus music inspired by that city/country (turn the sound on for a more authentic feel) — all while training your math.\n\nFree, no login.\n\n',
