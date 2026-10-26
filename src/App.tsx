@@ -18,7 +18,7 @@
  * ---------------------------------------------------------------------
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect , useRef } from 'react';
 import Home, { type PlayKind } from './pages/Home';
 import Game from './pages/Game';
 import Settings from './pages/Settings';
@@ -146,6 +146,9 @@ function App() {
   const [offlineSession, setOfflineSession] = useState(false);
   const online = useOnline();
   const [offlineNavPopup, setOfflineNavPopup] = useState(false);
+  /** Internet putus di tengah mode yang butuh koneksi */
+  const [offlineMidOpen, setOfflineMidOpen] = useState(false);
+  const wasOnlineRef = useRef(true);
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
@@ -492,6 +495,19 @@ function App() {
     // Langsung scroll saat klik tab (jangan tunggu effect saja)
     scrollToTop();
   };
+
+
+  // Internet putus di tengah petualangan / bola gerak → beri tahu, jangan paksa keluar
+  useEffect(() => {
+    const prev = wasOnlineRef.current;
+    wasOnlineRef.current = online;
+    if (prev && !online && screen === 'game') {
+      const needsNet = playKind === 'petualangan' || selectedArena === 'agility';
+      if (needsNet) setOfflineMidOpen(true);
+    }
+    // Online lagi → tutup soft notice
+    if (online) setOfflineMidOpen(false);
+  }, [online, screen, playKind, selectedArena]);
 
   // Setiap ganti layar → mulai dari atas
   useEffect(() => {
@@ -924,6 +940,31 @@ function App() {
 
       {showBottomNav && (
         <BottomNav key={langTick} active={navActive} onChange={handleNav} offline={!online} />
+      )}
+
+      {offlineMidOpen && screen === 'game' && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setOfflineMidOpen(false)}
+        >
+          <div className="offline-need-net-box" onClick={(e) => e.stopPropagation()}>
+            <p className="offline-need-net-title">{t('offlineMidTitle')}</p>
+            <p className="offline-need-net-body">
+              {playKind === 'petualangan'
+                ? t('offlineMidBodyAdventure')
+                : t('offlineMidBody')}
+            </p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setOfflineMidOpen(false)}
+            >
+              {t('offlineMidOk')}
+            </button>
+          </div>
+        </div>
       )}
 
       {offlineNavPopup && (
