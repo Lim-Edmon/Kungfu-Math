@@ -3939,3 +3939,50 @@ a.is-offline-locked {
   text-align: center;
   margin-bottom: 10px;
 }
+
+
+.offline-need-net-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(10, 16, 28, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.offline-need-net-box {
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #222);
+  border-radius: 14px;
+  padding: 18px 16px 14px;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+.offline-need-net-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+}
+.offline-need-net-body {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0 0 14px;
+  opacity: 0.92;
+}
+/* Offline locked: tetap bisa diklik (untuk popup), tampilan redup */
+.mode-btn.is-offline-locked {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.game-arena-plain {
+  background-image: none !important;
+  background: linear-gradient(165deg, #2a3544 0%, #1a2332 45%, #243044 100%) !important;
+}
+.game-arena-plain::before {
+  display: none;
+}
