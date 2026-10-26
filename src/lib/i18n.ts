@@ -195,6 +195,9 @@ const STRINGS = {
     offlineNoRecord: 'Mode offline — skor tidak disimpan',
     offlineNeedNet: 'Fitur ini perlu koneksi internet',
     offlineResultHint: 'Latihan offline selesai. Hubungkan internet untuk menyimpan rekor & petualangan.',
+    offlinePopup:
+      'Kamu sedang offline. Jika mau memainkan mode ini, pastikan ada koneksi internet.',
+    offlinePopupOk: 'Mengerti',
     btnCancel: 'Batal',
     inviteText:
       'Yuk coba Kungfu Math — game hitung cepat ala pendekar! Cocok buat anak (dan dewasa) belajar berhitung sambil main.\n\nNikmati mode Petualangan seru di kota-kota dunia: landscape unik tiap kota, plus musik khas kota/negara tersebut (nyalakan suara biar lebih otentik) — sambil latihan berhitung.\n\nGratis, tanpa login.\n\n',
@@ -439,6 +442,9 @@ const STRINGS = {
     offlineNoRecord: 'Offline mode — score not saved',
     offlineNeedNet: 'This feature needs an internet connection',
     offlineResultHint: 'Offline practice done. Go online to save records & play adventure.',
+    offlinePopup:
+      'You are offline. To play this mode, make sure you have an internet connection.',
+    offlinePopupOk: 'Got it',
     btnCancel: 'Cancel',
     inviteText:
       'Try Kungfu Math — a fast mental-math game with martial-hero vibes! Great for kids (and adults) practicing arithmetic while playing.\n\nEnjoy Adventure mode across world cities: unique landscapes for each stop, plus music inspired by that city/country (turn the sound on for a more authentic feel) — all while training your math.\n\nFree, no login.\n\n',
