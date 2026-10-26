@@ -194,7 +194,7 @@ const STRINGS = {
     offlineLockedAgility: 'Perlu internet',
     offlineNoRecord: 'Mode offline — skor tidak disimpan',
     offlineNeedNet: 'Fitur ini perlu koneksi internet',
-    offlineResultHint: 'Latihan offline selesai. Hubungkan internet untuk menyimpan rekor & petualangan.',
+    offlineResultHint: 'Latihan offline selesai. Skor sesi ini tidak disimpan (latihan saja).',
     offlinePopup:
       'Kamu sedang offline. Jika mau memainkan mode ini, pastikan ada koneksi internet.',
     offlinePopupOk: 'Mengerti',
@@ -445,7 +445,7 @@ const STRINGS = {
     offlineLockedAgility: 'Needs internet',
     offlineNoRecord: 'Offline mode — score not saved',
     offlineNeedNet: 'This feature needs an internet connection',
-    offlineResultHint: 'Offline practice done. Go online to save records & play adventure.',
+    offlineResultHint: 'Offline practice done. This session score was not saved (practice only).',
     offlinePopup:
       'You are offline. To play this mode, make sure you have an internet connection.',
     offlinePopupOk: 'Got it',
