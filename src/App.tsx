@@ -145,6 +145,7 @@ function App() {
   /** Sesi dimulai saat offline → jangan rekam rekor/badge/streak */
   const [offlineSession, setOfflineSession] = useState(false);
   const online = useOnline();
+  const [offlineNavPopup, setOfflineNavPopup] = useState(false);
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
@@ -480,6 +481,11 @@ function App() {
   };
 
   const handleNav = (tab: NavTab) => {
+    // Offline: Progres dikunci — sesi offline tidak menyimpan; arahkan pesan sama
+    if (!online && tab === 'dojo') {
+      setOfflineNavPopup(true);
+      return;
+    }
     if (tab === 'home') setScreen('home');
     else if (tab === 'dojo') setScreen('dojo');
     else setScreen('settings');
@@ -785,7 +791,7 @@ function App() {
                   </p>
                 )}
 
-                {playKind !== 'petualangan' && (
+                {playKind !== 'petualangan' && !offlineSession && (
                   <p className="result-high">
                     {t('highScore')}: {lastHighScore}
                     {isNewRecord
@@ -859,13 +865,15 @@ function App() {
                     {t('backToPractice')}
                   </button>
                 )}
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => setScreen('dojo')}
-                >
-                  {t('seeProgress')}
-                </button>
+                {!offlineSession && (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => setScreen('dojo')}
+                  >
+                    {t('seeProgress')}
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -915,7 +923,28 @@ function App() {
       )}
 
       {showBottomNav && (
-        <BottomNav key={langTick} active={navActive} onChange={handleNav} />
+        <BottomNav key={langTick} active={navActive} onChange={handleNav} offline={!online} />
+      )}
+
+      {offlineNavPopup && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setOfflineNavPopup(false)}
+        >
+          <div className="offline-need-net-box" onClick={(e) => e.stopPropagation()}>
+            <p className="offline-need-net-title">{t('offlineTitle')}</p>
+            <p className="offline-need-net-body">{t('offlinePopup')}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setOfflineNavPopup(false)}
+            >
+              {t('offlinePopupOk')}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
