@@ -7,9 +7,11 @@ export type NavTab = 'home' | 'dojo' | 'settings';
 interface BottomNavProps {
   active: NavTab;
   onChange: (tab: NavTab) => void;
+  /** Offline: tab Progres tampil terkunci, klik → popup (di App) */
+  offline?: boolean;
 }
 
-export default function BottomNav({ active, onChange }: BottomNavProps) {
+export default function BottomNav({ active, onChange, offline = false }: BottomNavProps) {
   return (
     <nav className="bottom-nav" aria-label="Main menu">
       <button
@@ -24,8 +26,9 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
       </button>
       <button
         type="button"
-        className={`bottom-nav-item ${active === 'dojo' ? 'active' : ''}`}
+        className={`bottom-nav-item ${active === 'dojo' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
         onClick={() => onChange('dojo')}
+        aria-disabled={offline}
       >
         <span className="bottom-nav-icon" aria-hidden>
           🏯
