@@ -161,6 +161,9 @@ export default function Dojo() {
       <header className="dojo-header">
         <h1>{t('dojoTitle')}</h1>
         <p className="dojo-sub">{t('dojoSub')}</p>
+        {offline && (
+          <p className="offline-dojo-note" role="status">{t('offlineNoRecord')}</p>
+        )}
       </header>
 
       <section className="dojo-card dojo-hero">

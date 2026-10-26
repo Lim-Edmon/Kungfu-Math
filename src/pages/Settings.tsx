@@ -17,12 +17,14 @@ interface SettingsProps {
   onBack: () => void;
   onLangChange?: () => void;
   onShowTutorial?: () => void;
+  offline?: boolean;
 }
 
 export default function Settings({
   onBack: _onBack,
   onLangChange,
   onShowTutorial,
+  offline = false,
 }: SettingsProps) {
   const [soundMuted, setSoundMuted] = useState(false);
   const [lang, setLangLocal] = useState<Lang>('id');
@@ -107,6 +109,7 @@ ${exportCode}
 
 ${t('waProgressSuffix')}`
     );
+    if (offline) { setMessage(t('offlineNeedNet')); return; }
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
   };
 
@@ -135,6 +138,10 @@ ${t('waProgressSuffix')}`
   };
 
   const handleShareInvite = async () => {
+    if (offline) {
+      setMessage(t('offlineNeedNet'));
+      return;
+    }
     const text = buildInviteText();
     // Web Share API (HP modern) — buka sheet WA / Telegram / dll
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -176,6 +183,9 @@ ${t('waProgressSuffix')}`
 
   return (
     <div className="settings-page">
+      {offline && (
+        <p className="offline-settings-note" role="status">{t('offlineNeedNet')}</p>
+      )}
       <header className="settings-header">
         <h1>{t('settingsTitle')}</h1>
       </header>
@@ -280,14 +290,20 @@ ${t('waProgressSuffix')}`
       <section className="settings-section">
         <h2>{t('settingsSupport')}</h2>
         <p className="settings-note">{t('settingsSupportNote')}</p>
-        <a
-          href={TRAKTEER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-trakteer btn-trakteer-full"
-        >
-          {t('btnTrakteer')}
-        </a>
+        {offline ? (
+          <button type="button" className="btn-trakteer btn-trakteer-full is-offline-locked" disabled>
+            {t('btnTrakteer')} — {t('offlineNeedNet')}
+          </button>
+        ) : (
+          <a
+            href={TRAKTEER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-trakteer btn-trakteer-full"
+          >
+            {t('btnTrakteer')}
+          </a>
+        )}
       </section>
 
       {/* 7. Ajak keluarga */}
@@ -295,7 +311,12 @@ ${t('waProgressSuffix')}`
         <h2>{t('settingsInvite')}</h2>
         <p className="settings-note">{t('settingsInviteNote')}</p>
         <div className="export-actions settings-share-actions">
-          <button type="button" className="btn-primary" onClick={handleShareInvite}>
+          <button
+            type="button"
+            className={`btn-primary ${offline ? 'is-offline-locked' : ''}`}
+            disabled={offline}
+            onClick={handleShareInvite}
+          >
             {t('btnShare')}
           </button>
           <button type="button" className="btn-secondary" onClick={handleCopyInvite}>

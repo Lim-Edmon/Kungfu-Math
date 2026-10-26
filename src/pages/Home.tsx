@@ -123,6 +123,8 @@ interface HomeProps {
     adventureCityId?: string
   ) => void;
   initialPlayKind?: PlayKind;
+  /** true = kunci petualangan & bola bergerak, paksa latihan diam */
+  offline?: boolean;
 }
 
 function lastUnlockedCityId(unlocked: string[]): string {
@@ -134,7 +136,7 @@ function lastUnlockedCityId(unlocked: string[]): string {
   return 'jakarta';
 }
 
-export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
+export default function Home({ onStartGame, initialPlayKind, offline = false }: HomeProps) {
   const [step, setStep] = useState<WizardStep>(1);
   /** null = belum dipilih (kecuali default yang diizinkan) */
   const [mode, setMode] = useState<InputMode | null>(null);
@@ -264,6 +266,13 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       setRegionPanel('current');
     }
   }, [initialPlayKind]);
+
+  /** Offline: hanya latihan + bola diam */
+  useEffect(() => {
+    if (!offline) return;
+    setPlayKind((pk) => (pk === 'petualangan' ? 'latihan' : pk));
+    setArena((a) => (a === 'agility' ? 'static' : a));
+  }, [offline]);
 
   /** Mode debug peta: langsung step 2 petualangan, fokus URL opsional */
   useEffect(() => {
@@ -787,16 +796,26 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               >
                 <span className="mode-icon">📚</span>
                 <span className="mode-name">{t('playLatihan')}</span>
-                <span className="mode-desc">{t('playLatihanDesc')}</span>
+                <span className="mode-desc">
+                  {offline ? t('offlinePlayOnly') : t('playLatihanDesc')}
+                </span>
               </button>
               <button
                 type="button"
-                className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''}`}
-                onClick={() => { setPlayKind('petualangan'); setFieldError(null); }}
+                className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                disabled={offline}
+                aria-disabled={offline}
+                onClick={() => {
+                  if (offline) return;
+                  setPlayKind('petualangan');
+                  setFieldError(null);
+                }}
               >
                 <span className="mode-icon">🌏</span>
                 <span className="mode-name">{t('playPetualangan')}</span>
-                <span className="mode-desc">{t('playPetualanganDesc')}</span>
+                <span className="mode-desc">
+                  {offline ? t('offlineLockedAdventure') : t('playPetualanganDesc')}
+                </span>
               </button>
             </div>
             </div>
@@ -1170,8 +1189,11 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 </button>
                 <button
                   type="button"
-                  className={`mode-btn ${arena === 'agility' ? 'active' : ''}`}
+                  className={`mode-btn ${arena === 'agility' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                  disabled={offline}
+                  aria-disabled={offline}
                   onClick={() => {
+                    if (offline) return;
                     setArena('agility');
                     setFieldError(null);
                     updateProgress({ preferredArena: 'agility' });
@@ -1179,7 +1201,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 >
                   <span className="mode-icon">⚡</span>
                   <span className="mode-name">{t('modeAgility')}</span>
-                  <span className="mode-desc">{t('modeAgilityDesc')}</span>
+                  <span className="mode-desc">{offline ? t('offlineLockedAgility') : t('modeAgilityDesc')}</span>
                 </button>
               </div>
             </div>
@@ -1419,16 +1441,22 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                   !playKind
                 )
                   return;
+                if (offline && (playKind === 'petualangan' || arena === 'agility')) {
+                  setFieldError('arena');
+                  return;
+                }
+                const startKind = offline ? 'latihan' : playKind;
+                const startArena = offline ? 'static' : arena;
                 onStartGame(
                   mode,
                   selectedCharacterId,
                   level,
-                  arena,
-                  playKind,
-                  playKind === 'petualangan'
+                  startArena,
+                  startKind,
+                  startKind === 'petualangan'
                     ? adventureDiffId || undefined
                     : undefined,
-                  playKind === 'latihan' &&
+                  startKind === 'latihan' &&
                   opsMode === 'focus' &&
                   level &&
                   getLevelById(level).operations.length > 1
@@ -1436,7 +1464,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                         (getLevelById(level).operations as string[]).includes(op)
                       )
                     : undefined,
-                  playKind === 'petualangan' ? cityId : undefined
+                  startKind === 'petualangan' ? cityId : undefined
                 );
               }}
             >
