@@ -14,7 +14,13 @@ export default function Footer() {
       >
         {t('footerSupport')}
       </a>
-      <p className="footer-copy">{t('footerCopy')}</p>
+      <p className="footer-legal">
+        <a href="/NOTICE.txt" target="_blank" rel="noopener noreferrer">
+          {t('footerNotice')}
+        </a>
+        {' · '}
+        <span className="footer-copy">{t('footerCopy')}</span>
+      </p>
     </footer>
   );
 }

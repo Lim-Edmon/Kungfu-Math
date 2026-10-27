@@ -352,10 +352,12 @@ export default function AdventureMap({
     return () => ro.disconnect();
   }, [fillViewport]);
   /**
-   * Aspect viewBox = ukuran frame aktual (sama untuk pilih Adventure & transisi).
-   * Pilih kota: frame CSS 2:1. Transisi: full layar. Mentok tepi → clamp, bukan biru.
+   * Aspect viewBox:
+   * - Pilih kota: ikut frame CSS (2:1).
+   * - Transisi fullscreen: pakai MAP_ASPECT (2:1) + SVG slice → isi layar tanpa gepeng.
+   *   (Frame HP portrait ≠ rasio peta → jangan paksa viewBox ikut portrait.)
    */
-  const targetAspect = frameAspect;
+  const targetAspect = fillViewport ? MAP_ASPECT : frameAspect;
   const [clickCoord, setClickCoord] = useState<{
     x: number;
     y: number;
@@ -900,7 +902,7 @@ export default function AdventureMap({
         <svg
           className={`adventure-map${mapReady ? ' is-map-ready' : ' is-map-loading'}`}
           viewBox={`${drawMinX} ${drawMinY} ${drawVbW} ${drawVbH}`}
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio={fillViewport ? 'xMidYMid slice' : 'xMidYMid meet'}
           role="img"
           aria-hidden
         >
