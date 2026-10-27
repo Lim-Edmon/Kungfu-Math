@@ -5,6 +5,8 @@ Latihan hitung cepat dengan gaya pendekar China kuno versi imut — mode **Slice
 
 **Main online:** [https://kungfu-math.vercel.app/](https://kungfu-math.vercel.app/)
 
+**Ownership / no reverse-engineering:** See [NOTICE.txt](public/NOTICE.txt) and [LICENSE](LICENSE) (English). Collaboration or permission: [Trakteer](https://trakteer.id/lim.edmon).
+
 Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di perangkat.
 
 ## Cara menjalankan (lokal / Codespaces)
