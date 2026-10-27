@@ -300,6 +300,18 @@
   text-decoration: underline;
 }
 
+.footer-legal {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0.9;
+}
+.footer-legal a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .footer-copy {
   font-size: 0.72rem;
   color: var(--color-text-muted);
@@ -4025,10 +4037,76 @@ a.is-offline-locked {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.12em 0.18em;
+  gap: 0.28em 0.35em;
   font-size: clamp(1.55rem, 6vw, 2.15rem);
 }
+.q-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55em;
+  min-height: 1.7em;
+  padding: 0.12em 0.28em;
+  border-radius: 0.35em;
+  border: 2px solid color-mix(in srgb, var(--color-text) 28%, transparent);
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, #fff 88%, var(--color-bg)) 0%,
+      color-mix(in srgb, var(--color-bg) 40%, #f5f0e6) 100%);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 70%, transparent) inset,
+    0 2px 4px color-mix(in srgb, #000 18%, transparent);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  line-height: 1;
+}
+.q-card-inner {
+  display: block;
+  transform: translateY(0.02em);
+}
+.q-card-empty {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+  color: color-mix(in srgb, var(--color-primary) 80%, var(--color-text));
+  opacity: 0.95;
+}
+.q-card-filled {
+  border-color: color-mix(in srgb, #16a34a 50%, var(--color-border));
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, #ecfdf5 90%, #fff) 0%,
+      color-mix(in srgb, #bbf7d0 35%, var(--color-bg)) 100%);
+}
+.q-card-answer {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, #fff 92%, var(--color-primary)) 0%,
+      color-mix(in srgb, var(--color-primary) 12%, var(--color-bg)) 100%);
+  min-width: 1.75em;
+}
+[data-theme="malam"] .q-card,
+[data-theme="nyaman"] .q-card {
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, var(--color-bg) 70%, #334155) 0%,
+      color-mix(in srgb, var(--color-bg) 90%, #1e293b) 100%);
+  border-color: color-mix(in srgb, #fff 22%, transparent);
+  box-shadow: 0 2px 6px color-mix(in srgb, #000 35%, transparent);
+}
+[data-theme="malam"] .q-card-empty,
+[data-theme="nyaman"] .q-card-empty {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-bg));
+}
+[data-theme="malam"] .q-card-filled,
+[data-theme="nyaman"] .q-card-filled {
+  background: color-mix(in srgb, #166534 35%, var(--color-bg));
+  border-color: color-mix(in srgb, #4ade80 40%, transparent);
+}
 .q-num {
+
   font-weight: 900;
   font-variant-numeric: tabular-nums;
   color: var(--color-text);

@@ -40,6 +40,8 @@ import {
 import {
   ADVENTURE_CITIES,
   getCityById,
+  getCountryNameId,
+  getCountryNameEn,
   getNextCityId,
   getNextPlayableCityId,
   getAdventureDifficulty,
@@ -60,6 +62,16 @@ import './styles/theme.css';
 import './App.css';
 
 type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
+
+
+/** Kota + negara — selalu tampil agar anak tahu negara mana */
+function formatCityCountry(city: { nameId: string; nameEn: string; countryId: string } | null | undefined): string {
+  if (!city) return '';
+  const en = getLang() === 'en';
+  const name = en ? city.nameEn : city.nameId;
+  const country = en ? getCountryNameEn(city.countryId) : getCountryNameId(city.countryId);
+  return en ? `${name} (${country})` : `${name} (negara: ${country})`;
+}
 
 function resultHeadline(
   grade: string,
@@ -641,9 +653,7 @@ function App() {
             }
             cityName={
               playKind === 'petualangan'
-                ? (getLang()==='en'
-                    ? getCityById(lastCityId || 'jakarta').nameEn
-                    : getCityById(lastCityId || 'jakarta').nameId)
+                ? formatCityCountry(getCityById(lastCityId || 'jakarta'))
                 : undefined
             }
             cityId={
@@ -673,7 +683,7 @@ function App() {
             playKind === 'petualangan' && passedCity && !nextCity;
           const headline = resultHeadline(lastGrade, isNewRecord, lastScore, {
             passedCity: playKind === 'petualangan' && passedCity && !journeyComplete,
-            cityName: getLang()==='en' ? city?.nameEn : city?.nameId,
+            cityName: city ? formatCityCountry(city) : undefined,
             journeyComplete,
           });
           const celebrate =
@@ -762,7 +772,7 @@ function App() {
               <div className="result-summary">
                 <p className="result-level">
                   {playKind === 'petualangan' && city
-                    ? `${t('playPetualangan')} · ${getLang()==='en' ? city.nameEn : city.nameId}`
+                    ? `${t('playPetualangan')} · ${formatCityCountry(city)}`
                     : `${t('levelTitle')}: ${levelLabel}`}
                 </p>
                 {offlineSession && (
@@ -781,10 +791,10 @@ function App() {
                   <p className="result-high">
                     {passedCity
                       ? getLang() === 'en'
-                        ? `Target ${city.targetScore} points in ${city.nameEn} reached${
+                        ? `Target ${city.targetScore} points in ${formatCityCountry(city)} reached${
                             nextCity ? '. You can continue to the next city.' : '.'
                           }`
-                        : `Target ${city.targetScore} poin ${city.nameId} tercapai${
+                        : `Target ${city.targetScore} poin ${formatCityCountry(city)} tercapai${
                             nextCity ? ', kamu bisa lanjut ke kota berikut.' : '.'
                           }`
                       : getLang() === 'en'
@@ -850,7 +860,7 @@ function App() {
                     className="btn-primary"
                     onClick={handleContinueNextCity}
                   >
-                    {t('continueCity')} {getLang() === 'en' ? nextCity.nameEn : nextCity.nameId}
+                    {t('continueCity')} {formatCityCountry(nextCity)}
                   </button>
                 )}
                 <button
@@ -859,7 +869,7 @@ function App() {
                   onClick={handlePlayAgain}
                 >
                   {playKind === 'petualangan' && city
-                    ? (getLang()==='en' ? `${t('playAgain')} in ${city.nameEn}` : `${t('playAgain')} di ${city.nameId}`)
+                    ? (getLang()==='en' ? `${t('playAgain')} in ${formatCityCountry(city)}` : `${t('playAgain')} di ${formatCityCountry(city)}`)
                     : t('playAgain')}
                 </button>
                 {playKind === 'petualangan' ? (
