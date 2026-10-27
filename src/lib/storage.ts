@@ -286,6 +286,61 @@ export function updateProgress(partial: Partial<PlayerProgress>): PlayerProgress
  * Export = snapshot progress SAAT INI.
  * Kode berubah setiap kali progress berubah (bukan PIN tetap).
  */
+
+/**
+ * Ambil payload KM1 dari teks apa pun (pesan WA, instruksi, spasi, baris baru).
+ * Menerima juga kode murni tanpa teks pembungkus.
+ */
+export function extractProgressCode(text: string): string | null {
+  const s = (text || '').trim();
+  if (!s) return null;
+
+  const tryBody = (body: string): string | null => {
+    const b = body.replace(/\s+/g, '');
+    if (b.length < 8) return null;
+    // Coba dari panjang penuh turun sampai JSON valid (jaga-jaga teks nempel)
+    for (let len = b.length; len >= 8; len--) {
+      let slice = b.slice(0, len);
+      const mod = slice.length % 4;
+      if (mod) slice = slice + '='.repeat(4 - mod);
+      try {
+        const json = decodeURIComponent(escape(atob(slice)));
+        if (!json.startsWith('{')) continue;
+        JSON.parse(json);
+        return CODE_PREFIX + b.slice(0, len);
+      } catch {
+        /* shorter */
+      }
+    }
+    return null;
+  };
+
+  // Prioritas: baris berisi KM1. (format share WA)
+  for (const line of s.split(/\r?\n/)) {
+    const idx = line.toLowerCase().indexOf('km1.');
+    if (idx < 0) continue;
+    const got = tryBody(line.slice(idx + 4));
+    if (got) return got;
+  }
+
+  // Fallback: di mana pun dalam teks
+  const allIdx = s.toLowerCase().indexOf('km1.');
+  if (allIdx >= 0) {
+    const got = tryBody(s.slice(allIdx + 4));
+    if (got) return got;
+  }
+
+  const compact = s.replace(/\s+/g, '');
+  if (compact.toLowerCase().startsWith('km1.')) {
+    const got = tryBody(compact.slice(4));
+    if (got) return got;
+  }
+  if (/^[A-Za-z0-9+/=]{20,}$/.test(compact) && compact.includes('eyJ')) {
+    return tryBody(compact);
+  }
+  return null;
+}
+
 export function exportProgress(): string {
   const json = JSON.stringify(loadProgress());
   const body = btoa(unescape(encodeURIComponent(json)));
@@ -463,6 +518,7 @@ export function importProgress(encoded: string): boolean {
   const trimmed = (encoded || '').trim();
   if (!trimmed) return false;
 
+  // Cheat dulu (teks pendek), baru payload KM1 dari pesan panjang
   const key = normalizeCheatKey(trimmed);
   if (DEV_UNLOCK_KEYS.has(key)) {
     applyDevUnlockAccess();
@@ -474,8 +530,10 @@ export function importProgress(encoded: string): boolean {
   }
 
   try {
-    let raw = trimmed.replace(/\s+/g, '');
-    if (raw.startsWith(CODE_PREFIX)) raw = raw.slice(CODE_PREFIX.length);
+    const extracted = extractProgressCode(trimmed);
+    if (!extracted) return false;
+    let raw = extracted.replace(/\s+/g, '');
+    if (raw.toUpperCase().startsWith('KM1.')) raw = raw.slice(4);
     const json = decodeURIComponent(escape(atob(raw)));
     const parsed = JSON.parse(json);
     const merged = normalizeProgress(parsed);
