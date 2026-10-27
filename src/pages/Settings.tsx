@@ -102,12 +102,11 @@ export default function Settings({
       handleExport();
       return;
     }
+    const suffix = t('waProgressSuffix').trim();
     const text = encodeURIComponent(
-      `${t('waProgressPrefix')}
-
-${exportCode}
-
-${t('waProgressSuffix')}`
+      suffix
+        ? `${t('waProgressPrefix')}\n\n${exportCode}\n\n${suffix}`
+        : `${t('waProgressPrefix')}\n\n${exportCode}`
     );
     if (offline) { setMessage(t('offlineNeedNet')); return; }
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');

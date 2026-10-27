@@ -22,8 +22,13 @@ import { sfx, playCityMusic, stopAllMusic } from '../lib/sound';
 import { loadProgress, updateProgress } from '../lib/storage';
 
 function playEndSound(score: number, target?: number) {
-  if (target != null && score >= target) sfx.win();
-  else sfx.finish();
+  // Lolos kota / di atas target → fanfare; selain itu nada selesai biasa
+  if (target != null && score >= target) {
+    sfx.win();
+    setTimeout(() => sfx.combo(), 180);
+  } else {
+    sfx.finish();
+  }
 }
 
 interface GameProps {
@@ -116,7 +121,22 @@ function createNumbersFromQuestion(
   });
 }
 
-function calcGrade(score: number, solved: number, maxCombo: number): string {
+/** Petualangan: S/A hanya jika lolos target. Latihan: ambang skor absolut. */
+function calcGrade(
+  score: number,
+  solved: number,
+  maxCombo: number,
+  opts?: { targetScore?: number; isAdventure?: boolean }
+): string {
+  const target = opts?.targetScore;
+  if (opts?.isAdventure && typeof target === 'number' && target > 0) {
+    const passed = score >= target;
+    if (passed && score >= target * 1.35 && maxCombo >= 8 && solved >= 10) return 'S';
+    if (passed && (score >= target * 1.1 || maxCombo >= 5)) return 'A';
+    if (passed) return 'B';
+    if (score >= target * 0.7) return 'C';
+    return 'D';
+  }
   if (solved >= 12 && maxCombo >= 5 && score >= 1500) return 'S';
   if (solved >= 8 && score >= 900) return 'A';
   if (solved >= 5 && score >= 500) return 'B';
@@ -142,34 +162,41 @@ function renderQuestionParts(
   operation: OperationType | undefined
 ): ReactNode {
   const tokens = text.split(/(\d+|\?|[+\-−×÷=]|\s+)/).filter((t) => t !== '');
+  let pastEq = false;
   return tokens.map((tok, i) => {
     const t = tok.trim();
     if (t === '') return <span key={i}>{tok}</span>;
-    if (/^\d+$/.test(t) || t === '?') {
+    if (t === '=') {
+      pastEq = true;
       return (
-        <span key={i} className="q-num">
-          {t}
+        <span key={i} className="q-eq" aria-hidden={false}>
+          =
         </span>
       );
     }
-    if (t === '=' ) {
+    if (/^\d+$/.test(t) || t === '?') {
+      const isEmpty = t === '?';
+      const kind = pastEq ? 'answer' : isEmpty ? 'empty' : 'filled';
       return (
-        <span key={i} className="q-eq">
-          =
+        <span
+          key={i}
+          className={`q-card q-card-${kind}`}
+          aria-label={isEmpty ? '?' : t}
+        >
+          <span className="q-card-inner">{isEmpty ? '?' : t}</span>
         </span>
       );
     }
     if (t === '+' || t === '−' || t === '-' || t === '×' || t === '÷') {
       let kind = 'add';
-      if (t === '−' || t === '-') kind = 'sub';
+      if (operation === 'add') kind = 'add';
+      else if (operation === 'sub') kind = 'sub';
+      else if (operation === 'mul') kind = 'mul';
+      else if (operation === 'div') kind = 'div';
+      else if (t === '−' || t === '-') kind = 'sub';
       else if (t === '×') kind = 'mul';
       else if (t === '÷') kind = 'div';
       else kind = 'add';
-      // Prefer question.operation if available for consistent color
-      if (operation === 'add') kind = 'add';
-      if (operation === 'sub') kind = 'sub';
-      if (operation === 'mul') kind = 'mul';
-      if (operation === 'div') kind = 'div';
       const symbol =
         kind === 'add' ? '+' : kind === 'sub' ? '−' : kind === 'mul' ? '×' : '÷';
       return (
@@ -181,6 +208,7 @@ function renderQuestionParts(
     return <span key={i}>{tok}</span>;
   });
 }
+
 
 function opChipLabel(op: OperationType | undefined): string {
   if (!op) return '';
@@ -523,7 +551,11 @@ export default function Game({
           const grade = calcGrade(
             prev.score,
             prev.questionsSolved,
-            prev.maxCombo
+            prev.maxCombo,
+            {
+              targetScore,
+              isAdventure: typeof targetScore === 'number' && targetScore > 0,
+            }
           );
           setTimeout(
               () =>
@@ -605,7 +637,11 @@ export default function Game({
         const grade = calcGrade(
           prev.score,
           prev.questionsSolved,
-          prev.maxCombo
+          prev.maxCombo,
+          {
+            targetScore,
+            isAdventure: typeof targetScore === 'number' && targetScore > 0,
+          }
         );
         setTimeout(
               () =>
@@ -748,10 +784,14 @@ export default function Game({
             stopAllMusic();
             playEndSound(prev.score, targetScore);
             const grade = calcGrade(
-              prev.score,
-              prev.questionsSolved,
-              prev.maxCombo
-            );
+          prev.score,
+          prev.questionsSolved,
+          prev.maxCombo,
+          {
+            targetScore,
+            isAdventure: typeof targetScore === 'number' && targetScore > 0,
+          }
+        );
             setTimeout(
               () =>
                 onFinish(prev.score, grade, {
@@ -853,10 +893,14 @@ export default function Game({
             stopAllMusic();
             playEndSound(prev.score, targetScore);
             const grade = calcGrade(
-              prev.score,
-              prev.questionsSolved,
-              prev.maxCombo
-            );
+          prev.score,
+          prev.questionsSolved,
+          prev.maxCombo,
+          {
+            targetScore,
+            isAdventure: typeof targetScore === 'number' && targetScore > 0,
+          }
+        );
             setTimeout(
               () =>
                 onFinish(prev.score, grade, {
@@ -1213,11 +1257,6 @@ export default function Game({
             {state.question
               ? renderQuestionParts(displayText, state.question.operation)
               : displayText}
-          </p>
-          <p className="question-hint">
-            {mode === 'tap'
-              ? t('hintTap')
-              : t('hintSlice')}
           </p>
         </div>
 

@@ -59,9 +59,23 @@ function formatRecordMeta(
   return parts.join(' · ');
 }
 
-export default function Dojo() {
+export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
   const [badgesOpen, setBadgesOpen] = useState(false);
-  const progress = loadProgress();
+  let progress;
+  try {
+    progress = loadProgress();
+  } catch (e) {
+    console.error('Dojo loadProgress', e);
+    progress = loadProgress(); // second try after normalize path
+  }
+  try {
+    // ensure arrays exist (import lama / data aneh)
+    if (!Array.isArray(progress.badges)) progress = { ...progress, badges: [] };
+    if (!progress.highScores) progress = { ...progress, highScores: {} };
+    if (!progress.adventureHighScores) progress = { ...progress, adventureHighScores: {} };
+  } catch {
+    /* ignore */
+  }
   // Belum main / belum pilih: tampilkan Yu Jin (bukan Hong Yi warisan data lama)
   const preferredId =
     progress.totalGamesPlayed > 0 && progress.preferredCharacter
