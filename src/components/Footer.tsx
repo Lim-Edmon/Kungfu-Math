@@ -4,9 +4,9 @@ import { TRAKTEER_URL } from '../lib/constants';
 import { t } from '../lib/i18n';
 
 /**
- * Tampilan: cukup "© Lim Edmon 2026" (link halus ke NOTICE).
- * Robot / AI / crawler tetap menemukan kebijakan lewat:
- *   /notice.html (tampilan) · /NOTICE.txt · /robots.txt · LICENSE
+ * Manusia: cukup "© Lim Edmon 2026" → /notice.html (halaman mudah dibaca).
+ * Robot/crawler menemukan sendiri di path standar (tanpa link di UI):
+ *   /robots.txt · /NOTICE.txt · LICENSE
  */
 export default function Footer() {
   return (
