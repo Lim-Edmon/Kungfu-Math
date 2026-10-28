@@ -3,6 +3,11 @@
 import { TRAKTEER_URL } from '../lib/constants';
 import { t } from '../lib/i18n';
 
+/**
+ * Tampilan: cukup "© Lim Edmon 2026" (link halus ke NOTICE).
+ * Robot / AI / crawler tetap menemukan kebijakan lewat:
+ *   /notice.html (tampilan) · /NOTICE.txt · /robots.txt · LICENSE
+ */
 export default function Footer() {
   return (
     <footer className="app-footer">
@@ -15,11 +20,16 @@ export default function Footer() {
         {t('footerSupport')}
       </a>
       <p className="footer-legal">
-        <a href="/NOTICE.txt" target="_blank" rel="noopener noreferrer">
-          {t('footerNotice')}
+        <a
+          href="/notice.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="footer-copy-link"
+          title={t('footerNotice')}
+          aria-label={t('footerNoticeAria')}
+        >
+          {t('footerCopy')}
         </a>
-        {' · '}
-        <span className="footer-copy">{t('footerCopy')}</span>
       </p>
     </footer>
   );

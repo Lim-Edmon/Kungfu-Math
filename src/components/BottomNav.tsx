@@ -29,6 +29,7 @@ export default function BottomNav({ active, onChange, offline = false }: BottomN
         className={`bottom-nav-item ${active === 'dojo' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
         onClick={() => onChange('dojo')}
         aria-disabled={offline}
+        title={offline ? t('offlineTitle') : undefined}
       >
         <span className="bottom-nav-icon" aria-hidden>
           🏯
