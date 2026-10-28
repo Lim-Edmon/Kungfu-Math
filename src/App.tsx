@@ -525,21 +525,23 @@ function App() {
   };
 
   const handleNav = (tab: NavTab) => {
-    // Offline: Progres dikunci — sesi offline tidak menyimpan; arahkan pesan sama
+    // Offline: Progres tidak dibuka (bisa blank kalau screen=dojo & online=false).
+    // Selalu paksa beranda + popup — jangan setScreen('dojo').
     if (!online && tab === 'dojo') {
+      setScreen('home');
       setOfflineNavPopup(true);
+      scrollToTop();
       return;
     }
     if (tab === 'home') setScreen('home');
     else if (tab === 'dojo') setScreen('dojo');
     else setScreen('settings');
-    // Langsung scroll saat klik tab (jangan tunggu effect saja)
     scrollToTop();
   };
 
 
 
-  // Offline + sedang di Progres → jangan biarkan blank; balik beranda + popup
+  // Offline + screen dojo → beranda + popup (hindari main kosong)
   useEffect(() => {
     if (!online && screen === 'dojo') {
       setScreen('home');
@@ -656,16 +658,33 @@ function App() {
           />
         )}
 
-        {screen === 'dojo' && online && (
-          <DojoErrorBoundary
-            key={langTick}
-            onError={() => {
-              setScreen('home');
-              setOfflineNavPopup(true);
-            }}
-          >
-            <Dojo offline={false} />
-          </DojoErrorBoundary>
+        {screen === 'dojo' && (
+          online ? (
+            <DojoErrorBoundary
+              key={langTick}
+              onError={() => {
+                setScreen('home');
+                setOfflineNavPopup(true);
+              }}
+            >
+              <Dojo offline={false} />
+            </DojoErrorBoundary>
+          ) : (
+            <div className="dojo-page offline-dojo-gate" role="status">
+              <h1>{t('navProgres')}</h1>
+              <p className="offline-need-net-body">{t('offlinePopup')}</p>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  setScreen('home');
+                  setOfflineNavPopup(false);
+                }}
+              >
+                {t('offlinePopupOk')}
+              </button>
+            </div>
+          )
         )}
 
         {screen === 'settings' && (

@@ -4182,3 +4182,23 @@ a.is-offline-locked {
   opacity: 0.45;
   filter: grayscale(0.35);
 }
+
+
+/* Offline: layar Progres tidak boleh kosong */
+.offline-dojo-gate {
+  padding: 1.5rem 1.15rem 2rem;
+  max-width: 28rem;
+  margin: 0 auto;
+  text-align: center;
+}
+.offline-dojo-gate h1 {
+  font-size: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+.offline-dojo-gate .offline-need-net-body {
+  margin: 0 0 1.25rem;
+  text-align: left;
+}
+.offline-dojo-gate .btn-primary {
+  min-width: 8rem;
+}
