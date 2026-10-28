@@ -18,7 +18,7 @@
  * ---------------------------------------------------------------------
  */
 
-import { useState, useEffect , useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Home, { type PlayKind } from './pages/Home';
 import Game from './pages/Game';
 import Settings from './pages/Settings';
@@ -60,6 +60,35 @@ import {
 } from './lib/badges';
 import './styles/theme.css';
 import './App.css';
+
+
+/** Tangkap error render Progres agar tidak blank full app */
+class DojoErrorBoundary extends React.Component<
+  { children: React.ReactNode; onError?: () => void },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: unknown) {
+    console.error('Dojo crash', err);
+    this.props.onError?.();
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="dojo-page" style={{ padding: '1.25rem' }}>
+          <p role="alert">{t('dojoLoadError')}</p>
+          <button type="button" className="btn-primary" onClick={() => this.setState({ hasError: false })}>
+            {t('offlinePopupOk')}
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
 
@@ -509,6 +538,15 @@ function App() {
   };
 
 
+
+  // Offline + sedang di Progres → jangan biarkan blank; balik beranda + popup
+  useEffect(() => {
+    if (!online && screen === 'dojo') {
+      setScreen('home');
+      setOfflineNavPopup(true);
+    }
+  }, [online, screen]);
+
   // Internet putus di tengah petualangan / bola gerak → beri tahu, jangan paksa keluar
   useEffect(() => {
     const prev = wasOnlineRef.current;
@@ -618,7 +656,17 @@ function App() {
           />
         )}
 
-        {screen === 'dojo' && <Dojo key={langTick} offline={!online} />}
+        {screen === 'dojo' && online && (
+          <DojoErrorBoundary
+            key={langTick}
+            onError={() => {
+              setScreen('home');
+              setOfflineNavPopup(true);
+            }}
+          >
+            <Dojo offline={false} />
+          </DojoErrorBoundary>
+        )}
 
         {screen === 'settings' && (
           <Settings
@@ -895,7 +943,7 @@ function App() {
                   <button
                     type="button"
                     className="btn-ghost"
-                    onClick={() => setScreen('dojo')}
+                    onClick={() => { if (!online) { setOfflineNavPopup(true); return; } setScreen('dojo'); }}
                   >
                     {t('seeProgress')}
                   </button>

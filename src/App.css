@@ -307,10 +307,19 @@
   text-align: center;
   opacity: 0.9;
 }
-.footer-legal a {
+.footer-legal a,
+.footer-copy-link {
   color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
+  border-bottom: 1px dotted color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  opacity: 0.85;
+}
+.footer-copy-link:hover,
+.footer-legal a:hover {
+  opacity: 1;
+  border-bottom-style: solid;
+  border-bottom-color: color-mix(in srgb, currentColor 55%, transparent);
 }
 .footer-copy {
   font-size: 0.72rem;
