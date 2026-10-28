@@ -200,6 +200,8 @@ const STRINGS = {
     offlineResultHint: 'Latihan offline selesai. Skor sesi ini tidak disimpan (latihan saja).',
     offlinePopup:
       'Kamu sedang offline. Jika mau memainkan mode ini, pastikan ada koneksi internet.',
+    offlineProgressPopup:
+      'Sedang offline. Tab Progres butuh koneksi agar data rekor & kota bisa ditampilkan dengan aman. Nyalakan internet, lalu buka Progres lagi.',
     offlinePopupOk: 'Mengerti',
     offlineMidTitle: 'Koneksi terputus',
     offlineMidBody:
@@ -461,6 +463,8 @@ const STRINGS = {
     offlineResultHint: 'Offline practice done. This session score was not saved (practice only).',
     offlinePopup:
       'You are offline. To play this mode, make sure you have an internet connection.',
+    offlineProgressPopup:
+      'You are offline. The Progress tab needs internet so records and cities can load safely. Turn on the connection, then open Progress again.',
     offlinePopupOk: 'Got it',
     offlineMidTitle: 'Connection lost',
     offlineMidBody:
