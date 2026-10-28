@@ -672,7 +672,7 @@ function App() {
           ) : (
             <div className="dojo-page offline-dojo-gate" role="status">
               <h1>{t('navProgres')}</h1>
-              <p className="offline-need-net-body">{t('offlinePopup')}</p>
+              <p className="offline-need-net-body">{t('offlineProgressPopup')}</p>
               <button
                 type="button"
                 className="btn-primary"
@@ -1053,7 +1053,7 @@ function App() {
         >
           <div className="offline-need-net-box" onClick={(e) => e.stopPropagation()}>
             <p className="offline-need-net-title">{t('offlineTitle')}</p>
-            <p className="offline-need-net-body">{t('offlinePopup')}</p>
+            <p className="offline-need-net-body">{t('offlineProgressPopup')}</p>
             <button
               type="button"
               className="btn-primary"
