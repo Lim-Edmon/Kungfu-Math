@@ -50,7 +50,8 @@ Allow: /
 #   Contact the developer via Trakteer (support message / tip with note):
 #   https://trakteer.id/lim.edmon
 #
-# Full terms: /NOTICE.txt and /LICENSE (repository). License text mirrors
+# Full terms: /NOTICE.txt (authoritative text)
+# Human-readable page: /notice.html and /LICENSE (repository). License text mirrors
 # the proprietary LICENSE shipped with the project.
 #
 Sitemap: https://kungfu-math.vercel.app/
