@@ -18,7 +18,8 @@ import {
   getCountryNameEn,
   resolveFocusCityId,
 } from '../lib/adventure';
-import type { ScoreRecord } from '../lib/types';
+import type { ScoreRecord, PlayerProgress } from '../lib/types';
+import { DEFAULT_PROGRESS } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
 import { BADGE_DEFS } from '../lib/badges';
 
@@ -61,20 +62,34 @@ function formatRecordMeta(
 
 export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
   const [badgesOpen, setBadgesOpen] = useState(false);
-  let progress;
+  let progress: PlayerProgress;
   try {
     progress = loadProgress();
   } catch (e) {
     console.error('Dojo loadProgress', e);
-    progress = loadProgress(); // second try after normalize path
+    progress = {
+      ...DEFAULT_PROGRESS,
+      highScores: { ...DEFAULT_PROGRESS.highScores },
+      highScoreRecords: {},
+      adventureHighScores: {},
+      adventureScoreRecords: {},
+      badges: [],
+      adventureUnlocked: ['jakarta'],
+    };
   }
-  try {
-    // ensure arrays exist (import lama / data aneh)
-    if (!Array.isArray(progress.badges)) progress = { ...progress, badges: [] };
-    if (!progress.highScores) progress = { ...progress, highScores: {} };
-    if (!progress.adventureHighScores) progress = { ...progress, adventureHighScores: {} };
-  } catch {
-    /* ignore */
+  // Pastikan field wajib ada (data import / offline aneh)
+  if (!progress || typeof progress !== 'object') {
+    progress = { ...DEFAULT_PROGRESS, highScores: {}, badges: [], adventureUnlocked: ['jakarta'] };
+  }
+  if (!Array.isArray(progress.badges)) progress = { ...progress, badges: [] };
+  if (!progress.highScores || typeof progress.highScores !== 'object') {
+    progress = { ...progress, highScores: {} };
+  }
+  if (!progress.adventureHighScores || typeof progress.adventureHighScores !== 'object') {
+    progress = { ...progress, adventureHighScores: {} };
+  }
+  if (!Array.isArray(progress.adventureUnlocked) || progress.adventureUnlocked.length === 0) {
+    progress = { ...progress, adventureUnlocked: ['jakarta'] };
   }
   // Belum main / belum pilih: tampilkan Yu Jin (bukan Hong Yi warisan data lama)
   const preferredId =
