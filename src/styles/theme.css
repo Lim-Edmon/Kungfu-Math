@@ -18,43 +18,52 @@
   --color-border: #e0d5c0;
   --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   --radius: 16px;
+  --color-btn-idle-bg: var(--color-card);
+  --color-btn-idle-border: var(--color-border);
+  --color-btn-active-bg: color-mix(in srgb, var(--color-primary) 14%, var(--color-card));
   --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Mode Malam – lebih gelap, biru dikurangi */
+/* Mode Malam – kontras teks & tombol lebih jelas */
 [data-theme='malam'] {
-  --color-bg: #1a1520;
-  --color-bg-secondary: #2a2230;
-  --color-text: #f5f0e6;
-  --color-text-muted: #b0a890;
-  --color-primary: #e05a6a;
-  --color-primary-hover: #c44a58;
-  --color-accent: #e8c547;
-  --color-accent-soft: #5a4a20;
-  --color-success: #66bb6a;
-  --color-danger: #ef5350;
-  --color-card: #2a2230;
-  --color-border: #3d3545;
-  --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --color-bg: #141018;
+  --color-bg-secondary: #241c2c;
+  --color-text: #faf6ef;
+  --color-text-muted: #d2c8b0;
+  --color-primary: #ff7a88;
+  --color-primary-hover: #e85f6e;
+  --color-accent: #f0d060;
+  --color-accent-soft: #4a3c18;
+  --color-success: #7dcea0;
+  --color-danger: #ff6b6b;
+  --color-card: #2e2636;
+  --color-border: #6a6078;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --color-btn-idle-bg: #363040;
+  --color-btn-idle-border: #8a8098;
+  --color-btn-active-bg: #4a3040;
 }
 
-/* Mode Nyaman Mata – hangat, blue light rendah */
+/* Mode Nyaman Mata – hangat, blue light rendah, teks tetap terbaca */
 [data-theme='nyaman'] {
-  --color-bg: #2a2118;
+  --color-bg: #261e16;
   --color-bg-secondary: #3a2e22;
-  --color-text: #f0e6d0;
-  --color-text-muted: #c0b090;
-  --color-primary: #d07050;
-  --color-primary-hover: #b85a40;
-  --color-accent: #e0b060;
+  --color-text: #faf0dc;
+  --color-text-muted: #d4c4a0;
+  --color-primary: #e88860;
+  --color-primary-hover: #d07048;
+  --color-accent: #efc070;
   --color-accent-soft: #5a4020;
-  --color-success: #8bc34a;
-  --color-danger: #e57373;
-  --color-card: #3a2e22;
-  --color-border: #4a3c30;
+  --color-success: #9ccc65;
+  --color-danger: #ef9a9a;
+  --color-card: #423628;
+  --color-border: #7a6850;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  /* Filter tambahan untuk kurangi blue light */
-  filter: brightness(0.95) sepia(0.15);
+  --color-btn-idle-bg: #4a3c2c;
+  --color-btn-idle-border: #9a8868;
+  --color-btn-active-bg: #5a4030;
+  /* Filter ringan saja — terlalu kuat membuat tombol “hilang” */
+  filter: brightness(0.98) sepia(0.08);
 }
 
 /* Reset & base */
