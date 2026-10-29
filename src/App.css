@@ -2382,7 +2382,17 @@ a.btn-link-trakteer {
 }
 .city-chip.active {
   border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+  border-width: 2.5px;
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 18%, var(--color-card, #fff));
+  color: var(--color-text, #333);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #c41e3a) 35%, transparent);
+}
+.city-chip.active .city-chip-name {
+  font-weight: 800;
+  color: var(--color-text, #333);
+}
+.city-chip.active .city-chip-country {
+  color: var(--color-text-muted, #666);
 }
 .city-chip.disabled {
   opacity: 0.45;
@@ -3124,10 +3134,11 @@ h1.home-title {
   margin-top: 10px;
 }
 .focus-op-chip {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: 1.5px solid var(--color-border, #e0d5c0);
-  background: var(--color-card, #fff);
+  border: 2px solid var(--color-btn-idle-border, var(--color-border, #e0d5c0));
+  background: var(--color-btn-idle-bg, var(--color-card, #fff));
+  color: var(--color-text, #333);
   font: inherit;
   font-weight: 600;
   font-size: 0.85rem;
@@ -3135,8 +3146,11 @@ h1.home-title {
 }
 .focus-op-chip.active {
   border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
-  color: var(--color-primary, #c41e3a);
+  border-width: 2.5px;
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 20%, var(--color-card, #fff));
+  color: var(--color-text, #1a1a1a);
+  font-weight: 800;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #c41e3a) 40%, transparent);
 }
 .dojo-stats-card {
   margin: 5px 0 7px;
@@ -4351,4 +4365,71 @@ a.is-offline-locked {
 [data-theme='malam'] .adventure-diff-buttons .mode-btn.active,
 [data-theme='nyaman'] .adventure-diff-buttons .mode-btn.active {
   outline: 2px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+
+/* ===== Kontras focus-op & city-chip (Malam / Nyaman Mata) ===== */
+[data-theme='malam'] .focus-op-chip,
+[data-theme='nyaman'] .focus-op-chip {
+  background: var(--color-btn-idle-bg);
+  border: 2px solid var(--color-btn-idle-border);
+  color: var(--color-text);
+  opacity: 1;
+}
+[data-theme='malam'] .focus-op-chip.active,
+[data-theme='nyaman'] .focus-op-chip.active {
+  background: var(--color-btn-active-bg);
+  border-color: var(--color-primary);
+  border-width: 2.5px;
+  color: var(--color-text);
+  font-weight: 800;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+[data-theme='malam'] .city-chip,
+[data-theme='nyaman'] .city-chip {
+  background: var(--color-btn-idle-bg);
+  border: 2px solid var(--color-btn-idle-border);
+  color: var(--color-text);
+}
+[data-theme='malam'] .city-chip-name,
+[data-theme='nyaman'] .city-chip-name {
+  color: var(--color-text);
+}
+[data-theme='malam'] .city-chip-country,
+[data-theme='nyaman'] .city-chip-country {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+[data-theme='malam'] .city-chip.active,
+[data-theme='nyaman'] .city-chip.active {
+  background: var(--color-btn-active-bg);
+  border-color: var(--color-primary);
+  border-width: 2.5px;
+  color: var(--color-text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+[data-theme='malam'] .city-chip.active .city-chip-name,
+[data-theme='nyaman'] .city-chip.active .city-chip-name {
+  color: var(--color-text);
+  font-weight: 800;
+}
+[data-theme='malam'] .city-chip.disabled,
+[data-theme='nyaman'] .city-chip.disabled {
+  opacity: 0.4;
+  border-color: var(--color-border);
+}
+
+/* Region label & chip row di dark mode */
+[data-theme='malam'] .city-region-label,
+[data-theme='nyaman'] .city-region-label {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+/* Ops mode block border di dark */
+[data-theme='malam'] .ops-mode-block,
+[data-theme='nyaman'] .ops-mode-block {
+  background: var(--color-card);
+  border-color: var(--color-border);
 }
