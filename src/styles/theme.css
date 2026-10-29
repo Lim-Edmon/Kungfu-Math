@@ -39,9 +39,9 @@
   --color-card: #2e2636;
   --color-border: #6a6078;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
-  --color-btn-idle-bg: #363040;
-  --color-btn-idle-border: #8a8098;
-  --color-btn-active-bg: #4a3040;
+  --color-btn-idle-bg: #3c3448;
+  --color-btn-idle-border: #a098b0;
+  --color-btn-active-bg: #5a3848;
 }
 
 /* Mode Nyaman Mata – hangat, blue light rendah, teks tetap terbaca */
@@ -59,9 +59,9 @@
   --color-card: #423628;
   --color-border: #7a6850;
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --color-btn-idle-bg: #4a3c2c;
-  --color-btn-idle-border: #9a8868;
-  --color-btn-active-bg: #5a4030;
+  --color-btn-idle-bg: #524434;
+  --color-btn-idle-border: #b8a070;
+  --color-btn-active-bg: #6a4c34;
   /* Filter ringan saja — terlalu kuat membuat tombol “hilang” */
   filter: brightness(0.98) sepia(0.08);
 }
