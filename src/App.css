@@ -2472,7 +2472,7 @@ a.btn-link-trakteer {
   min-height: 12px;
   border-radius: 50%;
   border: none;
-  background: #ccc;
+  background: var(--color-border, #ccc);
   padding: 0;
   margin: 0;
   cursor: pointer;
@@ -4201,4 +4201,154 @@ a.is-offline-locked {
 }
 .offline-dojo-gate .btn-primary {
   min-width: 8rem;
+}
+
+
+/* 3 gaya main: Diam | Pantul | Lewat — satu baris */
+.mode-buttons-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.mode-buttons-3 .mode-btn {
+  min-width: 0;
+  padding: 0.55rem 0.35rem;
+}
+.mode-buttons-3 .mode-desc {
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+.mode-buttons-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.sprint-length-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.sprint-length-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 0.25rem;
+}
+.game-arena.pass-mode .number-ball {
+  /* sedikit beda feel lewat */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ===== Kontras tombol Malam / Nyaman Mata ===== */
+[data-theme='malam'] .mode-btn,
+[data-theme='nyaman'] .mode-btn,
+[data-theme='malam'] .level-btn,
+[data-theme='nyaman'] .level-btn,
+[data-theme='malam'] .character-card,
+[data-theme='nyaman'] .character-card,
+[data-theme='malam'] .settings-toggle,
+[data-theme='nyaman'] .settings-toggle,
+[data-theme='malam'] .btn-ghost,
+[data-theme='nyaman'] .btn-ghost {
+  background: var(--color-btn-idle-bg, var(--color-card));
+  border-color: var(--color-btn-idle-border, var(--color-border));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .mode-btn .mode-name,
+[data-theme='nyaman'] .mode-btn .mode-name,
+[data-theme='malam'] .level-btn strong,
+[data-theme='nyaman'] .level-btn strong {
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .mode-btn .mode-desc,
+[data-theme='nyaman'] .mode-btn .mode-desc,
+[data-theme='malam'] .level-btn span,
+[data-theme='nyaman'] .level-btn span {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+[data-theme='malam'] .mode-btn.active,
+[data-theme='nyaman'] .mode-btn.active,
+[data-theme='malam'] .level-btn.active,
+[data-theme='nyaman'] .level-btn.active,
+[data-theme='malam'] .character-card.selected,
+[data-theme='nyaman'] .character-card.selected,
+[data-theme='malam'] .settings-toggle.active,
+[data-theme='nyaman'] .settings-toggle.active {
+  background: var(--color-btn-active-bg, color-mix(in srgb, var(--color-primary) 22%, var(--color-card)));
+  border-color: var(--color-primary);
+  border-width: 2.5px;
+  color: var(--color-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+[data-theme='malam'] .mode-btn.active .mode-name,
+[data-theme='nyaman'] .mode-btn.active .mode-name,
+[data-theme='malam'] .level-btn.active strong,
+[data-theme='nyaman'] .level-btn.active strong {
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+[data-theme='malam'] .bottom-nav-item,
+[data-theme='nyaman'] .bottom-nav-item {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+[data-theme='malam'] .bottom-nav-item.active,
+[data-theme='nyaman'] .bottom-nav-item.active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-card));
+  font-weight: 700;
+}
+
+[data-theme='malam'] .display-chip,
+[data-theme='nyaman'] .display-chip {
+  background: var(--color-btn-idle-bg, var(--color-card));
+  border-color: var(--color-btn-idle-border, var(--color-border));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .display-chip.active,
+[data-theme='nyaman'] .display-chip.active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 25%, var(--color-card));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .wizard-dot,
+[data-theme='nyaman'] .wizard-dot {
+  background: var(--color-border);
+  opacity: 0.85;
+}
+
+[data-theme='malam'] .wizard-dot.active,
+[data-theme='nyaman'] .wizard-dot.active {
+  background: var(--color-primary);
+  opacity: 1;
+}
+
+[data-theme='malam'] .wizard-dot.done,
+[data-theme='nyaman'] .wizard-dot.done {
+  background: var(--color-success);
+  opacity: 1;
+}
+
+[data-theme='malam'] .btn-secondary,
+[data-theme='nyaman'] .btn-secondary {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+/* Pastikan tombol terpilih tidak “larut” ke background */
+[data-theme='malam'] .adventure-diff-buttons .mode-btn.active,
+[data-theme='nyaman'] .adventure-diff-buttons .mode-btn.active {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
 }
