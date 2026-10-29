@@ -2596,11 +2596,11 @@ export const MVP_REGION_UNLOCK_MSG =
   'Kamu sudah berhasil membuka akses ke regional lain — Asia Tenggara! Selamat menikmati petualangan barumu.';
 
 /**
- * Ujung konten terbuka untuk pemain (Indo → SEA → Oceania → Asia Timur).
- * Lolos Novosibirsk → popup ujung perjalanan; region berikutnya tetap terkunci.
+ * Ujung konten terbuka untuk pemain (Indo → SEA → Oceania → Asia Timur → Asia Tengah & Selatan).
+ * Lolos Samarkand → popup ujung perjalanan; region berikutnya tetap terkunci.
  * Map debug / cheat tetap bisa melihat semua kota di data.
  */
-export const CONTENT_PATH_LAST_CITY_ID = 'novosibirsk';
+export const CONTENT_PATH_LAST_CITY_ID = 'samarkand';
 
 /** Ujung data penuh (USA) — dipakai nanti saat seluruh jalur dibuka */
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
