@@ -2600,7 +2600,7 @@ export const MVP_REGION_UNLOCK_MSG =
  * Lolos Cairo → popup ujung perjalanan; region berikutnya tetap terkunci.
  * Map debug / cheat tetap bisa melihat semua kota di data.
  */
-export const CONTENT_PATH_LAST_CITY_ID = 'cairo';
+export const CONTENT_PATH_LAST_CITY_ID = 'yerevan';
 
 /** Ujung data penuh (USA) — dipakai nanti saat seluruh jalur dibuka */
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
