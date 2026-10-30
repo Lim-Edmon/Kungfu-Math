@@ -231,10 +231,10 @@ function viewBoxFromPoints(
 
 /** Span maksimum zoom (map %). Tetangga jalur ±2 yang terlalu jauh
  *  (Honolulu↔Ilulissat, Fiji↔Auckland) tidak boleh bikin zoom setara dunia. */
-const MAP_ZOOM_MAX_SPAN = 14;
-const MAP_ZOOM_MIN_SPAN = 3.5;
-/** Zoom lokal saat tetangga jalur terlalu jarang (≈ viewBoxAround 75%) */
-const MAP_ZOOM_LOCAL_PCT = 75;
+const MAP_ZOOM_MAX_SPAN = 22;
+const MAP_ZOOM_MIN_SPAN = 8;
+/** Zoom lokal saat tetangga jalur terlalu jarang (angka lebih kecil = lebih jauh / kurang zoom-in) */
+const MAP_ZOOM_LOCAL_PCT = 48;
 
 /**
  * Zoom window: usahakan 2 kota sebelum + aktif + 2 sesudah (urutan jalur).
@@ -609,6 +609,14 @@ export default function AdventureMap({
       toIdx >= 0
         ? viewBoxForCityIndex(toIdx, aspect)
         : { minX: 0, minY: 0, vbW: 100, vbH: 100 };
+    /** Frame yang memuat KEDUA kota — pesawat & jalur selalu di dalam layar
+     *  (penting rute tepi: Queenstown→Fiji, Honolulu, dll.) */
+    const bothVB = viewBoxFromPoints(
+      [fromC, toC],
+      2.4,
+      Math.max(MAP_ZOOM_MIN_SPAN, 10),
+      aspect
+    );
 
     // (1) Langsung di frame kota asal — hindari flash view dunia gelap
     setZoomVB(startRuleVB);
@@ -629,6 +637,7 @@ export default function AdventureMap({
     let waitMapTimer = 0;
 
     const ease = (x: number) => 1 - Math.pow(1 - x, 2.6);
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
     const runFlight = () => {
       if (cancelled) return;
@@ -641,10 +650,24 @@ export default function AdventureMap({
 
         const cx = fromC.mapX + (toC.mapX - fromC.mapX) * e;
         const cy = fromC.mapY + (toC.mapY - fromC.mapY) * e;
-        const ruleW =
-          startRuleVB.vbW + (endRuleVB.vbW - startRuleVB.vbW) * e;
-        const ruleH =
-          startRuleVB.vbH + (endRuleVB.vbH - startRuleVB.vbH) * e;
+        // 0→0.35: buka ke frame kedua kota; 0.35→0.85: tahan; 0.85→1: ke frame tujuan
+        let ruleW: number;
+        let ruleH: number;
+        if (e < 0.35) {
+          const u = e / 0.35;
+          ruleW = lerp(startRuleVB.vbW, bothVB.vbW, u);
+          ruleH = lerp(startRuleVB.vbH, bothVB.vbH, u);
+        } else if (e < 0.85) {
+          ruleW = bothVB.vbW;
+          ruleH = bothVB.vbH;
+        } else {
+          const u = (e - 0.85) / 0.15;
+          ruleW = lerp(bothVB.vbW, endRuleVB.vbW, u);
+          ruleH = lerp(bothVB.vbH, endRuleVB.vbH, u);
+        }
+        // Pastikan frame minimal memuat titik pesawat + padding
+        ruleW = Math.max(ruleW, bothVB.vbW * 0.85);
+        ruleH = Math.max(ruleH, bothVB.vbH * 0.85);
         const vb = clampViewBox(
           {
             minX: cx - ruleW / 2,
@@ -661,10 +684,9 @@ export default function AdventureMap({
         if (p < 1) {
           raf = requestAnimationFrame(tick);
         } else {
-          // Jangan snap ke endRuleVB (pusat ±2 kota) — itu yang bikin loncat zoom.
-          // Frame terakhir interpolasi sudah di pusat kota tujuan + ukuran akhir.
           setT(1);
-          // Setelah landed: jeda singkat, lalu parent fade peta (bukan timer fix panjang)
+          setZoomVB(endRuleVB);
+          zoomVBRef.current = endRuleVB;
           doneTimer = window.setTimeout(() => {
             if (cancelled) return;
             travelOwnsZoomRef.current = false;
@@ -902,7 +924,7 @@ export default function AdventureMap({
         <svg
           className={`adventure-map${mapReady ? ' is-map-ready' : ' is-map-loading'}`}
           viewBox={`${drawMinX} ${drawMinY} ${drawVbW} ${drawVbH}`}
-          preserveAspectRatio={fillViewport ? 'xMidYMid slice' : 'xMidYMid meet'}
+          preserveAspectRatio={fillViewport ? 'xMidYMid meet' : 'xMidYMid meet'}
           role="img"
           aria-hidden
         >
@@ -1058,7 +1080,7 @@ export default function AdventureMap({
             const dx = toCity.mapX - fromCity.mapX;
             const dy = toCity.mapY - fromCity.mapY;
             const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
-            const s = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.06 : 0.14);
+            const s = Math.max(1.35, Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.08 : 0.2));
             return (
               <g
                 transform={`rotate(${rot}, ${planeX}, ${planeY})`}
