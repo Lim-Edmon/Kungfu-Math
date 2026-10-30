@@ -251,7 +251,7 @@ export function getCountryNameEn(countryId: string): string {
 }
 
 export const ADVENTURE_DIFFICULTIES: AdventureDifficulty[] = [
-  { id: 'santai', labelId: 'Santai', labelEn: 'Easygoing', timeBonus: 3, timePenalty: 0, descId: '+3 dtk tiap benar', descEn: '+3s per correct' },
+  { id: 'santai', labelId: 'Santai', labelEn: 'Easygoing', timeBonus: 2, timePenalty: 0, descId: '+2 dtk tiap benar', descEn: '+2s per correct' },
   { id: 'ringan', labelId: 'Ringan', labelEn: 'Light', timeBonus: 1, timePenalty: 0, descId: '+1 dtk tiap benar', descEn: '+1s per correct' },
   { id: 'normal', labelId: 'Normal', labelEn: 'Normal', timeBonus: 0, timePenalty: 0, descId: 'Tanpa bonus waktu', descEn: 'No time bonus' },
   { id: 'berani', labelId: 'Berani', labelEn: 'Bold', timeBonus: 0, timePenalty: 3, descId: 'Salah −3 dtk', descEn: 'Wrong −3s' },

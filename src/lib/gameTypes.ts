@@ -44,12 +44,13 @@ export const COMBO_BONUS_AGILITY = 10;
 export const COMBO_BONUS = 5;
 
 
-/** Pengali skor (bisa ditumpuk). Lihat docs/SCORING.md */
+/** Pengali skor (bisa ditumpuk). Lihat docs/SCORING.md
+ * Tempo mudah = poin per jawaban lebih murah; Berani = lebih padat. */
 export const TEMPO_SCORE_MULT: Record<string, number> = {
-  santai: 1.0,
-  ringan: 1.05,
-  normal: 1.1,
-  berani: 1.15,
+  santai: 0.95,
+  ringan: 0.98,
+  normal: 1.0,
+  berani: 1.1,
 };
 
 export const LEVEL_SCORE_MULT: Record<string, number> = {
@@ -61,6 +62,7 @@ export const LEVEL_SCORE_MULT: Record<string, number> = {
 };
 
 export const AGILITY_SCORE_MULT = 1.1;
+export const PASS_SCORE_MULT = 1.12;
 export const STATIC_SCORE_MULT = 1.0;
 
 /** Tap (tangan kosong) sedikit lebih tinggi dari slice */
