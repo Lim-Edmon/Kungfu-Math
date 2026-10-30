@@ -10,10 +10,10 @@
 
 | Sumber | Nilai |
 |--------|-------|
-| Tempo Santai | ×1.00 |
-| Tempo Ringan | ×1.05 |
-| Tempo Normal | ×1.10 |
-| Tempo Berani | ×1.15 |
+| Tempo Santai (+2 dtk/benar) | ×0.95 |
+| Tempo Ringan (+1 dtk/benar) | ×0.98 |
+| Tempo Normal (tanpa bonus waktu) | ×1.00 |
+| Tempo Berani (salah −3 dtk) | ×1.10 |
 | Bola diam | ×1.00 |
 | Bola gerak | ×1.10 |
 | Level Pemula | ×1.00 |
@@ -34,7 +34,7 @@
 - **speed** = 1.1 jika jawab benar dalam < 1 detik sejak soal muncul **dan** belum salah di soal itu; selain itu 1.0
 
 Contoh: Master + Berani + bola gerak + combo ×3 + fokus hanya kali:  
-`(100 + 2×10) × 1.15 × 1.20 × 1.10 × 1.10 = round(182.556) → 183`
+`(100 + 2×10) × 1.10 × 1.20 × 1.10 × 1.10 = round(174.24) → 174`
 
 ## Target skor kota (Petualangan)
 
