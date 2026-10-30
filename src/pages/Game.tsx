@@ -36,7 +36,11 @@ interface GameProps {
   characterId: CharacterId;
   level: DifficultyLevel;
   /** true = bola bergerak (mode ketangkasan) */
+  /** @deprecated pakai arenaStyle */
   agility?: boolean;
+  arenaStyle?: 'static' | 'agility' | 'pass';
+  practiceSession?: 'grade' | 'sprint';
+  sprintTarget?: number;
   /** Petualangan: detik ditambah tiap jawaban benar */
   timeBonusSec?: number;
   /** Petualangan: detik dikurangi tiap jawaban salah */
@@ -59,7 +63,13 @@ interface GameProps {
   onFinish: (
     score: number,
     grade: string,
-    meta?: { maxCombo: number; perfect: boolean }
+    meta?: {
+      maxCombo: number;
+      perfect: boolean;
+      sprintMs?: number;
+      sessionKind?: string;
+      sprintLength?: number;
+    }
   ) => void;
 }
 
@@ -67,18 +77,55 @@ interface GameProps {
  * Posisikan angka di area aman (tidak kepotong atas/bawah).
  * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol {t('exit')}.
  */
+function hasCorrectOnScreen(
+  question: MathQuestion,
+  numbers: FloatingNumber[]
+): boolean {
+  const pool = numbers
+    .filter((n) => !n.sliced && !n.isBomb)
+    .map((n) => n.value);
+  for (const v of question.correctNumbers) {
+    const i = pool.indexOf(v);
+    if (i < 0) return false;
+    pool.splice(i, 1);
+  }
+  return true;
+}
+
 function createNumbersFromQuestion(
   question: MathQuestion,
-  agility = false,
-  /** 1 = normal; <1 lebih pelan (Tap + ketangkasan lebih mudah) */
+  arenaStyle: 'static' | 'agility' | 'pass' = 'static',
+  /** 1 = normal; <1 lebih pelan (Tap + gerak lebih mudah) */
   speedScale = 1
 ): FloatingNumber[] {
   const count = question.candidates.length;
+  const yMin = 18;
+  const yMax = 72;
+
+  if (arenaStyle === 'pass') {
+    // Spawn dari kiri atau kanan, bergerak horizontal ke sisi lawan
+    return question.candidates.map((value, index) => {
+      const isBomb = question.bombIndexes.includes(index);
+      const fromLeft = Math.random() < 0.5;
+      const speed = (18 + Math.random() * 16) * speedScale;
+      const y = yMin + Math.random() * (yMax - yMin);
+      const x = fromLeft ? -4 - Math.random() * 8 : 104 + Math.random() * 8;
+      return {
+        id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+        value,
+        x,
+        y,
+        isBomb,
+        sliced: false,
+        vx: fromLeft ? speed : -speed,
+        vy: (Math.random() - 0.5) * 6 * speedScale,
+      };
+    });
+  }
+
   const cols = count <= 4 ? 2 : count <= 6 ? 3 : 4;
   const rows = Math.ceil(count / cols);
   const xMargin = 12;
-  const yMin = 18;
-  const yMax = 72;
   const xSpan = 100 - xMargin * 2;
   const ySpan = yMax - yMin;
   const cellW = xSpan / cols;
@@ -103,9 +150,9 @@ function createNumbersFromQuestion(
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
 
+  const agility = arenaStyle === 'agility';
   return question.candidates.map((value, index) => {
     const isBomb = question.bombIndexes.includes(index);
-    // Kecepatan acak untuk mode ketangkasan (% per detik)
     const speed = (12 + Math.random() * 22) * speedScale;
     const angle = Math.random() * Math.PI * 2;
     return {
@@ -290,6 +337,9 @@ export default function Game({
   characterId,
   level,
   agility = false,
+  arenaStyle: arenaStyleProp,
+  practiceSession = 'grade',
+  sprintTarget = 5,
   timeBonusSec = 0,
   timePenaltySec = 0,
   cityName,
@@ -301,6 +351,12 @@ export default function Game({
   holdStart = false,
   onFinish,
 }: GameProps) {
+  const arenaStyle: 'static' | 'agility' | 'pass' =
+    arenaStyleProp ?? (agility ? 'agility' : 'static');
+  const isMoving = arenaStyle === 'agility' || arenaStyle === 'pass';
+  const isSprint = practiceSession === 'sprint';
+  const sprintGoal = Math.max(1, sprintTarget || 5);
+  const sprintStartedAtRef = useRef<number>(0);
   const forceOpsRef = useRef(forceOps);
   forceOpsRef.current = forceOps;
   const tempoIdRef = useRef(tempoId);
@@ -517,14 +573,17 @@ export default function Game({
       i += 1;
       if (i >= steps.length) {
         const q = generateQuestion(levelRef.current, { forceOps: forceOpsRef.current });
+        sprintStartedAtRef.current = performance.now();
         setState((prev) => ({
           ...prev,
           status: 'playing',
+          // Sprint: timer dipakai sbg elapsed (naik); grade: countdown 60s
+          timeLeft: isSprint ? 0 : prev.timeLeft,
           question: q,
           numbers: createNumbersFromQuestion(
             q,
-            agility,
-            mode === 'tap' && agility ? 0.7 : 1
+            arenaStyle,
+            mode === 'tap' && isMoving ? 0.7 : 1
           ),
           selectedIds: [],
         }));
@@ -535,18 +594,43 @@ export default function Game({
     };
     timer = setTimeout(next, steps[0].ms);
     return () => clearTimeout(timer);
-  }, [state.status, agility, mode, holdStart]);
+  }, [state.status, arenaStyle, isMoving, mode, holdStart]);
 
-  // Timer hitung mundur
+  // Timer: Grade = hitung mundur; Sprint = hitung naik (elapsed)
   useEffect(() => {
     if (state.status !== 'playing') return;
 
     timerRef.current = setInterval(() => {
       setState((prev) => {
+        if (isSprint) {
+          // Elapsed detik; batas aman 10 menit
+          const nextT = prev.timeLeft + 1;
+          if (nextT >= 600) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            clearNextQuestionTimeout();
+            stopAllMusic();
+            playEndSound(prev.score, targetScore);
+            const sprintMs = Math.round(performance.now() - sprintStartedAtRef.current);
+            const grade = calcGrade(prev.score, prev.questionsSolved, prev.maxCombo, {});
+            setTimeout(
+              () =>
+                onFinish(prev.score, grade, {
+                  maxCombo: prev.maxCombo,
+                  perfect: mistakesRef.current === 0 && prev.questionsSolved > 0,
+                  sprintMs,
+                  sessionKind: 'sprint',
+                  sprintLength: sprintGoal,
+                }),
+              100
+            );
+            return { ...prev, timeLeft: nextT, status: 'won' };
+          }
+          return { ...prev, timeLeft: nextT };
+        }
         if (prev.timeLeft <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
           clearNextQuestionTimeout();
-          stopAllMusic(); // hentikan lagu kota — jangan restart di confetti
+          stopAllMusic();
           playEndSound(prev.score, targetScore);
           const grade = calcGrade(
             prev.score,
@@ -558,14 +642,14 @@ export default function Game({
             }
           );
           setTimeout(
-              () =>
-                onFinish(prev.score, grade, {
-                  maxCombo: prev.maxCombo,
-                  perfect:
-                    mistakesRef.current === 0 && prev.questionsSolved > 0,
-                }),
-              100
-            );
+            () =>
+              onFinish(prev.score, grade, {
+                maxCombo: prev.maxCombo,
+                perfect:
+                  mistakesRef.current === 0 && prev.questionsSolved > 0,
+              }),
+            100
+          );
           return { ...prev, timeLeft: 0, status: 'won' };
         }
         return { ...prev, timeLeft: prev.timeLeft - 1 };
@@ -575,7 +659,7 @@ export default function Game({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [state.status, onFinish, clearNextQuestionTimeout]);
+  }, [state.status, onFinish, clearNextQuestionTimeout, isSprint, sprintGoal, targetScore]);
 
   // Bersihkan timeout saat unmount
   useEffect(() => {
@@ -588,10 +672,10 @@ export default function Game({
     return {
       ...prev,
       question: q,
-      numbers: createNumbersFromQuestion(q, agility, mode === 'tap' && agility ? 0.7 : 1),
+      numbers: createNumbersFromQuestion(q, arenaStyle, mode === 'tap' && isMoving ? 0.7 : 1),
       selectedIds: [],
     };
-  }, [agility, mode]);
+  }, [arenaStyle, mode, isMoving]);
 
   /**
    * Kehilangan nyawa.
@@ -617,14 +701,24 @@ export default function Game({
           if (!(restoreSet.has(n.id) && !n.isBomb)) return n;
           const speed =
             (12 + Math.random() * 22) *
-            (mode === 'tap' && agility ? 0.7 : 1);
+            (mode === 'tap' && isMoving ? 0.7 : 1);
           const angle = Math.random() * Math.PI * 2;
           return {
             ...n,
             sliced: false,
             id: `${n.id}-r${token}`,
-            vx: agility ? Math.cos(angle) * speed : n.vx,
-            vy: agility ? Math.sin(angle) * speed : n.vy,
+            vx:
+              arenaStyle === 'agility'
+                ? Math.cos(angle) * speed
+                : arenaStyle === 'pass'
+                  ? (Math.random() < 0.5 ? speed : -speed)
+                  : 0,
+            vy:
+              arenaStyle === 'agility'
+                ? Math.sin(angle) * speed
+                : arenaStyle === 'pass'
+                  ? (Math.random() - 0.5) * 6
+                  : 0,
           };
         });
       }
@@ -673,7 +767,7 @@ export default function Game({
         selectedIds: [],
       };
     },
-    [onFinish, clearNextQuestionTimeout, agility, mode]
+    [onFinish, clearNextQuestionTimeout, isMoving, mode, arenaStyle]
   );
 
 
@@ -850,7 +944,7 @@ export default function Game({
             elapsedMs < 1000;
           const points = computeSolvePoints({
             combo: newCombo,
-            agility,
+            agility: isMoving,
             tempoId: tempoIdRef.current,
             levelId: levelIdRef.current,
             forceOps: forceOpsRef.current,
@@ -861,18 +955,44 @@ export default function Game({
           if (newCombo > 1) sfx.combo();
           else sfx.correct();
           const bonus = timeBonusSec > 0 ? timeBonusSec : 0;
+          const solved = prev.questionsSolved + 1;
           const next: GameState = {
             ...prev,
             score: prev.score + points,
             combo: newCombo,
             maxCombo: Math.max(prev.maxCombo, newCombo),
-            questionsSolved: prev.questionsSolved + 1,
-            timeLeft: bonus > 0 ? prev.timeLeft + bonus : prev.timeLeft,
+            questionsSolved: solved,
+            timeLeft:
+              isSprint
+                ? prev.timeLeft
+                : bonus > 0
+                  ? prev.timeLeft + bonus
+                  : prev.timeLeft,
             numbers: updatedNumbers,
             selectedIds: newSelectedIds,
           };
-          // Hanya benar → ganti soal setelah jeda singkat
           clearNextQuestionTimeout();
+          if (isSprint && solved >= sprintGoal) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            stopAllMusic();
+            playEndSound(next.score, targetScore);
+            const sprintMs = Math.round(
+              performance.now() - sprintStartedAtRef.current
+            );
+            const grade = calcGrade(next.score, solved, next.maxCombo, {});
+            setTimeout(
+              () =>
+                onFinish(next.score, grade, {
+                  maxCombo: next.maxCombo,
+                  perfect: mistakesRef.current === 0 && solved > 0,
+                  sprintMs,
+                  sessionKind: 'sprint',
+                  sprintLength: sprintGoal,
+                }),
+              100
+            );
+            return { ...next, status: 'won' };
+          }
           nextQuestionTimeoutRef.current = setTimeout(() => {
             nextQuestionTimeoutRef.current = null;
             setState((p) => spawnNextQuestion(p));
@@ -935,13 +1055,17 @@ export default function Game({
       targetScore,
       pulseAvatar,
       spawnImpact,
+      isSprint,
+      sprintGoal,
+      isMoving,
+      arenaStyle,
     ]
   );
 
 
-  // Mode ketangkasan: bola mantul di arena
+  // Mode Pantul (bounce) + Lewat (pass)
   useEffect(() => {
-    if (!agility || state.status !== 'playing') return;
+    if (!isMoving || state.status !== 'playing') return;
 
     let raf = 0;
     let last = performance.now();
@@ -955,7 +1079,38 @@ export default function Game({
       last = now;
 
       setState((prev) => {
-        if (prev.status !== 'playing') return prev;
+        if (prev.status !== 'playing' || !prev.question) return prev;
+        if (arenaStyle === 'pass') {
+          let numbers = prev.numbers.map((n) => {
+            if (n.sliced) return n;
+            const vx = n.vx ?? 0;
+            const vy = n.vy ?? 0;
+            let x = n.x + vx * dt;
+            let y = n.y + vy * dt;
+            let nvy = vy;
+            // pantul tipis di atas/bawah, horizontal terus
+            if (y < yMin) {
+              y = yMin;
+              nvy = Math.abs(vy);
+            } else if (y > yMax) {
+              y = yMax;
+              nvy = -Math.abs(vy);
+            }
+            return { ...n, x, y, vy: nvy };
+          });
+          // Buang yang sudah keluar kiri/kanan
+          numbers = numbers.filter(
+            (n) => n.sliced || (n.x > -12 && n.x < 112)
+          );
+          // Jamin solusi masih ada di layar
+          if (!hasCorrectOnScreen(prev.question, numbers)) {
+            const scale = mode === 'tap' ? 0.7 : 1;
+            numbers = createNumbersFromQuestion(prev.question, 'pass', scale);
+          }
+          return { ...prev, numbers };
+        }
+
+        // agility bounce
         let changed = false;
         let numbers = prev.numbers.map((n) => {
           if (n.sliced) return n;
@@ -983,42 +1138,15 @@ export default function Game({
           }
           return { ...n, x, y, vx: nvx, vy: nvy };
         });
-
-        // Tolak pelan antar bola supaya jarang numpuk exact (kurangi double-hit)
-        const minDist = 11;
-        for (let i = 0; i < numbers.length; i++) {
-          if (numbers[i].sliced) continue;
-          for (let j = i + 1; j < numbers.length; j++) {
-            if (numbers[j].sliced) continue;
-            const dx = numbers[j].x - numbers[i].x;
-            const dy = numbers[j].y - numbers[i].y;
-            const d = Math.hypot(dx, dy) || 0.01;
-            if (d >= minDist) continue;
-            changed = true;
-            const push = ((minDist - d) / 2) * 0.35;
-            const nx = dx / d;
-            const ny = dy / d;
-            const a = { ...numbers[i] };
-            const b = { ...numbers[j] };
-            a.x = Math.max(xMin, Math.min(xMax, a.x - nx * push));
-            a.y = Math.max(yMin, Math.min(yMax, a.y - ny * push));
-            b.x = Math.max(xMin, Math.min(xMax, b.x + nx * push));
-            b.y = Math.max(yMin, Math.min(yMax, b.y + ny * push));
-            numbers[i] = a;
-            numbers[j] = b;
-          }
-        }
-
         if (!changed) return prev;
         return { ...prev, numbers };
       });
-
       raf = requestAnimationFrame(tick);
     };
-
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [agility, state.status]);
+  }, [isMoving, arenaStyle, state.status, mode]);
+
 
   const hearts = Array.from({ length: INITIAL_LIVES }, (_, i) =>
     i < state.lives ? '❤️' : '🖤'
@@ -1201,15 +1329,16 @@ export default function Game({
                 <strong className="hud-name">{displayName}</strong>
                 <span className="hud-meta">
                   {mode === 'slice' ? t('modeSlice') : t('modeTap')}
-                  {agility ? ` · ${t('modeMoving')}` : ` · ${t('modeStill')}`}
+                  {arenaStyle === 'pass'
+                    ? ` · ${t('modePass')}`
+                    : arenaStyle === 'agility'
+                      ? ` · ${t('modeAgility')}`
+                      : ` · ${t('modeStatic')}`}
                 </span>
                 <span className="hud-lives-row">
                   <span className="hud-lives">{hearts.join('')}</span>
                   <span className="hud-context">
                     {cityName ? cityName : levelLabel}
-                    {cityName && typeof targetScore === 'number'
-                      ? ` · ≥${targetScore}`
-                      : ''}
                     {timePenaltySec > 0 ? ` · salah −${timePenaltySec}s` : ''}
                     {timeBonusSec > 0 ? ` · +${timeBonusSec}s` : ''}
                   </span>
@@ -1218,19 +1347,18 @@ export default function Game({
             </div>
           </div>
           <div className="hud-center">
-            <span className="hud-timer">{state.timeLeft}s</span>
+            <span className="hud-timer">
+              {isSprint
+                ? `${state.timeLeft}s · ${state.questionsSolved}/${sprintGoal}`
+                : `${state.timeLeft}s`}
+            </span>
           </div>
           <div className="hud-right">
-            <button type="button" className="btn-exit-top" onClick={onExit}>
-              {t('exit')}
-            </button>
-            <div className="hud-right-row">
-              <span className="hud-score">{state.score}</span>
-              {state.combo >= 2 && (
-                <span className="hud-combo" aria-live="polite">
-                  ×{state.combo}
-                </span>
-              )}
+            {/* Baris 1: Keluar + Suara bersebelahan */}
+            <div className="hud-right-row hud-right-actions">
+              <button type="button" className="btn-exit-top" onClick={onExit}>
+                {t('exit')}
+              </button>
               <button
                 type="button"
                 className={`btn-mute-hud ${soundMuted ? 'is-muted' : ''}`}
@@ -1241,6 +1369,21 @@ export default function Game({
                 {soundMuted ? '🔇' : '🔊'}
               </button>
             </div>
+            {/* Baris 2: Skor + combo bersebelahan */}
+            <div className="hud-right-row hud-right-score">
+              <span className="hud-score">{state.score}</span>
+              {state.combo >= 2 && (
+                <span className="hud-combo" aria-live="polite">
+                  ×{state.combo}
+                </span>
+              )}
+            </div>
+            {/* Baris 3: target kota (petualangan) */}
+            {cityName && typeof targetScore === 'number' && (
+              <div className="hud-target" title={cityName}>
+                ≥{targetScore}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1261,7 +1404,7 @@ export default function Game({
         </div>
 
         <div
-          className={`game-arena city-bg ${!resolvedBgUrl && bgReady ? 'game-arena-plain' : ''} ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
+          className={`game-arena city-bg ${!resolvedBgUrl && bgReady ? 'game-arena-plain' : ''} ${mode === 'slice' ? 'slice-mode' : ''} ${isMoving ? 'agility-mode' : ''} ${arenaStyle === 'pass' ? 'pass-mode' : ''}`}
           data-city={cityId || 'default'}
           style={{
             /* Tunggu probe OK — jangan tampil dojo/broken sebentar */
