@@ -425,9 +425,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
   max-width: 42%;
+}
+.hud-right-actions {
+  gap: 6px;
+}
+.hud-right-score {
+  gap: 6px;
+  align-items: center;
+}
+.hud-target {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .hud-identity {
@@ -1013,6 +1027,32 @@
 .result-score {
   font-size: 1.2rem;
   font-weight: 700;
+}
+
+
+/* Tombol hasil petualangan: kota + negara 2 baris, tidak kepotong */
+.result-actions .btn-city-wrap {
+  white-space: normal;
+  line-height: 1.25;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+}
+.btn-city-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+.btn-city-line1 {
+  font-weight: 700;
+  word-break: break-word;
+}
+.btn-city-line2 {
+  font-weight: 600;
+  font-size: 0.88em;
+  opacity: 0.9;
 }
 
 .result-actions {
@@ -3659,6 +3699,7 @@ h1.home-title {
 
 
 /* ===== Transisi lanjut kota: expand → full layar (cover, tanpa bilah biru) ===== */
+/* travel-overlay-bg-fix: hindari bilah biru saat meet */
 .travel-overlay {
   position: fixed;
   inset: 0;
@@ -3667,7 +3708,7 @@ h1.home-title {
   align-items: center;
   justify-content: center;
   /* Transparan: di belakang = Game kota tujuan yang sudah mount */
-  background: transparent;
+  background: #1a3a4a;
   padding: 0;
   pointer-events: auto;
 }
@@ -4039,21 +4080,22 @@ a.is-offline-locked {
   line-height: 1.2;
   text-transform: uppercase;
 }
+/* Warna operasi: tambah hijau · kurang hitam · kali biru · bagi merah */
 .op-chip-add {
   background: color-mix(in srgb, #16a34a 22%, transparent);
   color: #15803d;
 }
 .op-chip-sub {
+  background: color-mix(in srgb, #111827 14%, transparent);
+  color: #111827;
+}
+.op-chip-mul {
   background: color-mix(in srgb, #2563eb 22%, transparent);
   color: #1d4ed8;
 }
-.op-chip-mul {
-  background: color-mix(in srgb, #ea580c 22%, transparent);
-  color: #c2410c;
-}
 .op-chip-div {
-  background: color-mix(in srgb, #7c3aed 22%, transparent);
-  color: #6d28d9;
+  background: color-mix(in srgb, #dc2626 20%, transparent);
+  color: #b91c1c;
 }
 .question-text {
   display: flex;
@@ -4150,28 +4192,28 @@ a.is-offline-locked {
   padding: 0 0.08em;
 }
 .q-op-add { color: #16a34a; }
-.q-op-sub { color: #2563eb; }
-.q-op-mul { color: #ea580c; }
-.q-op-div { color: #7c3aed; }
+.q-op-sub { color: #111827; }
+.q-op-mul { color: #2563eb; }
+.q-op-div { color: #dc2626; }
 
 /* Mode malam / nyaman: tetap kontras */
 [data-theme="malam"] .q-op-add,
 [data-theme="nyaman"] .q-op-add { color: #4ade80; }
 [data-theme="malam"] .q-op-sub,
-[data-theme="nyaman"] .q-op-sub { color: #60a5fa; }
+[data-theme="nyaman"] .q-op-sub { color: #e5e7eb; }
 [data-theme="malam"] .q-op-mul,
-[data-theme="nyaman"] .q-op-mul { color: #fb923c; }
+[data-theme="nyaman"] .q-op-mul { color: #60a5fa; }
 [data-theme="malam"] .q-op-div,
-[data-theme="nyaman"] .q-op-div { color: #c4b5fd; }
+[data-theme="nyaman"] .q-op-div { color: #f87171; }
 
 [data-theme="malam"] .op-chip-add,
 [data-theme="nyaman"] .op-chip-add { color: #4ade80; }
 [data-theme="malam"] .op-chip-sub,
-[data-theme="nyaman"] .op-chip-sub { color: #93c5fd; }
+[data-theme="nyaman"] .op-chip-sub { color: #e5e7eb; background: color-mix(in srgb, #e5e7eb 16%, transparent); }
 [data-theme="malam"] .op-chip-mul,
-[data-theme="nyaman"] .op-chip-mul { color: #fdba74; }
+[data-theme="nyaman"] .op-chip-mul { color: #93c5fd; background: color-mix(in srgb, #2563eb 22%, transparent); }
 [data-theme="malam"] .op-chip-div,
-[data-theme="nyaman"] .op-chip-div { color: #ddd6fe; }
+[data-theme="nyaman"] .op-chip-div { color: #fca5a5; background: color-mix(in srgb, #dc2626 22%, transparent); }
 
 .game-question.op-flash {
   animation: op-flash-pulse 0.38s ease-out;

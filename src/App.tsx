@@ -28,7 +28,7 @@ import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
 import AdventureMap from './components/AdventureMap';
 import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
-import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
+import type { ArenaStyle, CharacterId, InputMode, PracticeSessionKind, SprintLength} from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
 import {
@@ -93,13 +93,46 @@ class DojoErrorBoundary extends React.Component<
 type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
 
 
-/** Kota + negara — selalu tampil agar anak tahu negara mana */
+/** Nama kota saja (tanpa negara) */
+function formatCityName(city: { nameId: string; nameEn: string } | null | undefined): string {
+  if (!city) return '';
+  return getLang() === 'en' ? city.nameEn : city.nameId;
+}
+
+/** Nama negara lengkap */
+function formatCountryName(city: { countryId: string } | null | undefined): string {
+  if (!city) return '';
+  return getLang() === 'en'
+    ? getCountryNameEn(city.countryId)
+    : getCountryNameId(city.countryId);
+}
+
+/** Kota + negara satu baris (teks biasa / headline) */
 function formatCityCountry(city: { nameId: string; nameEn: string; countryId: string } | null | undefined): string {
   if (!city) return '';
-  const en = getLang() === 'en';
-  const name = en ? city.nameEn : city.nameId;
-  const country = en ? getCountryNameEn(city.countryId) : getCountryNameId(city.countryId);
-  return en ? `${name} (${country})` : `${name} (negara: ${country})`;
+  const name = formatCityName(city);
+  const country = formatCountryName(city);
+  return getLang() === 'en' ? `${name} (${country})` : `${name} (negara: ${country})`;
+}
+
+/** Label tombol 2 baris: baris1 + (negara) di bawah — hindari kepotong nama panjang */
+function CityCountryButtonLabel({
+  prefix,
+  city,
+}: {
+  prefix: string;
+  city: { nameId: string; nameEn: string; countryId: string };
+}) {
+  const name = formatCityName(city);
+  const country = formatCountryName(city);
+  return (
+    <span className="btn-city-stack">
+      <span className="btn-city-line1">
+        {prefix} {name}
+      </span>
+      <span className="btn-city-line2">({country})</span>
+    </span>
+  );
 }
 
 function resultHeadline(
@@ -167,6 +200,8 @@ function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
   const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
+  const [practiceSessionKind, setPracticeSessionKind] = useState<PracticeSessionKind>('grade');
+  const [sprintLength, setSprintLength] = useState<SprintLength>(5);
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
   const [adventureDiffId, setAdventureDiffId] = useState('ringan');
   const [passedCity, setPassedCity] = useState(false);
@@ -196,6 +231,8 @@ function App() {
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [newBadges, setNewBadges] = useState<string[]>([]);
   const [lastMaxCombo, setLastMaxCombo] = useState(0);
+  const [lastSprintMs, setLastSprintMs] = useState<number | null>(null);
+  const [lastSprintLen, setLastSprintLen] = useState<number | null>(null);
   const [forceOps, setForceOps] = useState<
     Array<'add' | 'sub' | 'mul' | 'div'> | undefined
   >(undefined);
@@ -248,9 +285,17 @@ function App() {
 
   // Menu / hasil: BGM default volume rendah. Jangan stop saat pindah tab (home↔dojo↔settings).
   // Hanya stop saat masuk game — Game.tsx yang atur musik kota / BGM main.
+  // Delay singkat: cleanup unmount Game (stopAllMusic) bisa jalan setelah effect ini
+  // kalau tanpa delay — musik hasil/adventure mati total.
   useEffect(() => {
     if (screen === 'game') return;
     playMenuBgm();
+    const t = window.setTimeout(() => playMenuBgm(), 120);
+    const t2 = window.setTimeout(() => playMenuBgm(), 400);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(t2);
+    };
   }, [screen]);
 
   // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
@@ -268,7 +313,9 @@ function App() {
     kind: PlayKind = 'latihan',
     diffId: string = 'normal',
     opsForce?: Array<'add' | 'sub' | 'mul' | 'div'>,
-    adventureCityIdArg?: string
+    adventureCityIdArg?: string,
+    sessionKind: PracticeSessionKind = 'grade',
+    sprintLen: SprintLength = 5
   ) => {
     setSelectedMode(mode);
     setSelectedArena(arena);
@@ -277,6 +324,8 @@ function App() {
     setPlayKind(kind);
     setAdventureDiffId(diffId || 'normal');
     setForceOps(kind === 'latihan' ? opsForce : undefined);
+    setPracticeSessionKind(kind === 'latihan' ? sessionKind : 'grade');
+    setSprintLength(sprintLen || 5);
     // Kota petualangan: pakai yang terlihat di UI (cityId), jangan andalkan storage lama
     const cityForRun =
       kind === 'petualangan'
@@ -348,11 +397,40 @@ function App() {
   const handleFinishGame = (
     score: number,
     grade: string,
-    runMeta?: { maxCombo: number; perfect: boolean }
+    runMeta?: {
+      maxCombo: number;
+      perfect: boolean;
+      sprintMs?: number;
+      sessionKind?: string;
+      sprintLength?: number;
+    }
   ) => {
     const prog0 = loadProgress();
     const maxCombo = runMeta?.maxCombo ?? 0;
     setLastMaxCombo(maxCombo);
+    // Sprint rekor waktu (latihan, online)
+    if (
+      !offlineSession &&
+      playKind === 'latihan' &&
+      runMeta?.sessionKind === 'sprint' &&
+      typeof runMeta.sprintMs === 'number' &&
+      runMeta.sprintMs > 0
+    ) {
+      const len = runMeta.sprintLength === 10 ? 10 : 5;
+      const key = `${selectedLevel}|${len}|${selectedArena}`;
+      const prevBest = prog0.sprintBestMs?.[key];
+      if (prevBest == null || runMeta.sprintMs < prevBest) {
+        updateProgress({
+          sprintBestMs: { ...(prog0.sprintBestMs || {}), [key]: runMeta.sprintMs },
+        });
+        setIsNewRecord(true);
+      }
+      setLastSprintMs(runMeta.sprintMs);
+      setLastSprintLen(len);
+    } else {
+      setLastSprintMs(null);
+      setLastSprintLen(null);
+    }
 
     // Offline session: latihan murni, tidak ubah progress / rekor / badge
     if (offlineSession) {
@@ -554,7 +632,10 @@ function App() {
     const prev = wasOnlineRef.current;
     wasOnlineRef.current = online;
     if (prev && !online && screen === 'game') {
-      const needsNet = playKind === 'petualangan' || selectedArena === 'agility';
+      const needsNet =
+        playKind === 'petualangan' ||
+        selectedArena === 'agility' ||
+        selectedArena === 'pass';
       if (needsNet) setOfflineMidOpen(true);
     }
     // Online lagi → tutup soft notice
@@ -707,7 +788,13 @@ function App() {
             characterId={selectedCharacterId}
             level={selectedLevel}
             holdStart={!!travelOverlay}
-            agility={selectedArena === 'agility'}
+            arenaStyle={selectedArena}
+            practiceSession={playKind === 'latihan' ? practiceSessionKind : 'grade'}
+            sprintTarget={
+              playKind === 'latihan' && practiceSessionKind === 'sprint'
+                ? sprintLength
+                : undefined
+            }
             timeBonusSec={
               playKind === 'petualangan'
                 ? getAdventureDifficulty(adventureDiffId).timeBonus
@@ -851,6 +938,24 @@ function App() {
                   <strong>{t('score')} {lastScore}</strong>
                   <span> · {lastGrade}</span>
                 </p>
+                {lastSprintMs != null && lastSprintLen != null && (
+                  <p className="result-sprint-line">
+                    <strong>
+                      {t('sprintTimeLabel')}:{' '}
+                      {(lastSprintMs / 1000).toFixed(1)}s
+                    </strong>
+                    <span>
+                      {' '}
+                      · {lastSprintLen} {t('sprintQuestions')}
+                    </span>
+                    {isNewRecord && practiceSessionKind === 'sprint' && (
+                      <span> · {t('sprintNewRecord')}</span>
+                    )}
+                  </p>
+                )}
+                {lastSprintMs != null && (
+                  <p className="result-combo-note">{t('resultSprintHint')}</p>
+                )}
                 <p className="result-combo-note">
                   {t('runMaxCombo')}: ×{lastMaxCombo}
                 </p>
@@ -924,20 +1029,32 @@ function App() {
                 {playKind === 'petualangan' && passedCity && nextCity && (
                   <button
                     type="button"
-                    className="btn-primary"
+                    className="btn-primary btn-city-wrap"
                     onClick={handleContinueNextCity}
                   >
-                    {t('continueCity')} {formatCityCountry(nextCity)}
+                    <CityCountryButtonLabel
+                      prefix={t('continueCity')}
+                      city={nextCity}
+                    />
                   </button>
                 )}
                 <button
                   type="button"
-                  className="btn-primary"
+                  className={`btn-primary${playKind === 'petualangan' && city ? ' btn-city-wrap' : ''}`}
                   onClick={handlePlayAgain}
                 >
-                  {playKind === 'petualangan' && city
-                    ? (getLang()==='en' ? `${t('playAgain')} in ${formatCityCountry(city)}` : `${t('playAgain')} di ${formatCityCountry(city)}`)
-                    : t('playAgain')}
+                  {playKind === 'petualangan' && city ? (
+                    <CityCountryButtonLabel
+                      prefix={
+                        getLang() === 'en'
+                          ? `${t('playAgain')} in`
+                          : `${t('playAgain')} di`
+                      }
+                      city={city}
+                    />
+                  ) : (
+                    t('playAgain')
+                  )}
                 </button>
                 {playKind === 'petualangan' ? (
                   <button
