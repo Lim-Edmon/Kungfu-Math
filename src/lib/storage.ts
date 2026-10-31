@@ -15,8 +15,40 @@ import { BADGE_DEFS } from './badges';
 
 const STORAGE_KEY = 'kungfu-math-progress';
 const CODE_PREFIX = 'KM1.';
+/** Format export: KM1.<base64>.<checksum> — checksum menahan edit kasual (bukan kriptografi). */
 const MAX_SCORE = 999_999;
 const MAX_GAMES = 1_000_000;
+
+/** FNV-1a 32-bit → base36 (ringan, cukup anti-edit kasual di client) */
+function progressChecksum(body: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < body.length; i++) {
+    h ^= body.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(36);
+}
+
+/** Pisahkan body base64 + checksum opsional (format baru) dari string setelah KM1. */
+function splitProgressPayload(rawNoPrefix: string): {
+  body: string;
+  sum: string | null;
+} {
+  const s = (rawNoPrefix || '').replace(/\s+/g, '');
+  const lastDot = s.lastIndexOf('.');
+  if (lastDot > 0 && lastDot < s.length - 1) {
+    const maybeSum = s.slice(lastDot + 1);
+    const body = s.slice(0, lastDot);
+    if (
+      /^[a-z0-9]{3,12}$/i.test(maybeSum) &&
+      /^[A-Za-z0-9+/=]+$/.test(body) &&
+      body.length >= 8
+    ) {
+      return { body, sum: maybeSum.toLowerCase() };
+    }
+  }
+  return { body: s, sum: null };
+}
 
 const LEVEL_IDS = new Set(['pemula', 'dasar', 'menengah', 'mahir', 'master']);
 const CHAR_IDS = new Set([
@@ -68,6 +100,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     ...DEFAULT_PROGRESS,
     highScores: { ...DEFAULT_PROGRESS.highScores },
     highScoreRecords: {},
+    sprintBestMs: {},
     adventureHighScores: {},
     adventureScoreRecords: {},
   };
@@ -128,6 +161,14 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (typeof p.maxComboAdventure === 'number' && Number.isFinite(p.maxComboAdventure)) {
     next.maxComboAdventure = Math.max(0, Math.min(999, Math.floor(p.maxComboAdventure)));
   }
+  if (p.sprintBestMs && typeof p.sprintBestMs === 'object') {
+    const sm: Record<string, number> = { ...(next.sprintBestMs || {}) };
+    for (const [k, v] of Object.entries(p.sprintBestMs as Record<string, unknown>)) {
+      if (typeof v === 'number' && Number.isFinite(v) && v > 0) sm[k] = Math.min(3_600_000, Math.floor(v));
+    }
+    next.sprintBestMs = sm;
+  }
+
   if (typeof p.perfectCityStreak === 'number' && Number.isFinite(p.perfectCityStreak)) {
     next.perfectCityStreak = Math.max(0, Math.min(99, Math.floor(p.perfectCityStreak)));
   }
@@ -295,19 +336,26 @@ export function extractProgressCode(text: string): string | null {
   const s = (text || '').trim();
   if (!s) return null;
 
-  const tryBody = (body: string): string | null => {
-    const b = body.replace(/\s+/g, '');
-    if (b.length < 8) return null;
-    // Coba dari panjang penuh turun sampai JSON valid (jaga-jaga teks nempel)
-    for (let len = b.length; len >= 8; len--) {
-      let slice = b.slice(0, len);
+  const tryBody = (payload: string): string | null => {
+    const compact = payload.replace(/\s+/g, '');
+    if (compact.length < 8) return null;
+    const { body: fullBody, sum } = splitProgressPayload(compact);
+
+    // Coba dari panjang penuh turun sampai JSON valid (teks nempel / WA)
+    for (let len = fullBody.length; len >= 8; len--) {
+      let slice = fullBody.slice(0, len);
       const mod = slice.length % 4;
       if (mod) slice = slice + '='.repeat(4 - mod);
       try {
         const json = decodeURIComponent(escape(atob(slice)));
         if (!json.startsWith('{')) continue;
         JSON.parse(json);
-        return CODE_PREFIX + b.slice(0, len);
+        // Kembalikan payload resmi: body + checksum jika ada & cocok di ujung
+        const used = fullBody.slice(0, len);
+        if (sum && len === fullBody.length) {
+          return CODE_PREFIX + used + '.' + sum;
+        }
+        return CODE_PREFIX + used;
       } catch {
         /* shorter */
       }
@@ -335,7 +383,7 @@ export function extractProgressCode(text: string): string | null {
     const got = tryBody(compact.slice(4));
     if (got) return got;
   }
-  if (/^[A-Za-z0-9+/=]{20,}$/.test(compact) && compact.includes('eyJ')) {
+  if (/^[A-Za-z0-9+/=.]{20,}$/.test(compact) && compact.includes('eyJ')) {
     return tryBody(compact);
   }
   return null;
@@ -344,7 +392,8 @@ export function extractProgressCode(text: string): string | null {
 export function exportProgress(): string {
   const json = JSON.stringify(loadProgress());
   const body = btoa(unescape(encodeURIComponent(json)));
-  return CODE_PREFIX + body;
+  const sum = progressChecksum(body);
+  return CODE_PREFIX + body + '.' + sum;
 }
 
 /**
@@ -534,7 +583,10 @@ export function importProgress(encoded: string): boolean {
     if (!extracted) return false;
     let raw = extracted.replace(/\s+/g, '');
     if (raw.toUpperCase().startsWith('KM1.')) raw = raw.slice(4);
-    const json = decodeURIComponent(escape(atob(raw)));
+    const { body, sum } = splitProgressPayload(raw);
+    // Format baru: checksum wajib cocok. Format lama (tanpa titik checksum) tetap diterima.
+    if (sum && progressChecksum(body) !== sum) return false;
+    const json = decodeURIComponent(escape(atob(body)));
     const parsed = JSON.parse(json);
     const merged = normalizeProgress(parsed);
     saveProgress(merged);
