@@ -12,11 +12,44 @@ import { DEFAULT_PROGRESS } from './types';
 import { getLang, t } from './i18n';
 import { ADVENTURE_CITIES } from './adventure';
 import { BADGE_DEFS } from './badges';
+import { getIsOnline } from './offline';
 
 const STORAGE_KEY = 'kungfu-math-progress';
 const CODE_PREFIX = 'KM1.';
+/** Format export: KM1.<base64>.<checksum> — checksum menahan edit kasual (bukan kriptografi). */
 const MAX_SCORE = 999_999;
 const MAX_GAMES = 1_000_000;
+
+/** FNV-1a 32-bit → base36 (ringan, cukup anti-edit kasual di client) */
+function progressChecksum(body: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < body.length; i++) {
+    h ^= body.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(36);
+}
+
+/** Pisahkan body base64 + checksum opsional (format baru) dari string setelah KM1. */
+function splitProgressPayload(rawNoPrefix: string): {
+  body: string;
+  sum: string | null;
+} {
+  const s = (rawNoPrefix || '').replace(/\s+/g, '');
+  const lastDot = s.lastIndexOf('.');
+  if (lastDot > 0 && lastDot < s.length - 1) {
+    const maybeSum = s.slice(lastDot + 1);
+    const body = s.slice(0, lastDot);
+    if (
+      /^[a-z0-9]{3,12}$/i.test(maybeSum) &&
+      /^[A-Za-z0-9+/=]+$/.test(body) &&
+      body.length >= 8
+    ) {
+      return { body, sum: maybeSum.toLowerCase() };
+    }
+  }
+  return { body: s, sum: null };
+}
 
 const LEVEL_IDS = new Set(['pemula', 'dasar', 'menengah', 'mahir', 'master']);
 const CHAR_IDS = new Set([
@@ -68,6 +101,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     ...DEFAULT_PROGRESS,
     highScores: { ...DEFAULT_PROGRESS.highScores },
     highScoreRecords: {},
+    sprintBestMs: {},
     adventureHighScores: {},
     adventureScoreRecords: {},
   };
@@ -128,6 +162,14 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (typeof p.maxComboAdventure === 'number' && Number.isFinite(p.maxComboAdventure)) {
     next.maxComboAdventure = Math.max(0, Math.min(999, Math.floor(p.maxComboAdventure)));
   }
+  if (p.sprintBestMs && typeof p.sprintBestMs === 'object') {
+    const sm: Record<string, number> = { ...(next.sprintBestMs || {}) };
+    for (const [k, v] of Object.entries(p.sprintBestMs as Record<string, unknown>)) {
+      if (typeof v === 'number' && Number.isFinite(v) && v > 0) sm[k] = Math.min(3_600_000, Math.floor(v));
+    }
+    next.sprintBestMs = sm;
+  }
+
   if (typeof p.perfectCityStreak === 'number' && Number.isFinite(p.perfectCityStreak)) {
     next.perfectCityStreak = Math.max(0, Math.min(99, Math.floor(p.perfectCityStreak)));
   }
@@ -286,10 +328,73 @@ export function updateProgress(partial: Partial<PlayerProgress>): PlayerProgress
  * Export = snapshot progress SAAT INI.
  * Kode berubah setiap kali progress berubah (bukan PIN tetap).
  */
+
+/**
+ * Ambil payload KM1 dari teks apa pun (pesan WA, instruksi, spasi, baris baru).
+ * Menerima juga kode murni tanpa teks pembungkus.
+ */
+export function extractProgressCode(text: string): string | null {
+  const s = (text || '').trim();
+  if (!s) return null;
+
+  const tryBody = (payload: string): string | null => {
+    const compact = payload.replace(/\s+/g, '');
+    if (compact.length < 8) return null;
+    const { body: fullBody, sum } = splitProgressPayload(compact);
+
+    // Coba dari panjang penuh turun sampai JSON valid (teks nempel / WA)
+    for (let len = fullBody.length; len >= 8; len--) {
+      let slice = fullBody.slice(0, len);
+      const mod = slice.length % 4;
+      if (mod) slice = slice + '='.repeat(4 - mod);
+      try {
+        const json = decodeURIComponent(escape(atob(slice)));
+        if (!json.startsWith('{')) continue;
+        JSON.parse(json);
+        // Kembalikan payload resmi: body + checksum jika ada & cocok di ujung
+        const used = fullBody.slice(0, len);
+        if (sum && len === fullBody.length) {
+          return CODE_PREFIX + used + '.' + sum;
+        }
+        return CODE_PREFIX + used;
+      } catch {
+        /* shorter */
+      }
+    }
+    return null;
+  };
+
+  // Prioritas: baris berisi KM1. (format share WA)
+  for (const line of s.split(/\r?\n/)) {
+    const idx = line.toLowerCase().indexOf('km1.');
+    if (idx < 0) continue;
+    const got = tryBody(line.slice(idx + 4));
+    if (got) return got;
+  }
+
+  // Fallback: di mana pun dalam teks
+  const allIdx = s.toLowerCase().indexOf('km1.');
+  if (allIdx >= 0) {
+    const got = tryBody(s.slice(allIdx + 4));
+    if (got) return got;
+  }
+
+  const compact = s.replace(/\s+/g, '');
+  if (compact.toLowerCase().startsWith('km1.')) {
+    const got = tryBody(compact.slice(4));
+    if (got) return got;
+  }
+  if (/^[A-Za-z0-9+/=.]{20,}$/.test(compact) && compact.includes('eyJ')) {
+    return tryBody(compact);
+  }
+  return null;
+}
+
 export function exportProgress(): string {
   const json = JSON.stringify(loadProgress());
   const body = btoa(unescape(encodeURIComponent(json)));
-  return CODE_PREFIX + body;
+  const sum = progressChecksum(body);
+  return CODE_PREFIX + body + '.' + sum;
 }
 
 /**
@@ -463,20 +568,29 @@ export function importProgress(encoded: string): boolean {
   const trimmed = (encoded || '').trim();
   if (!trimmed) return false;
 
+  // Cheat dulu (teks pendek), baru payload KM1 dari pesan panjang
   const key = normalizeCheatKey(trimmed);
-  if (DEV_UNLOCK_KEYS.has(key)) {
-    applyDevUnlockAccess();
-    return true;
-  }
-  if (DEV_LOCK_KEYS.has(key)) {
+  if (DEV_UNLOCK_KEYS.has(key) || DEV_LOCK_KEYS.has(key)) {
+    // Cheat hanya saat online — penghalang kasual (bukan kriptografi).
+    // Tanpa backend, string tetap bisa ditemukan di bundle; ini hanya menolak offline.
+    if (!getIsOnline()) return false;
+    if (DEV_UNLOCK_KEYS.has(key)) {
+      applyDevUnlockAccess();
+      return true;
+    }
     applyDevLockAccess();
     return true;
   }
 
   try {
-    let raw = trimmed.replace(/\s+/g, '');
-    if (raw.startsWith(CODE_PREFIX)) raw = raw.slice(CODE_PREFIX.length);
-    const json = decodeURIComponent(escape(atob(raw)));
+    const extracted = extractProgressCode(trimmed);
+    if (!extracted) return false;
+    let raw = extracted.replace(/\s+/g, '');
+    if (raw.toUpperCase().startsWith('KM1.')) raw = raw.slice(4);
+    const { body, sum } = splitProgressPayload(raw);
+    // Format baru: checksum wajib cocok. Format lama (tanpa titik checksum) tetap diterima.
+    if (sum && progressChecksum(body) !== sum) return false;
+    const json = decodeURIComponent(escape(atob(body)));
     const parsed = JSON.parse(json);
     const merged = normalizeProgress(parsed);
     saveProgress(merged);

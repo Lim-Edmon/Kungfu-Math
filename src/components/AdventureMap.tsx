@@ -67,6 +67,8 @@ interface AdventureMapProps {
   travelFromId?: string | null;
   travelToId?: string | null;
   onTravelDone?: () => void;
+  /** Full device window (transisi): tanpa max-height crop manual */
+  fillViewport?: boolean;
 }
 
 const MAP_ASPECT = 5760 / 2880; // world.webp aspect (full world 2:1)
@@ -140,7 +142,38 @@ function clampViewBox(
   return { minX, minY, vbW, vbH };
 }
 
-function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
+/**
+ * Samakan aspect viewBox ke target (layar / frame), lalu clamp di tepi 0–100.
+ * Mentok → geser center (tahan di sisi itu), bukan letterbox biru, bukan potong isi.
+ */
+function applyAspectAndClamp(
+  minX: number,
+  minY: number,
+  vbW: number,
+  vbH: number,
+  preferCx: number,
+  preferCy: number,
+  targetAspect: number
+): ViewBox {
+  const aspect = Math.max(0.2, Math.min(5, targetAspect || MAP_ASPECT));
+  if (vbW / Math.max(0.0001, vbH) > aspect) {
+    const needH = vbW / aspect;
+    minY -= (needH - vbH) / 2;
+    vbH = needH;
+  } else {
+    const needW = vbH * aspect;
+    minX -= (needW - vbW) / 2;
+    vbW = needW;
+  }
+  return clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
+}
+
+function viewBoxAround(
+  cx: number,
+  cy: number,
+  zoomPct: number,
+  targetAspect: number = MAP_ASPECT
+): ViewBox {
   const safeCx = Number.isFinite(cx) ? cx : 50;
   const safeCy = Number.isFinite(cy) ? cy : 50;
   const pct = Math.max(
@@ -148,34 +181,23 @@ function viewBoxAround(cx: number, cy: number, zoomPct: number): ViewBox {
     Math.min(800, Number.isFinite(zoomPct) ? zoomPct : 100)
   );
   const span = 6 * (100 / pct);
-  let minX = safeCx - span / 2;
-  let maxX = safeCx + span / 2;
-  let minY = safeCy - span / 2;
-  let maxY = safeCy + span / 2;
-  let vbW = maxX - minX;
-  let vbH = maxY - minY;
-  if (vbW / vbH > MAP_ASPECT) {
-    const needH = vbW / MAP_ASPECT;
-    const extra = needH - vbH;
-    minY -= extra / 2;
-    maxY += extra / 2;
-    vbH = needH;
-  } else {
-    const needW = vbH * MAP_ASPECT;
-    const extra = needW - vbW;
-    minX -= extra / 2;
-    maxX += extra / 2;
-    vbW = needW;
-  }
-  return clampViewBox({ minX, minY, vbW, vbH }, safeCx, safeCy);
+  return applyAspectAndClamp(
+    safeCx - span / 2,
+    safeCy - span / 2,
+    span,
+    span,
+    safeCx,
+    safeCy,
+    targetAspect
+  );
 }
 
-
-/** Hitung viewBox dari daftar titik (mapX/mapY), jaga aspect peta */
+/** Hitung viewBox dari daftar titik (mapX/mapY), jaga aspect target */
 function viewBoxFromPoints(
   points: { mapX: number; mapY: number }[],
   pad = 0.85,
-  minSpan = 2.2
+  minSpan = 2.2,
+  targetAspect: number = MAP_ASPECT
 ): ViewBox {
   if (!points.length) {
     return { minX: 0, minY: 0, vbW: 100, vbH: 100 };
@@ -194,57 +216,53 @@ function viewBoxFromPoints(
     minY = m - minSpan / 2;
     maxY = m + minSpan / 2;
   }
-  let vbW = maxX - minX;
-  let vbH = maxY - minY;
-  if (vbW / vbH > MAP_ASPECT) {
-    const needH = vbW / MAP_ASPECT;
-    const extra = needH - vbH;
-    minY -= extra / 2;
-    maxY += extra / 2;
-    vbH = needH;
-  } else {
-    const needW = vbH * MAP_ASPECT;
-    const extra = needW - vbW;
-    minX -= extra / 2;
-    maxX += extra / 2;
-    vbW = needW;
-  }
-  const preferCx = minX + vbW / 2;
-  const preferCy = minY + vbH / 2;
-  return clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
+  const vbW = maxX - minX;
+  const vbH = maxY - minY;
+  return applyAspectAndClamp(
+    minX,
+    minY,
+    vbW,
+    vbH,
+    minX + vbW / 2,
+    minY + vbH / 2,
+    targetAspect
+  );
 }
 
 /** Span maksimum zoom (map %). Tetangga jalur ±2 yang terlalu jauh
  *  (Honolulu↔Ilulissat, Fiji↔Auckland) tidak boleh bikin zoom setara dunia. */
-const MAP_ZOOM_MAX_SPAN = 14;
-const MAP_ZOOM_MIN_SPAN = 3.5;
-/** Zoom lokal saat tetangga jalur terlalu jarang (≈ viewBoxAround 75%) */
-const MAP_ZOOM_LOCAL_PCT = 75;
+const MAP_ZOOM_MAX_SPAN = 22;
+const MAP_ZOOM_MIN_SPAN = 8;
+/** Zoom lokal saat tetangga jalur terlalu jarang (angka lebih kecil = lebih jauh / kurang zoom-in) */
+const MAP_ZOOM_LOCAL_PCT = 48;
 
 /**
  * Zoom window: usahakan 2 kota sebelum + aktif + 2 sesudah (urutan jalur).
  * Jika rentang geografis > MAP_ZOOM_MAX_SPAN → jatuh ke frame lokal di kota aktif
  * (tetangga jauh tidak memaksa peta melebar).
  */
-function viewBoxForCityIndex(idx: number): ViewBox {
+function viewBoxForCityIndex(
+  idx: number,
+  targetAspect: number = MAP_ASPECT
+): ViewBox {
   const safeIdx = Math.max(0, Math.min(ADVENTURE_CITIES.length - 1, idx));
   const cities = ADVENTURE_CITIES.slice(
     Math.max(0, safeIdx - 2),
     Math.min(ADVENTURE_CITIES.length, safeIdx + 3)
   );
-  let vb = viewBoxFromPoints(cities, 0.9, MAP_ZOOM_MIN_SPAN);
+  let vb = viewBoxFromPoints(cities, 0.9, MAP_ZOOM_MIN_SPAN, targetAspect);
   if (Math.max(vb.vbW, vb.vbH) > MAP_ZOOM_MAX_SPAN) {
     const c = ADVENTURE_CITIES[safeIdx];
     if (c) {
       // Frame lokal di kota aktif; coba tarik tetangga yang masih muat
-      const local = viewBoxAround(c.mapX, c.mapY, MAP_ZOOM_LOCAL_PCT);
+      const local = viewBoxAround(c.mapX, c.mapY, MAP_ZOOM_LOCAL_PCT, targetAspect);
       const near = cities.filter(
         (p) =>
           Math.abs(p.mapX - c.mapX) <= local.vbW * 0.45 &&
           Math.abs(p.mapY - c.mapY) <= local.vbH * 0.45
       );
       if (near.length > 1) {
-        vb = viewBoxFromPoints(near, 0.9, MAP_ZOOM_MIN_SPAN);
+        vb = viewBoxFromPoints(near, 0.9, MAP_ZOOM_MIN_SPAN, targetAspect);
         if (Math.max(vb.vbW, vb.vbH) > MAP_ZOOM_MAX_SPAN) {
           vb = local;
         }
@@ -294,9 +312,52 @@ export default function AdventureMap({
   travelFromId,
   travelToId,
   onTravelDone,
+  fillViewport = false,
 }: AdventureMapProps) {
   const mapDebug = useMapDebug();
   const frameRef = useRef<HTMLDivElement>(null);
+  /** Rasio frame (lebar/tinggi). Fullscreen → ikut layar; normal → 2:1 peta. */
+  const [frameAspect, setFrameAspect] = useState(MAP_ASPECT);
+  /** Peta siap — hindari pin tanpa gambar di awal transisi */
+  const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const src = '/cities/map/world.webp';
+    const img = new Image();
+    const mark = () => {
+      if (!cancelled) setMapReady(true);
+    };
+    img.onload = mark;
+    img.onerror = mark; // jangan blokir selamanya
+    img.src = src;
+    if (img.complete) mark();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  useEffect(() => {
+    const el = frameRef.current;
+    if (!el) return;
+    const measure = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w > 0 && h > 0) {
+        const a = w / h;
+        setFrameAspect((prev) => (Math.abs(prev - a) < 0.01 ? prev : a));
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fillViewport]);
+  /**
+   * Aspect viewBox:
+   * - Pilih kota: ikut frame CSS (2:1).
+   * - Transisi fullscreen: pakai MAP_ASPECT (2:1) + SVG slice → isi layar tanpa gepeng.
+   *   (Frame HP portrait ≠ rasio peta → jangan paksa viewBox ikut portrait.)
+   */
+  const targetAspect = fillViewport ? MAP_ASPECT : frameAspect;
   const [clickCoord, setClickCoord] = useState<{
     x: number;
     y: number;
@@ -390,7 +451,7 @@ export default function AdventureMap({
     // Default: sama seperti main (±2 jalur, capped). Manual zoom (≠100) → viewBoxAround.
     const useManualZoom = Math.abs(debugZoomPct - 100) > 0.5;
     const vb = useManualZoom
-      ? viewBoxAround(cx, cy, debugZoomPct)
+      ? viewBoxAround(cx, cy, debugZoomPct, targetAspect)
       : viewBoxForCityIndex(
           focusCity
             ? ADVENTURE_CITIES.findIndex((c) => c.id === focusCity.id)
@@ -401,7 +462,7 @@ export default function AdventureMap({
     minY = vb.minY;
     maxY = vb.minY + vb.vbH;
   } else {
-    const vb = viewBoxForCityIndex(activeIdx);
+    const vb = viewBoxForCityIndex(activeIdx, targetAspect);
     minX = vb.minX;
     maxX = vb.minX + vb.vbW;
     minY = vb.minY;
@@ -410,29 +471,24 @@ export default function AdventureMap({
 
   let vbW = maxX - minX;
   let vbH = maxY - minY;
-  // Debug manual / path sudah lewat clamp di helper; normal juga.
-  // Pastikan aspect + tepi tetap aman bila sumber belum clamp.
-  if (vbW / Math.max(0.0001, vbH) > MAP_ASPECT) {
-    const needH = vbW / MAP_ASPECT;
-    const extra = needH - vbH;
-    minY -= extra / 2;
-    maxY += extra / 2;
-    vbH = needH;
-  } else {
-    const needW = vbH * MAP_ASPECT;
-    const extra = needW - vbW;
-    minX -= extra / 2;
-    maxX += extra / 2;
-    vbW = needW;
-  }
+  // Samakan aspect ke frame (layar saat fullscreen) → meet mengisi penuh, tanpa biru.
+  // Mentok tepi peta → clamp geser center (bukan potong, bukan letterbox).
   {
     const preferCx = (minX + maxX) / 2;
     const preferCy = (minY + maxY) / 2;
-    const clamped = clampViewBox({ minX, minY, vbW, vbH }, preferCx, preferCy);
-    minX = clamped.minX;
-    minY = clamped.minY;
-    vbW = clamped.vbW;
-    vbH = clamped.vbH;
+    const fitted = applyAspectAndClamp(
+      minX,
+      minY,
+      vbW,
+      vbH,
+      preferCx,
+      preferCy,
+      targetAspect
+    );
+    minX = fitted.minX;
+    minY = fitted.minY;
+    vbW = fitted.vbW;
+    vbH = fitted.vbH;
     maxX = minX + vbW;
     maxY = minY + vbH;
   }
@@ -469,6 +525,11 @@ export default function AdventureMap({
   zoomVBRef.current = zoomVB;
   /** true = travel effect sedang mengontrol zoom (jangan di-override) */
   const travelOwnsZoomRef = useRef(false);
+  /** Stabil — ganti tempo/parent re-render jangan restart animasi pesawat */
+  const onTravelDoneRef = useRef(onTravelDone);
+  onTravelDoneRef.current = onTravelDone;
+  const targetAspectRef = useRef(targetAspect);
+  targetAspectRef.current = targetAspect;
 
   useEffect(() => {
     if (mapDebug.on) {
@@ -485,7 +546,7 @@ export default function AdventureMap({
       });
       return;
     }
-    if (traveling || travelOwnsZoomRef.current) return;
+    if (traveling || travelOwnsZoomRef.current || fillViewport) return;
     const end: ViewBox = { minX, minY, vbW, vbH };
     if (didIntroZoomRef.current) {
       setZoomVB(end);
@@ -508,12 +569,27 @@ export default function AdventureMap({
   const fontSize = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.022 : 0.055);
 
   /**
-   * Urutan pindah kota:
-   * - Perlu zoom OUT (view lebih luas) → zoom dulu, baru pesawat terbang
-   * - Perlu zoom IN (view lebih dekat) → pesawat dulu, baru zoom in
+   * Urutan transisi lanjut kota:
+   * 1) Expand dari titik tengah → full window (CSS), view = aturan zoom kota asal
+   * 2–3) Pesawat terbang; kamera & zoom mengikuti jalur → aturan kota tujuan
+   * 4) Snap soft ke viewBox tujuan
+   * 5) Parent fade-out → masuk permainan
    */
   useEffect(() => {
-    if (!traveling || !fromCity || !toCity) {
+    // Hanya restart saat pasangan kota asal→tujuan berubah (bukan tempo/re-render parent)
+    if (!travelFromId || !travelToId) {
+      setT(0);
+      travelOwnsZoomRef.current = false;
+      return;
+    }
+    const fromC = ADVENTURE_CITIES.find((c) => c.id === travelFromId);
+    const toC = ADVENTURE_CITIES.find((c) => c.id === travelToId);
+    if (!fromC || !toC) {
+      setT(0);
+      travelOwnsZoomRef.current = false;
+      return;
+    }
+    if (travelFromId === travelToId) {
       setT(0);
       travelOwnsZoomRef.current = false;
       return;
@@ -522,149 +598,144 @@ export default function AdventureMap({
     travelOwnsZoomRef.current = true;
     setT(0);
 
-    const toIdx = ADVENTURE_CITIES.findIndex((c) => c.id === toCity.id);
-    const targetVB =
-      toIdx >= 0 ? viewBoxForCityIndex(toIdx) : { minX, minY, vbW, vbH };
-    // View selama terbang: selalu tampilkan kota asal + tujuan
-    const flightVB = viewBoxFromPoints(
-      [
-        { mapX: fromCity.mapX, mapY: fromCity.mapY },
-        { mapX: toCity.mapX, mapY: toCity.mapY },
-      ],
-      1.2,
-      3.0
+    const aspect = targetAspectRef.current;
+    const fromIdx = ADVENTURE_CITIES.findIndex((c) => c.id === fromC.id);
+    const toIdx = ADVENTURE_CITIES.findIndex((c) => c.id === toC.id);
+    const startRuleVB =
+      fromIdx >= 0
+        ? viewBoxForCityIndex(fromIdx, aspect)
+        : { minX: 0, minY: 0, vbW: 100, vbH: 100 };
+    const endRuleVB =
+      toIdx >= 0
+        ? viewBoxForCityIndex(toIdx, aspect)
+        : { minX: 0, minY: 0, vbW: 100, vbH: 100 };
+    /** Frame yang memuat KEDUA kota — pesawat & jalur selalu di dalam layar
+     *  (penting rute tepi: Queenstown→Fiji, Honolulu, dll.) */
+    const bothVB = viewBoxFromPoints(
+      [fromC, toC],
+      2.4,
+      Math.max(MAP_ZOOM_MIN_SPAN, 10),
+      aspect
     );
 
-    const current = { ...zoomVBRef.current };
-    const curSpan = spanOf(current);
-    const tgtSpan = spanOf(targetVB);
-    const flightSpan = spanOf(flightVB);
+    // (1) Langsung di frame kota asal — hindari flash view dunia gelap
+    setZoomVB(startRuleVB);
+    zoomVBRef.current = startRuleVB;
 
-    const dist = Math.hypot(
-      toCity.mapX - fromCity.mapX,
-      toCity.mapY - fromCity.mapY
-    );
-    const SPEED = 4.2;
-    const flightDur = Math.max(700, Math.min(8000, (dist / SPEED) * 1000));
+    const dist = Math.hypot(toC.mapX - fromC.mapX, toC.mapY - fromC.mapY);
+    /** Pelan + ~0.5s ekstra total (expand + terbang + jeda + fade) */
+    const SPEED = 3.0;
+    const flightDur = Math.max(1400, Math.min(10000, (dist / SPEED) * 1000));
+    /** Samakan dengan CSS travelMapExpand */
+    const EXPAND_MS = fillViewport ? 900 : 0;
 
-    let cancelZoom: (() => void) | null = null;
-    let cancelFlight: (() => void) | null = null;
     let cancelled = false;
+    let started = false; // cegah begin() ganda (onload + timeout = reset pesawat)
+    let raf = 0;
+    let expandTimer = 0;
+    let doneTimer = 0;
+    let waitMapTimer = 0;
 
-    const runFlight = (after: () => void) => {
+    const ease = (x: number) => 1 - Math.pow(1 - x, 2.6);
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const runFlight = () => {
+      if (cancelled) return;
       const t0 = performance.now();
-      let raf = 0;
       const tick = (now: number) => {
         if (cancelled) return;
         const p = Math.min(1, (now - t0) / flightDur);
+        const e = ease(p);
         setT(p);
+
+        const cx = fromC.mapX + (toC.mapX - fromC.mapX) * e;
+        const cy = fromC.mapY + (toC.mapY - fromC.mapY) * e;
+        // 0→0.35: buka ke frame kedua kota; 0.35→0.85: tahan; 0.85→1: ke frame tujuan
+        let ruleW: number;
+        let ruleH: number;
+        if (e < 0.35) {
+          const u = e / 0.35;
+          ruleW = lerp(startRuleVB.vbW, bothVB.vbW, u);
+          ruleH = lerp(startRuleVB.vbH, bothVB.vbH, u);
+        } else if (e < 0.85) {
+          ruleW = bothVB.vbW;
+          ruleH = bothVB.vbH;
+        } else {
+          const u = (e - 0.85) / 0.15;
+          ruleW = lerp(bothVB.vbW, endRuleVB.vbW, u);
+          ruleH = lerp(bothVB.vbH, endRuleVB.vbH, u);
+        }
+        // Pastikan frame minimal memuat titik pesawat + padding
+        ruleW = Math.max(ruleW, bothVB.vbW * 0.85);
+        ruleH = Math.max(ruleH, bothVB.vbH * 0.85);
+        const vb = clampViewBox(
+          {
+            minX: cx - ruleW / 2,
+            minY: cy - ruleH / 2,
+            vbW: ruleW,
+            vbH: ruleH,
+          },
+          cx,
+          cy
+        );
+        setZoomVB(vb);
+        zoomVBRef.current = vb;
+
         if (p < 1) {
           raf = requestAnimationFrame(tick);
         } else {
-          after();
+          setT(1);
+          setZoomVB(endRuleVB);
+          zoomVBRef.current = endRuleVB;
+          doneTimer = window.setTimeout(() => {
+            if (cancelled) return;
+            travelOwnsZoomRef.current = false;
+            onTravelDoneRef.current?.();
+          }, 500);
         }
       };
       raf = requestAnimationFrame(tick);
-      cancelFlight = () => cancelAnimationFrame(raf);
     };
 
-    const finish = () => {
-      if (cancelled) return;
-      travelOwnsZoomRef.current = false;
-      onTravelDone?.();
-    };
-
-    const settleToTarget = (from: ViewBox) => {
-      // Sudah dekat dengan target → selesai
-      if (Math.abs(spanOf(from) - tgtSpan) < 0.15) {
-        setZoomVB(targetVB);
-        finish();
-        return;
+    const beginOnce = () => {
+      if (cancelled || started) return;
+      started = true;
+      if (EXPAND_MS > 0) {
+        expandTimer = window.setTimeout(runFlight, EXPAND_MS);
+      } else {
+        runFlight();
       }
-      cancelZoom = animateViewBox(from, targetVB, 700, setZoomVB, finish);
     };
 
-    // —— Zoom OUT: view tujuan lebih luas → zoom dulu, lalu terbang ——
-    if (tgtSpan > curSpan * 1.08 || flightSpan > curSpan * 1.08) {
-      const pre =
-        flightSpan >= tgtSpan * 0.95 ? flightVB : targetVB;
-      cancelZoom = animateViewBox(current, pre, 650, setZoomVB, () => {
+    // Preload peta — sekali begin saja (bukan onload DAN timeout)
+    const probe = new Image();
+    probe.src = '/cities/map/world.webp';
+    const already =
+      mapReady || (probe.complete && probe.naturalWidth > 0);
+
+    if (!fillViewport || already) {
+      if (already) setMapReady(true);
+      beginOnce();
+    } else {
+      const onReady = () => {
         if (cancelled) return;
-        runFlight(() => settleToTarget(zoomVBRef.current));
-      });
-    }
-    // —— Zoom IN: view tujuan lebih dekat → terbang dulu, baru zoom in ——
-    else if (tgtSpan < curSpan * 0.92) {
-      // Pastikan kedua kota kelihatan selama terbang
-      const bothVisible =
-        fromCity.mapX >= current.minX &&
-        fromCity.mapX <= current.minX + current.vbW &&
-        fromCity.mapY >= current.minY &&
-        fromCity.mapY <= current.minY + current.vbH &&
-        toCity.mapX >= current.minX &&
-        toCity.mapX <= current.minX + current.vbW &&
-        toCity.mapY >= current.minY &&
-        toCity.mapY <= current.minY + current.vbH;
-
-      const startFlight = () => {
-        runFlight(() => {
-          cancelZoom = animateViewBox(
-            zoomVBRef.current,
-            targetVB,
-            750,
-            setZoomVB,
-            finish
-          );
-        });
+        window.clearTimeout(waitMapTimer);
+        setMapReady(true);
+        beginOnce();
       };
-
-      if (!bothVisible) {
-        cancelZoom = animateViewBox(current, flightVB, 500, setZoomVB, () => {
-          if (cancelled) return;
-          startFlight();
-        });
-      } else {
-        startFlight();
-      }
-    }
-    // —— Skala mirip: pastikan rute kelihatan, terbang, settle ——
-    else {
-      const needFlightView =
-        flightSpan > curSpan * 1.05 ||
-        !(
-          toCity.mapX >= current.minX &&
-          toCity.mapX <= current.minX + current.vbW &&
-          toCity.mapY >= current.minY &&
-          toCity.mapY <= current.minY + current.vbH
-        );
-      if (needFlightView) {
-        cancelZoom = animateViewBox(current, flightVB, 500, setZoomVB, () => {
-          if (cancelled) return;
-          runFlight(() => settleToTarget(zoomVBRef.current));
-        });
-      } else {
-        runFlight(() => settleToTarget(zoomVBRef.current));
-      }
+      probe.onload = onReady;
+      waitMapTimer = window.setTimeout(onReady, 1500);
     }
 
     return () => {
       cancelled = true;
-      cancelZoom?.();
-      cancelFlight?.();
+      cancelAnimationFrame(raf);
+      window.clearTimeout(expandTimer);
+      window.clearTimeout(doneTimer);
+      window.clearTimeout(waitMapTimer);
       travelOwnsZoomRef.current = false;
     };
-  }, [
-    travelFromId,
-    travelToId,
-    traveling,
-    onTravelDone,
-    fromCity,
-    toCity,
-    minX,
-    minY,
-    vbW,
-    vbH,
-  ]);
+  }, [travelFromId, travelToId, fillViewport]);
 
   const planeX =
     traveling && fromCity && toCity
@@ -841,7 +912,7 @@ export default function AdventureMap({
   return (
     <div className="adventure-map-wrap" aria-label="Peta jalur petualangan">
       <div
-        className={`adventure-map-frame${mapDebug.on ? ' is-debug' : ''}`}
+        className={`adventure-map-frame${mapDebug.on ? ' is-debug' : ''}${fillViewport ? ' is-fill-viewport' : ''}`}
         ref={frameRef}
         onPointerDown={mapDebug.on ? handlePointerDown : undefined}
         onPointerMove={mapDebug.on ? handlePointerMove : undefined}
@@ -851,12 +922,13 @@ export default function AdventureMap({
         style={mapDebug.on ? { touchAction: 'none', cursor: 'grab' } : undefined}
       >
         <svg
-          className="adventure-map"
+          className={`adventure-map${mapReady ? ' is-map-ready' : ' is-map-loading'}`}
           viewBox={`${drawMinX} ${drawMinY} ${drawVbW} ${drawVbH}`}
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio={fillViewport ? 'xMidYMid meet' : 'xMidYMid meet'}
           role="img"
           aria-hidden
         >
+          {/* Pin 0–100; viewBox aspect = frame → meet isi penuh. Mentok tepi = clamp, bukan biru. */}
           <image
             href="/cities/map/world.webp"
             x={0}
@@ -864,9 +936,11 @@ export default function AdventureMap({
             width={100}
             height={100}
             preserveAspectRatio="none"
+            opacity={mapReady ? 1 : 0}
+            onLoad={() => setMapReady(true)}
           />
 
-          {traveling && fromCity && toCity && (
+          {mapReady && traveling && fromCity && toCity && (
             <line
               x1={fromCity.mapX}
               y1={fromCity.mapY}
@@ -879,7 +953,7 @@ export default function AdventureMap({
             />
           )}
 
-          {renderCities.map((c) => {
+          {mapReady && renderCities.map((c) => {
             const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
             const won = wonIds.includes(c.id);
             const isActive = activeId === c.id;
@@ -1006,7 +1080,7 @@ export default function AdventureMap({
             const dx = toCity.mapX - fromCity.mapX;
             const dy = toCity.mapY - fromCity.mapY;
             const rot = (Math.atan2(dx, -dy) * 180) / Math.PI;
-            const s = Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.06 : 0.14);
+            const s = Math.max(1.35, Math.min(drawVbW, drawVbH) * (mapDebug.on ? 0.08 : 0.2));
             return (
               <g
                 transform={`rotate(${rot}, ${planeX}, ${planeY})`}
@@ -1036,8 +1110,9 @@ export default function AdventureMap({
           })()}
         </svg>
 
-        {/* Area ketuk HTML — pusat = pin kota */}
-        {renderCities.map((c) => {
+        {/* Area ketuk HTML — pusat = pin kota (tunggu peta siap) */}
+        {mapReady &&
+          renderCities.map((c) => {
           const open = unlockedIds.includes(c.id) || c.id === 'jakarta';
           if (!open || !onSelect) return null;
           const pos = pct(c.mapX, c.mapY);

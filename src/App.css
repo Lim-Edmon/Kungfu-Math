@@ -300,6 +300,27 @@
   text-decoration: underline;
 }
 
+.footer-legal {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0.9;
+}
+.footer-legal a,
+.footer-copy-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px dotted color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  opacity: 0.85;
+}
+.footer-copy-link:hover,
+.footer-legal a:hover {
+  opacity: 1;
+  border-bottom-style: solid;
+  border-bottom-color: color-mix(in srgb, currentColor 55%, transparent);
+}
 .footer-copy {
   font-size: 0.72rem;
   color: var(--color-text-muted);
@@ -382,6 +403,23 @@
   flex-shrink: 0;
 }
 
+/* Footer dalam game: default sembunyi (tablet/PC). Portrait HP: tampil isi ruang. */
+.game-chrome-footer {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  user-select: none;
+}
+.game-chrome-copy {
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+}
+
 .hud-left {
   flex: 1 1 0;
   min-width: 0;
@@ -404,9 +442,23 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
   max-width: 42%;
+}
+.hud-right-actions {
+  gap: 6px;
+}
+.hud-right-score {
+  gap: 6px;
+  align-items: center;
+}
+.hud-target {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .hud-identity {
@@ -426,6 +478,68 @@
   background: var(--color-card);
   flex-shrink: 0;
 }
+
+/* Avatar full-body di HUD — lebih besar, animasi serang per keahlian */
+.hud-avatar.hud-avatar-full {
+  width: 72px;
+  height: 90px;
+  border-radius: 12px;
+  object-fit: contain;
+  object-position: center bottom;
+  background: color-mix(in srgb, var(--color-card) 88%, var(--color-primary) 12%);
+  transform-origin: 50% 85%;
+  transition: transform 0.08s ease-out;
+}
+.hud-avatar.pose-attack.style-tombak,
+.hud-avatar.pose-attack.style-tongkat,
+.hud-avatar.pose-attack.style-pedang {
+  animation: hudSlash 0.42s ease-out;
+}
+.hud-avatar.pose-attack.style-tendangan {
+  animation: hudKick 0.42s ease-out;
+}
+.hud-avatar.pose-attack.style-shaolin {
+  animation: hudPunch 0.4s ease-out;
+}
+.hud-avatar.pose-attack.style-telapak {
+  animation: hudPalm 0.4s ease-out;
+}
+.hud-avatar.pose-miss {
+  animation: hudMiss 0.32s ease-out;
+}
+.hud-avatar-emoji.pose-attack,
+.hud-avatar-emoji.pose-miss {
+  display: inline-block;
+  animation: hudPunch 0.4s ease-out;
+}
+@keyframes hudSlash {
+  0% { transform: rotate(0deg) scale(1); }
+  35% { transform: rotate(-18deg) scale(1.06) translateX(-4px); }
+  70% { transform: rotate(14deg) scale(1.08) translateX(5px); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+@keyframes hudKick {
+  0% { transform: translateY(0) rotate(0deg); }
+  40% { transform: translateY(-10px) rotate(-8deg) scale(1.08); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+@keyframes hudPunch {
+  0% { transform: scale(1) translateX(0); }
+  40% { transform: scale(1.1) translateX(6px); }
+  100% { transform: scale(1) translateX(0); }
+}
+@keyframes hudPalm {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12) translateY(-4px); filter: brightness(1.15); }
+  100% { transform: scale(1); filter: none; }
+}
+@keyframes hudMiss {
+  0% { transform: translateX(0); }
+  30% { transform: translateX(5px) rotate(4deg); opacity: 0.9; }
+  60% { transform: translateX(-4px) rotate(-3deg); }
+  100% { transform: translateX(0); }
+}
+
 
 .hud-avatar-emoji {
   font-size: 1.6rem;
@@ -932,6 +1046,32 @@
   font-weight: 700;
 }
 
+
+/* Tombol hasil petualangan: kota + negara 2 baris, tidak kepotong */
+.result-actions .btn-city-wrap {
+  white-space: normal;
+  line-height: 1.25;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: center;
+}
+.btn-city-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+}
+.btn-city-line1 {
+  font-weight: 700;
+  word-break: break-word;
+}
+.btn-city-line2 {
+  font-weight: 600;
+  font-size: 0.88em;
+  opacity: 0.9;
+}
+
 .result-actions {
   display: flex;
   flex-direction: column;
@@ -1045,7 +1185,7 @@
   padding: 12px 16px 8px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .settings-header {
@@ -1070,18 +1210,18 @@
 
 .settings-section h2 {
   font-size: 1rem;
-  margin-bottom: 8px;
+  margin: 0 0 4px;
 }
 
 .settings-note {
   font-size: 0.8rem;
   color: var(--color-text-muted);
-  margin: 8px 0;
+  margin: 4px 0;
 }
 
 .settings-toggle {
   width: 100%;
-  padding: 12px;
+  padding: 8px 10px;
   border-radius: var(--radius);
   border: 2px solid var(--color-border);
   background: var(--color-card);
@@ -1281,7 +1421,78 @@
   }
 }
 
-/* HP besar / phablet */
+/*
+ * Portrait HP: HUD lebih “tebal” + bar © tipis di bawah.
+ * Arena tetap flex:1 mengisi sisa → tidak blank.
+ * Arena lebih pendek → BG landscape cover potong kiri-kanan lebih sedikit.
+ */
+@media (max-width: 600px) and (orientation: portrait) {
+  .game-inner {
+    padding: 6px 10px 0;
+  }
+
+  .game-hud {
+    padding: 8px 2px 6px;
+    gap: 8px;
+    min-height: 96px;
+    align-items: center;
+  }
+
+  .hud-avatar.hud-avatar-full {
+    width: 64px;
+    height: 80px;
+  }
+
+  .hud-name {
+    font-size: 0.95rem;
+  }
+
+  .hud-meta {
+    font-size: 0.72rem;
+  }
+
+  .hud-timer {
+    font-size: 2rem;
+  }
+
+  .hud-score {
+    font-size: 1.05rem;
+  }
+
+  .hud-target {
+    font-size: 0.78rem;
+  }
+
+  .hud-context {
+    max-width: 120px;
+  }
+
+  .game-question {
+    padding: 6px 4px 8px;
+  }
+
+  /* Jangan paksa min-height tinggi — biar HUD+footer yang “makan” ruang */
+  .game-arena {
+    min-height: 0;
+    flex: 1 1 0;
+  }
+
+  .game-arena.city-bg {
+    background-position: center center;
+  }
+
+  .floating-number {
+    width: 50px;
+    height: 50px;
+    font-size: 1.15rem;
+  }
+
+  .game-chrome-footer {
+    display: flex;
+  }
+}
+
+/* HP besar / phablet (tetap hormati portrait di atas) */
 @media (min-width: 400px) {
   .floating-number {
     width: 60px;
@@ -1291,6 +1502,19 @@
 
   .game-arena {
     min-height: 300px;
+  }
+}
+
+/* Portrait: batalkan min-height arena dari rule phablet di atas */
+@media (max-width: 600px) and (orientation: portrait) {
+  .game-arena {
+    min-height: 0 !important;
+  }
+
+  .floating-number {
+    width: 50px;
+    height: 50px;
+    font-size: 1.15rem;
   }
 }
 
@@ -1546,21 +1770,21 @@
 .dojo-sub {
   color: var(--color-text-muted);
   font-size: 0.9rem;
-  margin: 2px 0 12px;
+  margin: 2px 0 6px;
 }
 
 .dojo-card {
   background: var(--color-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
 }
 
 .dojo-hero {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .dojo-hero-emoji {
@@ -1571,7 +1795,7 @@
 .dojo-hero-name {
   font-size: 1.15rem;
   font-weight: 700;
-  margin: 0 0 4px;
+  margin: 0 0 2px;
 }
 
 .dojo-hero-meta {
@@ -1584,7 +1808,7 @@
   font-size: 0.8rem;
 }
 .dojo-adv-summary {
-  margin: 0 0 10px;
+  margin: 0 0 5px;
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
@@ -1594,14 +1818,14 @@
 }
 
 .dojo-section {
-  margin-top: 1.35rem;
+  margin-top: 0.65rem;
 }
 .dojo-section:first-of-type {
   margin-top: 0.5rem;
 }
 .dojo-section h2 {
   font-size: 1rem;
-  margin: 0 0 10px;
+  margin: 0 0 5px;
 }
 
 .dojo-score-list {
@@ -1617,8 +1841,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 7px 10px;
   background: var(--color-card);
   border: 2px solid var(--color-border);
   border-radius: var(--radius);
@@ -1942,8 +2166,8 @@
 
 
 .dojo-tips-section {
-  margin-top: 1.75rem;
-  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .dojo-tips {
@@ -2012,21 +2236,20 @@
   border-radius: 12px;
   overflow: hidden;
   border: 2px solid var(--color-border);
-  background: #e0f7fa;
+  background: transparent;
   touch-action: manipulation;
 }
 
-/* Frame: aspect = peta; hit button diposisikan % di sini */
+/* Frame: aspect peta 2:1 — isi penuh map, tanpa bilah biru */
 .adventure-map-frame {
   position: relative;
   width: 100%;
-  /* Jaga aspect: jika max-height membatasi, lebar ikut menyusut (hindari letterbox) */
-  max-width: min(100%, calc(340px * 2800 / 1527));
-  aspect-ratio: 2800 / 1527;
+  max-width: min(100%, calc(340px * 2 / 1));
+  aspect-ratio: 2 / 1;
   max-height: 340px;
   height: auto;
   margin: 0 auto;
-  background: #81d4fa;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -2300,7 +2523,17 @@ a.btn-link-trakteer {
 }
 .city-chip.active {
   border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+  border-width: 2.5px;
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 18%, var(--color-card, #fff));
+  color: var(--color-text, #333);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #c41e3a) 35%, transparent);
+}
+.city-chip.active .city-chip-name {
+  font-weight: 800;
+  color: var(--color-text, #333);
+}
+.city-chip.active .city-chip-country {
+  color: var(--color-text-muted, #666);
 }
 .city-chip.disabled {
   opacity: 0.45;
@@ -2390,7 +2623,7 @@ a.btn-link-trakteer {
   min-height: 12px;
   border-radius: 50%;
   border: none;
-  background: #ccc;
+  background: var(--color-border, #ccc);
   padding: 0;
   margin: 0;
   cursor: pointer;
@@ -2806,18 +3039,18 @@ a.btn-link-trakteer:hover,
 .settings-section {
   border: 1px solid var(--color-border, #d0d0d0);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 7px 10px;
   background: var(--color-card, rgba(255,255,255,0.55));
 }
 .settings-section + .settings-section {
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 /* Region collapsible di Progres petualangan */
 .dojo-region {
   border: 1px solid var(--color-border, #d0d0d0);
   border-radius: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   overflow: hidden;
   background: var(--color-card, rgba(255,255,255,0.5));
 }
@@ -3042,10 +3275,11 @@ h1.home-title {
   margin-top: 10px;
 }
 .focus-op-chip {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 999px;
-  border: 1.5px solid var(--color-border, #e0d5c0);
-  background: var(--color-card, #fff);
+  border: 2px solid var(--color-btn-idle-border, var(--color-border, #e0d5c0));
+  background: var(--color-btn-idle-bg, var(--color-card, #fff));
+  color: var(--color-text, #333);
   font: inherit;
   font-weight: 600;
   font-size: 0.85rem;
@@ -3053,19 +3287,22 @@ h1.home-title {
 }
 .focus-op-chip.active {
   border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
-  color: var(--color-primary, #c41e3a);
+  border-width: 2.5px;
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 20%, var(--color-card, #fff));
+  color: var(--color-text, #1a1a1a);
+  font-weight: 800;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #c41e3a) 40%, transparent);
 }
 .dojo-stats-card {
-  margin: 10px 0 14px;
-  padding: 14px 16px;
+  margin: 5px 0 7px;
+  padding: 8px 12px;
   border-radius: 16px;
   border: 2px solid color-mix(in srgb, var(--color-primary, #c41e3a) 35%, #e0d5c0);
   background: var(--color-card, #fff);
   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 }
 .dojo-section-title {
-  margin: 10px 0 6px;
+  margin: 4px 0 3px;
   font-size: 0.95rem;
 }
 .dojo-section-title:first-child {
@@ -3531,4 +3768,811 @@ h1.home-title {
   border-radius: 999px;
   line-height: 1.35;
   order: -1; /* di atas angka countdown */
+}
+
+.pause-overlay {
+  cursor: pointer;
+}
+.pause-hint {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  max-width: 16rem;
+  text-align: center;
+}
+
+.result-fail-hint {
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-accent, #e85d04) 14%, var(--color-card));
+  font-size: 0.9rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.dojo-region.is-secret .dojo-region-locked-only {
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+}
+
+
+/* ===== Transisi lanjut kota: expand → full layar (cover, tanpa bilah biru) ===== */
+/* travel-overlay-bg-fix: hindari bilah biru saat meet */
+.travel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Transparan: di belakang = Game kota tujuan yang sudah mount */
+  background: #1a3a4a;
+  padding: 0;
+  pointer-events: auto;
+}
+.travel-overlay-out {
+  animation: none;
+  pointer-events: none;
+}
+.travel-overlay-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100dvh;
+  display: block;
+  transform-origin: center center;
+  animation: travelMapExpand 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  /* Peta solid menutupi game sampai fade */
+  background: #c5e8f5;
+}
+.travel-overlay-out .travel-overlay-inner {
+  animation: travelMapFadeOut 0.7s ease-in forwards;
+}
+.travel-overlay .adventure-map-wrap {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  background: transparent;
+  display: block;
+}
+/* Cover penuh layar: rasio peta tetap, sisi mentok dipotong (bukan letterbox biru) */
+.travel-overlay .adventure-map-frame,
+.adventure-map-frame.is-fill-viewport {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+.travel-overlay .adventure-map-legend,
+.travel-overlay .adventure-map-hit {
+  display: none;
+}
+@keyframes travelOverlayBgIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes travelOverlayBgOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes travelMapExpand {
+  0% {
+    opacity: 0;
+    transform: scale(0.08);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes travelMapFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.03);
+  }
+}
+
+
+/* Tips skor — collapsible di atas langkah 1 (default tertutup) */
+.home-tips-block {
+  margin: 0 0 0.85rem;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid var(--color-border, #ddd);
+  background: color-mix(in srgb, var(--color-card, #fff) 94%, var(--color-accent, #e85d04) 6%);
+  overflow: hidden;
+}
+.home-tips-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--color-text, #222);
+  cursor: pointer;
+  text-align: left;
+  gap: 0.5rem;
+}
+.home-tips-toggle-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.home-tips-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-style: italic;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.home-tips-chevron {
+  opacity: 0.65;
+  font-size: 0.85rem;
+}
+.home-tips-list {
+  margin: 0;
+  padding: 0 0.85rem 0.7rem 2.15rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--color-text-muted, #555);
+}
+.home-tips-list li {
+  margin-bottom: 0.2rem;
+}
+
+
+/* Efek benturan tap (kena bola / miss area kosong) — gaya ledakan anime singkat */
+.tap-impact-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 18;
+  overflow: hidden;
+}
+.tap-impact {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.tap-impact-core {
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffe082 40%, #ff6d00 75%, transparent 100%);
+  box-shadow: 0 0 14px #ffab00, 0 0 6px #fff;
+  animation: impactCore 0.4s ease-out forwards;
+}
+.tap-impact.is-miss .tap-impact-core {
+  background: radial-gradient(circle, #fff 0%, #b0bec5 45%, #78909c 80%, transparent 100%);
+  box-shadow: 0 0 10px #90a4ae;
+  opacity: 0.85;
+}
+.tap-impact-ring {
+  position: absolute;
+  left: -8px;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid #ff6d00;
+  animation: impactRing 0.45s ease-out forwards;
+}
+.tap-impact-ring.delay {
+  animation-delay: 0.06s;
+  border-color: #ffab40;
+}
+.tap-impact.is-miss .tap-impact-ring {
+  border-color: #90a4ae;
+}
+.tap-impact-spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #fff, #ff9100);
+  transform-origin: 0 50%;
+  animation: impactSpark 0.4s ease-out forwards;
+}
+.tap-impact.is-miss .tap-impact-spark {
+  background: linear-gradient(90deg, #eceff1, #90a4ae);
+}
+.tap-impact-spark.s1 { transform: rotate(0deg); }
+.tap-impact-spark.s2 { transform: rotate(90deg); }
+.tap-impact-spark.s3 { transform: rotate(180deg); }
+.tap-impact-spark.s4 { transform: rotate(270deg); }
+@keyframes impactCore {
+  0% { transform: scale(0.4); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes impactRing {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(5); opacity: 0; }
+}
+@keyframes impactSpark {
+  0% { transform: rotate(var(--rot, 0deg)) scaleX(0.3); opacity: 1; }
+  100% { transform: rotate(var(--rot, 0deg)) translateX(28px) scaleX(1.2); opacity: 0; }
+}
+.tap-impact-spark.s1 { --rot: 25deg; animation-name: impactSparkRot; }
+.tap-impact-spark.s2 { --rot: 115deg; animation-name: impactSparkRot; }
+.tap-impact-spark.s3 { --rot: 200deg; animation-name: impactSparkRot; }
+.tap-impact-spark.s4 { --rot: 295deg; animation-name: impactSparkRot; }
+@keyframes impactSparkRot {
+  0% { transform: rotate(var(--rot)) scaleX(0.4); opacity: 1; }
+  100% { transform: rotate(var(--rot)) translateX(30px) scaleX(1.3); opacity: 0; }
+}
+
+
+/* Pin/tombol kota: sembunyi dulu sampai gambar peta siap (hindari titik tanpa peta) */
+.adventure-map.is-map-loading ~ .adventure-map-hit,
+.adventure-map-frame:has(.adventure-map.is-map-loading) .adventure-map-hit {
+  visibility: hidden;
+  pointer-events: none;
+}
+.adventure-map.is-map-loading {
+  background: #c5e8f5;
+}
+
+
+/* ——— Offline mode ——— */
+.offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background: linear-gradient(180deg, #3d4a5c 0%, #2c3645 100%);
+  color: #f5f7fa;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.offline-banner-inner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.offline-banner-icon {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+.offline-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+.offline-banner-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.offline-banner-body {
+  opacity: 0.92;
+}
+.mode-btn:disabled,
+.mode-btn.is-offline-locked,
+button.is-offline-locked:disabled,
+a.is-offline-locked {
+  opacity: 0.45;
+  filter: grayscale(0.35);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.offline-settings-note,
+.offline-dojo-note,
+.offline-result-hint {
+  margin: 8px 0 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #5c6b7a 18%, var(--color-bg, #fff));
+  border: 1px solid color-mix(in srgb, #5c6b7a 35%, transparent);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text, #222);
+}
+.offline-result-hint {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+
+.offline-need-net-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(10, 16, 28, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.offline-need-net-box {
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #222);
+  border-radius: 14px;
+  padding: 18px 16px 14px;
+  max-width: 320px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+.offline-need-net-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+}
+.offline-need-net-body {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0 0 14px;
+  opacity: 0.92;
+}
+/* Offline locked: tetap bisa diklik (untuk popup), tampilan redup */
+.mode-btn.is-offline-locked {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.game-arena-plain {
+  background-image: none !important;
+  background: linear-gradient(165deg, #2a3544 0%, #1a2332 45%, #243044 100%) !important;
+}
+.game-arena-plain::before {
+  display: none;
+}
+
+
+/* ——— Soal: simbol operasi jelas ——— */
+.game-question {
+  position: relative;
+  gap: 4px;
+}
+.op-chip {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 2px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+/* Warna operasi: tambah hijau · kurang hitam · kali biru · bagi merah */
+.op-chip-add {
+  background: color-mix(in srgb, #16a34a 22%, transparent);
+  color: #15803d;
+}
+.op-chip-sub {
+  background: color-mix(in srgb, #111827 14%, transparent);
+  color: #111827;
+}
+.op-chip-mul {
+  background: color-mix(in srgb, #2563eb 22%, transparent);
+  color: #1d4ed8;
+}
+.op-chip-div {
+  background: color-mix(in srgb, #dc2626 20%, transparent);
+  color: #b91c1c;
+}
+.question-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28em 0.35em;
+  font-size: clamp(1.55rem, 6vw, 2.15rem);
+}
+.q-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.55em;
+  min-height: 1.7em;
+  padding: 0.12em 0.28em;
+  border-radius: 0.35em;
+  border: 2px solid color-mix(in srgb, var(--color-text) 28%, transparent);
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, #fff 88%, var(--color-bg)) 0%,
+      color-mix(in srgb, var(--color-bg) 40%, #f5f0e6) 100%);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, #fff 70%, transparent) inset,
+    0 2px 4px color-mix(in srgb, #000 18%, transparent);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  line-height: 1;
+}
+.q-card-inner {
+  display: block;
+  transform: translateY(0.02em);
+}
+.q-card-empty {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+  color: color-mix(in srgb, var(--color-primary) 80%, var(--color-text));
+  opacity: 0.95;
+}
+.q-card-filled {
+  border-color: color-mix(in srgb, #16a34a 50%, var(--color-border));
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, #ecfdf5 90%, #fff) 0%,
+      color-mix(in srgb, #bbf7d0 35%, var(--color-bg)) 100%);
+}
+.q-card-answer {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, #fff 92%, var(--color-primary)) 0%,
+      color-mix(in srgb, var(--color-primary) 12%, var(--color-bg)) 100%);
+  min-width: 1.75em;
+}
+[data-theme="malam"] .q-card,
+[data-theme="nyaman"] .q-card {
+  background:
+    linear-gradient(165deg,
+      color-mix(in srgb, var(--color-bg) 70%, #334155) 0%,
+      color-mix(in srgb, var(--color-bg) 90%, #1e293b) 100%);
+  border-color: color-mix(in srgb, #fff 22%, transparent);
+  box-shadow: 0 2px 6px color-mix(in srgb, #000 35%, transparent);
+}
+[data-theme="malam"] .q-card-empty,
+[data-theme="nyaman"] .q-card-empty {
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-bg));
+}
+[data-theme="malam"] .q-card-filled,
+[data-theme="nyaman"] .q-card-filled {
+  background: color-mix(in srgb, #166534 35%, var(--color-bg));
+  border-color: color-mix(in srgb, #4ade80 40%, transparent);
+}
+.q-num {
+
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+.q-eq {
+  font-weight: 800;
+  opacity: 0.75;
+  margin: 0 0.08em;
+}
+.q-op {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15em;
+  font-size: 1.25em;
+  font-weight: 900;
+  line-height: 1;
+  padding: 0 0.08em;
+}
+.q-op-add { color: #16a34a; }
+.q-op-sub { color: #111827; }
+.q-op-mul { color: #2563eb; }
+.q-op-div { color: #dc2626; }
+
+/* Mode malam / nyaman: tetap kontras */
+[data-theme="malam"] .q-op-add,
+[data-theme="nyaman"] .q-op-add { color: #4ade80; }
+[data-theme="malam"] .q-op-sub,
+[data-theme="nyaman"] .q-op-sub { color: #e5e7eb; }
+[data-theme="malam"] .q-op-mul,
+[data-theme="nyaman"] .q-op-mul { color: #60a5fa; }
+[data-theme="malam"] .q-op-div,
+[data-theme="nyaman"] .q-op-div { color: #f87171; }
+
+[data-theme="malam"] .op-chip-add,
+[data-theme="nyaman"] .op-chip-add { color: #4ade80; }
+[data-theme="malam"] .op-chip-sub,
+[data-theme="nyaman"] .op-chip-sub { color: #e5e7eb; background: color-mix(in srgb, #e5e7eb 16%, transparent); }
+[data-theme="malam"] .op-chip-mul,
+[data-theme="nyaman"] .op-chip-mul { color: #93c5fd; background: color-mix(in srgb, #2563eb 22%, transparent); }
+[data-theme="malam"] .op-chip-div,
+[data-theme="nyaman"] .op-chip-div { color: #fca5a5; background: color-mix(in srgb, #dc2626 22%, transparent); }
+
+.game-question.op-flash {
+  animation: op-flash-pulse 0.38s ease-out;
+}
+@keyframes op-flash-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent);
+    transform: scale(1);
+  }
+  40% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: var(--shadow);
+    transform: scale(1);
+  }
+}
+
+
+.bottom-nav-item.is-offline-locked {
+  opacity: 0.45;
+  filter: grayscale(0.35);
+}
+
+
+/* Offline: layar Progres tidak boleh kosong */
+.offline-dojo-gate {
+  padding: 1.5rem 1.15rem 2rem;
+  max-width: 28rem;
+  margin: 0 auto;
+  text-align: center;
+}
+.offline-dojo-gate h1 {
+  font-size: 1.25rem;
+  margin: 0 0 0.75rem;
+}
+.offline-dojo-gate .offline-need-net-body {
+  margin: 0 0 1.25rem;
+  text-align: left;
+}
+.offline-dojo-gate .btn-primary {
+  min-width: 8rem;
+}
+
+
+/* 3 gaya main: Diam | Pantul | Lewat — satu baris */
+.mode-buttons-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.mode-buttons-3 .mode-btn {
+  min-width: 0;
+  padding: 0.55rem 0.35rem;
+}
+.mode-buttons-3 .mode-desc {
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+.mode-buttons-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.sprint-length-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.sprint-length-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-right: 0.25rem;
+}
+.game-arena.pass-mode .number-ball {
+  /* sedikit beda feel lewat */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ===== Kontras tombol Malam / Nyaman Mata ===== */
+[data-theme='malam'] .mode-btn,
+[data-theme='nyaman'] .mode-btn,
+[data-theme='malam'] .level-btn,
+[data-theme='nyaman'] .level-btn,
+[data-theme='malam'] .character-card,
+[data-theme='nyaman'] .character-card,
+[data-theme='malam'] .settings-toggle,
+[data-theme='nyaman'] .settings-toggle,
+[data-theme='malam'] .btn-ghost,
+[data-theme='nyaman'] .btn-ghost {
+  background: var(--color-btn-idle-bg, var(--color-card));
+  border-color: var(--color-btn-idle-border, var(--color-border));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .mode-btn .mode-name,
+[data-theme='nyaman'] .mode-btn .mode-name,
+[data-theme='malam'] .level-btn strong,
+[data-theme='nyaman'] .level-btn strong {
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .mode-btn .mode-desc,
+[data-theme='nyaman'] .mode-btn .mode-desc,
+[data-theme='malam'] .level-btn span,
+[data-theme='nyaman'] .level-btn span {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+[data-theme='malam'] .mode-btn.active,
+[data-theme='nyaman'] .mode-btn.active,
+[data-theme='malam'] .level-btn.active,
+[data-theme='nyaman'] .level-btn.active,
+[data-theme='malam'] .character-card.selected,
+[data-theme='nyaman'] .character-card.selected,
+[data-theme='malam'] .settings-toggle.active,
+[data-theme='nyaman'] .settings-toggle.active {
+  background: var(--color-btn-active-bg, color-mix(in srgb, var(--color-primary) 22%, var(--color-card)));
+  border-color: var(--color-primary);
+  border-width: 2.5px;
+  color: var(--color-text);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+[data-theme='malam'] .mode-btn.active .mode-name,
+[data-theme='nyaman'] .mode-btn.active .mode-name,
+[data-theme='malam'] .level-btn.active strong,
+[data-theme='nyaman'] .level-btn.active strong {
+  color: var(--color-text);
+  font-weight: 800;
+}
+
+[data-theme='malam'] .bottom-nav-item,
+[data-theme='nyaman'] .bottom-nav-item {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+[data-theme='malam'] .bottom-nav-item.active,
+[data-theme='nyaman'] .bottom-nav-item.active {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-card));
+  font-weight: 700;
+}
+
+[data-theme='malam'] .display-chip,
+[data-theme='nyaman'] .display-chip {
+  background: var(--color-btn-idle-bg, var(--color-card));
+  border-color: var(--color-btn-idle-border, var(--color-border));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .display-chip.active,
+[data-theme='nyaman'] .display-chip.active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 25%, var(--color-card));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .wizard-dot,
+[data-theme='nyaman'] .wizard-dot {
+  background: var(--color-border);
+  opacity: 0.85;
+}
+
+[data-theme='malam'] .wizard-dot.active,
+[data-theme='nyaman'] .wizard-dot.active {
+  background: var(--color-primary);
+  opacity: 1;
+}
+
+[data-theme='malam'] .wizard-dot.done,
+[data-theme='nyaman'] .wizard-dot.done {
+  background: var(--color-success);
+  opacity: 1;
+}
+
+[data-theme='malam'] .btn-secondary,
+[data-theme='nyaman'] .btn-secondary {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+/* Pastikan tombol terpilih tidak “larut” ke background */
+[data-theme='malam'] .adventure-diff-buttons .mode-btn.active,
+[data-theme='nyaman'] .adventure-diff-buttons .mode-btn.active {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+
+/* ===== Kontras focus-op & city-chip (Malam / Nyaman Mata) ===== */
+[data-theme='malam'] .focus-op-chip,
+[data-theme='nyaman'] .focus-op-chip {
+  background: var(--color-btn-idle-bg);
+  border: 2px solid var(--color-btn-idle-border);
+  color: var(--color-text);
+  opacity: 1;
+}
+[data-theme='malam'] .focus-op-chip.active,
+[data-theme='nyaman'] .focus-op-chip.active {
+  background: var(--color-btn-active-bg);
+  border-color: var(--color-primary);
+  border-width: 2.5px;
+  color: var(--color-text);
+  font-weight: 800;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+[data-theme='malam'] .city-chip,
+[data-theme='nyaman'] .city-chip {
+  background: var(--color-btn-idle-bg);
+  border: 2px solid var(--color-btn-idle-border);
+  color: var(--color-text);
+}
+[data-theme='malam'] .city-chip-name,
+[data-theme='nyaman'] .city-chip-name {
+  color: var(--color-text);
+}
+[data-theme='malam'] .city-chip-country,
+[data-theme='nyaman'] .city-chip-country {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+[data-theme='malam'] .city-chip.active,
+[data-theme='nyaman'] .city-chip.active {
+  background: var(--color-btn-active-bg);
+  border-color: var(--color-primary);
+  border-width: 2.5px;
+  color: var(--color-text);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+[data-theme='malam'] .city-chip.active .city-chip-name,
+[data-theme='nyaman'] .city-chip.active .city-chip-name {
+  color: var(--color-text);
+  font-weight: 800;
+}
+[data-theme='malam'] .city-chip.disabled,
+[data-theme='nyaman'] .city-chip.disabled {
+  opacity: 0.4;
+  border-color: var(--color-border);
+}
+
+/* Region label & chip row di dark mode */
+[data-theme='malam'] .city-region-label,
+[data-theme='nyaman'] .city-region-label {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+/* Ops mode block border di dark */
+[data-theme='malam'] .ops-mode-block,
+[data-theme='nyaman'] .ops-mode-block {
+  background: var(--color-card);
+  border-color: var(--color-border);
 }

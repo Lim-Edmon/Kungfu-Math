@@ -17,12 +17,14 @@ interface SettingsProps {
   onBack: () => void;
   onLangChange?: () => void;
   onShowTutorial?: () => void;
+  offline?: boolean;
 }
 
 export default function Settings({
   onBack: _onBack,
   onLangChange,
   onShowTutorial,
+  offline = false,
 }: SettingsProps) {
   const [soundMuted, setSoundMuted] = useState(false);
   const [lang, setLangLocal] = useState<Lang>('id');
@@ -100,13 +102,13 @@ export default function Settings({
       handleExport();
       return;
     }
+    const suffix = t('waProgressSuffix').trim();
     const text = encodeURIComponent(
-      `${t('waProgressPrefix')}
-
-${exportCode}
-
-${t('waProgressSuffix')}`
+      suffix
+        ? `${t('waProgressPrefix')}\n\n${exportCode}\n\n${suffix}`
+        : `${t('waProgressPrefix')}\n\n${exportCode}`
     );
+    if (offline) { setMessage(t('offlineNeedNet')); return; }
     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
   };
 
@@ -117,6 +119,11 @@ ${t('waProgressSuffix')}`
     }
     const isUnlock = isDevUnlockCode(importCode);
     const isLock = isDevLockCode(importCode);
+    // Cheat unlock/lock wajib online (penghalang kasual; string tetap di client)
+    if ((isUnlock || isLock) && offline) {
+      setMessage(t('msgCheatNeedOnline'));
+      return;
+    }
     const ok = importProgress(importCode);
     if (ok) {
       const msg = isUnlock
@@ -130,11 +137,15 @@ ${t('waProgressSuffix')}`
       }
       setImportCode('');
     } else {
-      setMessage(t('msgImportFail'));
+      setMessage(isUnlock || isLock ? t('msgCheatNeedOnline') : t('msgImportFail'));
     }
   };
 
   const handleShareInvite = async () => {
+    if (offline) {
+      setMessage(t('offlineNeedNet'));
+      return;
+    }
     const text = buildInviteText();
     // Web Share API (HP modern) — buka sheet WA / Telegram / dll
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
@@ -176,6 +187,9 @@ ${t('waProgressSuffix')}`
 
   return (
     <div className="settings-page">
+      {offline && (
+        <p className="offline-settings-note" role="status">{t('offlineNeedNet')}</p>
+      )}
       <header className="settings-header">
         <h1>{t('settingsTitle')}</h1>
       </header>
@@ -232,7 +246,8 @@ ${t('waProgressSuffix')}`
         </div>
       </section>
 
-      {/* 4. Pindah progres */}
+      {/* 4. Pindah progres — hanya online (offline tidak menyimpan rekor) */}
+      {!offline && (
       <section className="settings-section">
         <h2>{t('settingsProgress')}</h2>
         <p className="settings-note">{t('settingsProgressNote')}</p>
@@ -259,8 +274,10 @@ ${t('waProgressSuffix')}`
           </div>
         )}
       </section>
+      )}
 
       {/* 5. Masukan kode */}
+      {!offline && (
       <section className="settings-section">
         <h2>{t('settingsImport')}</h2>
         <p className="settings-note">{t('settingsImportNote')}</p>
@@ -275,6 +292,7 @@ ${t('waProgressSuffix')}`
           {t('btnImport')}
         </button>
       </section>
+      )}
 
       {/* 6. Saran & dukungan */}
       <section className="settings-section">
@@ -295,7 +313,12 @@ ${t('waProgressSuffix')}`
         <h2>{t('settingsInvite')}</h2>
         <p className="settings-note">{t('settingsInviteNote')}</p>
         <div className="export-actions settings-share-actions">
-          <button type="button" className="btn-primary" onClick={handleShareInvite}>
+          <button
+            type="button"
+            className={`btn-primary ${offline ? 'is-offline-locked' : ''}`}
+            disabled={offline}
+            onClick={handleShareInvite}
+          >
             {t('btnShare')}
           </button>
           <button type="button" className="btn-secondary" onClick={handleCopyInvite}>

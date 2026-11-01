@@ -1,12 +1,12 @@
 /** Kungfu Math — Author: Lim Edmon · Full disclaimer: src/App.tsx */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { CharacterId, InputMode } from '../lib/types';
 import type { DifficultyLevel } from '../lib/levels';
 import { getLevelById } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
 import { generateQuestion } from '../lib/mathGenerator';
-import type { MathQuestion } from '../lib/mathGenerator';
+import type { MathQuestion, OperationType } from '../lib/mathGenerator';
 import type { FloatingNumber, GameState } from '../lib/gameTypes';
 import {
   INITIAL_LIVES,
@@ -14,6 +14,7 @@ import {
   POINTS_PER_SOLVE,
   COMBO_BONUS_STATIC,
   COMBO_BONUS_AGILITY,
+  computeSolvePoints,
 } from '../lib/gameTypes';
 import { cityBgCandidates } from '../lib/adventure';
 import { t } from '../lib/i18n';
@@ -21,8 +22,13 @@ import { sfx, playCityMusic, stopAllMusic } from '../lib/sound';
 import { loadProgress, updateProgress } from '../lib/storage';
 
 function playEndSound(score: number, target?: number) {
-  if (target != null && score >= target) sfx.win();
-  else sfx.finish();
+  // Lolos kota / di atas target → fanfare; selain itu nada selesai biasa
+  if (target != null && score >= target) {
+    sfx.win();
+    setTimeout(() => sfx.combo(), 180);
+  } else {
+    sfx.finish();
+  }
 }
 
 interface GameProps {
@@ -30,7 +36,11 @@ interface GameProps {
   characterId: CharacterId;
   level: DifficultyLevel;
   /** true = bola bergerak (mode ketangkasan) */
+  /** @deprecated pakai arenaStyle */
   agility?: boolean;
+  arenaStyle?: 'static' | 'agility' | 'pass';
+  practiceSession?: 'grade' | 'sprint';
+  sprintTarget?: number;
   /** Petualangan: detik ditambah tiap jawaban benar */
   timeBonusSec?: number;
   /** Petualangan: detik dikurangi tiap jawaban salah */
@@ -43,10 +53,23 @@ interface GameProps {
   onExit: () => void;
   /** Latihan Fokus: batasi operasi (harus cocok level) */
   forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>;
+  /** Petualangan: id tempo utk pengali skor */
+  tempoId?: string;
+  /**
+   * true = jangan mulai countdown dulu (transisi peta masih di depan).
+   * BG + HUD sudah siap di belakang.
+   */
+  holdStart?: boolean;
   onFinish: (
     score: number,
     grade: string,
-    meta?: { maxCombo: number; perfect: boolean }
+    meta?: {
+      maxCombo: number;
+      perfect: boolean;
+      sprintMs?: number;
+      sessionKind?: string;
+      sprintLength?: number;
+    }
   ) => void;
 }
 
@@ -54,18 +77,55 @@ interface GameProps {
  * Posisikan angka di area aman (tidak kepotong atas/bawah).
  * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol {t('exit')}.
  */
+function hasCorrectOnScreen(
+  question: MathQuestion,
+  numbers: FloatingNumber[]
+): boolean {
+  const pool = numbers
+    .filter((n) => !n.sliced && !n.isBomb)
+    .map((n) => n.value);
+  for (const v of question.correctNumbers) {
+    const i = pool.indexOf(v);
+    if (i < 0) return false;
+    pool.splice(i, 1);
+  }
+  return true;
+}
+
 function createNumbersFromQuestion(
   question: MathQuestion,
-  agility = false,
-  /** 1 = normal; <1 lebih pelan (Tap + ketangkasan lebih mudah) */
+  arenaStyle: 'static' | 'agility' | 'pass' = 'static',
+  /** 1 = normal; <1 lebih pelan (Tap + gerak lebih mudah) */
   speedScale = 1
 ): FloatingNumber[] {
   const count = question.candidates.length;
+  const yMin = 18;
+  const yMax = 72;
+
+  if (arenaStyle === 'pass') {
+    // Spawn dari kiri atau kanan, bergerak horizontal ke sisi lawan
+    return question.candidates.map((value, index) => {
+      const isBomb = question.bombIndexes.includes(index);
+      const fromLeft = Math.random() < 0.5;
+      const speed = (18 + Math.random() * 16) * speedScale;
+      const y = yMin + Math.random() * (yMax - yMin);
+      const x = fromLeft ? -4 - Math.random() * 8 : 104 + Math.random() * 8;
+      return {
+        id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+        value,
+        x,
+        y,
+        isBomb,
+        sliced: false,
+        vx: fromLeft ? speed : -speed,
+        vy: (Math.random() - 0.5) * 6 * speedScale,
+      };
+    });
+  }
+
   const cols = count <= 4 ? 2 : count <= 6 ? 3 : 4;
   const rows = Math.ceil(count / cols);
   const xMargin = 12;
-  const yMin = 18;
-  const yMax = 72;
   const xSpan = 100 - xMargin * 2;
   const ySpan = yMax - yMin;
   const cellW = xSpan / cols;
@@ -90,9 +150,9 @@ function createNumbersFromQuestion(
     [positions[i], positions[j]] = [positions[j], positions[i]];
   }
 
+  const agility = arenaStyle === 'agility';
   return question.candidates.map((value, index) => {
     const isBomb = question.bombIndexes.includes(index);
-    // Kecepatan acak untuk mode ketangkasan (% per detik)
     const speed = (12 + Math.random() * 22) * speedScale;
     const angle = Math.random() * Math.PI * 2;
     return {
@@ -108,7 +168,22 @@ function createNumbersFromQuestion(
   });
 }
 
-function calcGrade(score: number, solved: number, maxCombo: number): string {
+/** Petualangan: S/A hanya jika lolos target. Latihan: ambang skor absolut. */
+function calcGrade(
+  score: number,
+  solved: number,
+  maxCombo: number,
+  opts?: { targetScore?: number; isAdventure?: boolean }
+): string {
+  const target = opts?.targetScore;
+  if (opts?.isAdventure && typeof target === 'number' && target > 0) {
+    const passed = score >= target;
+    if (passed && score >= target * 1.35 && maxCombo >= 8 && solved >= 10) return 'S';
+    if (passed && (score >= target * 1.1 || maxCombo >= 5)) return 'A';
+    if (passed) return 'B';
+    if (score >= target * 0.7) return 'C';
+    return 'D';
+  }
   if (solved >= 12 && maxCombo >= 5 && score >= 1500) return 'S';
   if (solved >= 8 && score >= 900) return 'A';
   if (solved >= 5 && score >= 500) return 'B';
@@ -127,6 +202,69 @@ function fillDisplay(display: string, selectedValues: number[]): string {
   }
   return result;
 }
+
+/** Pecah teks soal jadi angka + simbol berwarna (supaya + vs × jelas). */
+function renderQuestionParts(
+  text: string,
+  operation: OperationType | undefined
+): ReactNode {
+  const tokens = text.split(/(\d+|\?|[+\-−×÷=]|\s+)/).filter((t) => t !== '');
+  let pastEq = false;
+  return tokens.map((tok, i) => {
+    const t = tok.trim();
+    if (t === '') return <span key={i}>{tok}</span>;
+    if (t === '=') {
+      pastEq = true;
+      return (
+        <span key={i} className="q-eq" aria-hidden={false}>
+          =
+        </span>
+      );
+    }
+    if (/^\d+$/.test(t) || t === '?') {
+      const isEmpty = t === '?';
+      const kind = pastEq ? 'answer' : isEmpty ? 'empty' : 'filled';
+      return (
+        <span
+          key={i}
+          className={`q-card q-card-${kind}`}
+          aria-label={isEmpty ? '?' : t}
+        >
+          <span className="q-card-inner">{isEmpty ? '?' : t}</span>
+        </span>
+      );
+    }
+    if (t === '+' || t === '−' || t === '-' || t === '×' || t === '÷') {
+      let kind = 'add';
+      if (operation === 'add') kind = 'add';
+      else if (operation === 'sub') kind = 'sub';
+      else if (operation === 'mul') kind = 'mul';
+      else if (operation === 'div') kind = 'div';
+      else if (t === '−' || t === '-') kind = 'sub';
+      else if (t === '×') kind = 'mul';
+      else if (t === '÷') kind = 'div';
+      else kind = 'add';
+      const symbol =
+        kind === 'add' ? '+' : kind === 'sub' ? '−' : kind === 'mul' ? '×' : '÷';
+      return (
+        <span key={i} className={`q-op q-op-${kind}`} aria-hidden={false}>
+          {symbol}
+        </span>
+      );
+    }
+    return <span key={i}>{tok}</span>;
+  });
+}
+
+
+function opChipLabel(op: OperationType | undefined): string {
+  if (!op) return '';
+  if (op === 'add') return t('opChipAdd');
+  if (op === 'sub') return t('opChipSub');
+  if (op === 'mul') return t('opChipMul');
+  return t('opChipDiv');
+}
+
 
 /** Berapa angka yang harus dipilih untuk soal ini */
 function getNeededCount(question: MathQuestion): number {
@@ -199,6 +337,9 @@ export default function Game({
   characterId,
   level,
   agility = false,
+  arenaStyle: arenaStyleProp,
+  practiceSession = 'grade',
+  sprintTarget = 5,
   timeBonusSec = 0,
   timePenaltySec = 0,
   cityName,
@@ -206,11 +347,27 @@ export default function Game({
   targetScore,
   onExit,
   forceOps,
+  tempoId,
+  holdStart = false,
   onFinish,
 }: GameProps) {
+  const arenaStyle: 'static' | 'agility' | 'pass' =
+    arenaStyleProp ?? (agility ? 'agility' : 'static');
+  const isMoving = arenaStyle === 'agility' || arenaStyle === 'pass';
+  const isSprint = practiceSession === 'sprint';
+  const sprintGoal = Math.max(1, sprintTarget || 5);
+  const sprintStartedAtRef = useRef<number>(0);
   const forceOpsRef = useRef(forceOps);
   forceOpsRef.current = forceOps;
+  const tempoIdRef = useRef(tempoId);
+  tempoIdRef.current = tempoId;
+  const levelIdRef = useRef(level);
+  levelIdRef.current = level;
   const mistakesRef = useRef(0);
+  /** Waktu soal saat ini muncul (ms) */
+  const questionShownAtRef = useRef<number>(0);
+  /** Sudah salah di soal berjalan (batalkan bonus cepat) */
+  const questionHadMistakeRef = useRef(false);
   const character = getCharacterById(characterId);
   const playerName = loadProgress().playerName?.trim() || '';
   const displayName = playerName || character?.name || 'Pendekar';
@@ -235,11 +392,18 @@ export default function Game({
    * Latihan → dojo; petualangan → kota (fallback default, BUKAN dojo).
    */
   const [resolvedBgUrl, setResolvedBgUrl] = useState<string | null>(null);
+  const [opFlash, setOpFlash] = useState(false);
+  const prevOpRef = useRef<OperationType | null>(null);
   const [bgReady, setBgReady] = useState(false);
   const [showVolumeHint, setShowVolumeHint] = useState(true);
   /** Layer jejak slice — DOM langsung (bukan React setState tiap move) */
   const trailLayerRef = useRef<HTMLDivElement | null>(null);
+  /** Layer efek benturan tap (kena / miss) */
+  const impactLayerRef = useRef<HTMLDivElement | null>(null);
   const lastTrailTsRef = useRef(0);
+  /** Animasi avatar HUD: idle | attack | miss */
+  const [avatarPose, setAvatarPose] = useState<'idle' | 'attack' | 'miss'>('idle');
+  const avatarPoseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [soundMuted, setSoundMuted] = useState(
     () => loadProgress().soundMuted === true
   );
@@ -271,12 +435,48 @@ export default function Game({
     stage: 1,
   }));
 
-  // Satu sumber musik saja: kota (petualangan) ATAU BGM default (latihan)
+
+  // Pause total saat tab/PWA tidak terlihat
+  const [bgPaused, setBgPaused] = useState(false);
+  const statusBeforePauseRef = useRef<'playing' | 'countdown' | null>(null);
   useEffect(() => {
+    const onVis = () => {
+      if (!document.hidden) return;
+      setState((prev) => {
+        if (prev.status !== 'playing' && prev.status !== 'countdown') return prev;
+        statusBeforePauseRef.current = prev.status;
+        return { ...prev, status: 'paused' };
+      });
+      setBgPaused(true);
+      stopAllMusic();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+
+  const resumeFromBgPause = () => {
+    const back = statusBeforePauseRef.current || 'playing';
+    statusBeforePauseRef.current = null;
+    setBgPaused(false);
+    setState((prev) =>
+      prev.status === 'paused'
+        ? { ...prev, status: back }
+        : prev
+    );
+    if (cityId) playCityMusic(cityId);
+    else sfx.startBgm();
+  };
+
+  // Musik: tahan selama holdStart (transisi peta), baru mulai saat overlay hilang
+  useEffect(() => {
+    if (holdStart) {
+      stopAllMusic();
+      return;
+    }
     if (cityId) playCityMusic(cityId);
     else sfx.startBgm();
     return () => stopAllMusic();
-  }, [cityId]);
+  }, [cityId, holdStart]);
 
   // Resolve BG: probe dulu, baru tampil (hindari flash dojo / broken image).
   useEffect(() => {
@@ -306,15 +506,37 @@ export default function Game({
         }
       }
       if (!cancelled) {
-        const fallback = cityId
-          ? '/cities/bg/default.webp'
-          : '/cities/bg/dojo.webp';
-        const okFb = await probe(fallback);
-        if (cancelled) return;
-        if (okFb) setResolvedBgUrl(fallback);
-        else if (cityId) setResolvedBgUrl('/cities/bg/default.jpg');
-        else setResolvedBgUrl('/cities/bg/dojo.jpg');
-        setBgReady(true);
+        if (cityId) {
+          for (const fb of ['/cities/bg/default.webp', '/cities/bg/default.jpg', '/cities/bg/default.png']) {
+            if (await probe(fb)) {
+              if (!cancelled) {
+                setResolvedBgUrl(fb);
+                setBgReady(true);
+              }
+              return;
+            }
+          }
+          // Kota tanpa aset: arena polos (bukan dojo)
+          if (!cancelled) {
+            setResolvedBgUrl(null);
+            setBgReady(true);
+          }
+          return;
+        }
+        // Latihan / offline: coba dojo, jika belum ter-cache → arena polos
+        for (const fb of ['/cities/bg/dojo.webp', '/cities/bg/dojo.jpg', '/cities/bg/dojo.png']) {
+          if (await probe(fb)) {
+            if (!cancelled) {
+              setResolvedBgUrl(fb);
+              setBgReady(true);
+            }
+            return;
+          }
+        }
+        if (!cancelled) {
+          setResolvedBgUrl(null);
+          setBgReady(true);
+        }
       }
     })();
     return () => {
@@ -330,15 +552,19 @@ export default function Game({
     }
   }, [state.status]);
 
-  // READY → 3 → 2 → 1 → GO → main
+  // READY → 3 → 2 → 1 → GO → main (tunggu holdStart selesai = peta sudah land)
   useEffect(() => {
     if (state.status !== 'countdown') return;
+    if (holdStart) {
+      setCountdownLabel('READY');
+      return;
+    }
     const steps: { label: string; ms: number }[] = [
-      { label: 'READY', ms: 900 },
-      { label: '3', ms: 700 },
-      { label: '2', ms: 700 },
-      { label: '1', ms: 700 },
-      { label: 'GO!', ms: 500 },
+      { label: 'READY', ms: 700 },
+      { label: '3', ms: 650 },
+      { label: '2', ms: 650 },
+      { label: '1', ms: 650 },
+      { label: 'GO!', ms: 450 },
     ];
     let i = 0;
     setCountdownLabel(steps[0].label);
@@ -347,14 +573,17 @@ export default function Game({
       i += 1;
       if (i >= steps.length) {
         const q = generateQuestion(levelRef.current, { forceOps: forceOpsRef.current });
+        sprintStartedAtRef.current = performance.now();
         setState((prev) => ({
           ...prev,
           status: 'playing',
+          // Sprint: timer dipakai sbg elapsed (naik); grade: countdown 60s
+          timeLeft: isSprint ? 0 : prev.timeLeft,
           question: q,
           numbers: createNumbersFromQuestion(
             q,
-            agility,
-            mode === 'tap' && agility ? 0.7 : 1
+            arenaStyle,
+            mode === 'tap' && isMoving ? 0.7 : 1
           ),
           selectedIds: [],
         }));
@@ -365,33 +594,62 @@ export default function Game({
     };
     timer = setTimeout(next, steps[0].ms);
     return () => clearTimeout(timer);
-  }, [state.status, agility, mode]);
+  }, [state.status, arenaStyle, isMoving, mode, holdStart]);
 
-  // Timer hitung mundur
+  // Timer: Grade = hitung mundur; Sprint = hitung naik (elapsed)
   useEffect(() => {
     if (state.status !== 'playing') return;
 
     timerRef.current = setInterval(() => {
       setState((prev) => {
+        if (isSprint) {
+          // Elapsed detik; batas aman 10 menit
+          const nextT = prev.timeLeft + 1;
+          if (nextT >= 600) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            clearNextQuestionTimeout();
+            stopAllMusic();
+            playEndSound(prev.score, targetScore);
+            const sprintMs = Math.round(performance.now() - sprintStartedAtRef.current);
+            const grade = calcGrade(prev.score, prev.questionsSolved, prev.maxCombo, {});
+            setTimeout(
+              () =>
+                onFinish(prev.score, grade, {
+                  maxCombo: prev.maxCombo,
+                  perfect: mistakesRef.current === 0 && prev.questionsSolved > 0,
+                  sprintMs,
+                  sessionKind: 'sprint',
+                  sprintLength: sprintGoal,
+                }),
+              100
+            );
+            return { ...prev, timeLeft: nextT, status: 'won' };
+          }
+          return { ...prev, timeLeft: nextT };
+        }
         if (prev.timeLeft <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
           clearNextQuestionTimeout();
-          stopAllMusic(); // hentikan lagu kota — jangan restart di confetti
+          stopAllMusic();
           playEndSound(prev.score, targetScore);
           const grade = calcGrade(
             prev.score,
             prev.questionsSolved,
-            prev.maxCombo
+            prev.maxCombo,
+            {
+              targetScore,
+              isAdventure: typeof targetScore === 'number' && targetScore > 0,
+            }
           );
           setTimeout(
-              () =>
-                onFinish(prev.score, grade, {
-                  maxCombo: prev.maxCombo,
-                  perfect:
-                    mistakesRef.current === 0 && prev.questionsSolved > 0,
-                }),
-              100
-            );
+            () =>
+              onFinish(prev.score, grade, {
+                maxCombo: prev.maxCombo,
+                perfect:
+                  mistakesRef.current === 0 && prev.questionsSolved > 0,
+              }),
+            100
+          );
           return { ...prev, timeLeft: 0, status: 'won' };
         }
         return { ...prev, timeLeft: prev.timeLeft - 1 };
@@ -401,7 +659,7 @@ export default function Game({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [state.status, onFinish, clearNextQuestionTimeout]);
+  }, [state.status, onFinish, clearNextQuestionTimeout, isSprint, sprintGoal, targetScore]);
 
   // Bersihkan timeout saat unmount
   useEffect(() => {
@@ -414,10 +672,10 @@ export default function Game({
     return {
       ...prev,
       question: q,
-      numbers: createNumbersFromQuestion(q, agility, mode === 'tap' && agility ? 0.7 : 1),
+      numbers: createNumbersFromQuestion(q, arenaStyle, mode === 'tap' && isMoving ? 0.7 : 1),
       selectedIds: [],
     };
-  }, [agility, mode]);
+  }, [arenaStyle, mode, isMoving]);
 
   /**
    * Kehilangan nyawa.
@@ -443,14 +701,24 @@ export default function Game({
           if (!(restoreSet.has(n.id) && !n.isBomb)) return n;
           const speed =
             (12 + Math.random() * 22) *
-            (mode === 'tap' && agility ? 0.7 : 1);
+            (mode === 'tap' && isMoving ? 0.7 : 1);
           const angle = Math.random() * Math.PI * 2;
           return {
             ...n,
             sliced: false,
             id: `${n.id}-r${token}`,
-            vx: agility ? Math.cos(angle) * speed : n.vx,
-            vy: agility ? Math.sin(angle) * speed : n.vy,
+            vx:
+              arenaStyle === 'agility'
+                ? Math.cos(angle) * speed
+                : arenaStyle === 'pass'
+                  ? (Math.random() < 0.5 ? speed : -speed)
+                  : 0,
+            vy:
+              arenaStyle === 'agility'
+                ? Math.sin(angle) * speed
+                : arenaStyle === 'pass'
+                  ? (Math.random() - 0.5) * 6
+                  : 0,
           };
         });
       }
@@ -463,7 +731,11 @@ export default function Game({
         const grade = calcGrade(
           prev.score,
           prev.questionsSolved,
-          prev.maxCombo
+          prev.maxCombo,
+          {
+            targetScore,
+            isAdventure: typeof targetScore === 'number' && targetScore > 0,
+          }
         );
         setTimeout(
               () =>
@@ -495,8 +767,65 @@ export default function Game({
         selectedIds: [],
       };
     },
-    [onFinish, clearNextQuestionTimeout, agility, mode]
+    [onFinish, clearNextQuestionTimeout, isMoving, mode, arenaStyle]
   );
+
+
+  // Catat saat soal baru muncul (untuk bonus jawab cepat)
+  useEffect(() => {
+    if (state.status !== 'playing' || !state.question) return;
+    questionShownAtRef.current = performance.now();
+    questionHadMistakeRef.current = false;
+  }, [state.question?.display, state.question?.target, state.status]);
+
+  const arenaRef = useRef<HTMLDivElement | null>(null);
+  const isSlicingRef = useRef(false);
+  const slicedThisGestureRef = useRef<Set<string>>(new Set());
+
+  /** Gaya serang dari data karakter (weapon / style) */
+  const attackStyle =
+    (character as { weapon?: string; style?: string } | undefined)?.weapon ||
+    (character as { style?: string } | undefined)?.style ||
+    (mode === 'slice' ? 'tongkat' : 'shaolin');
+
+  const pulseAvatar = useCallback((pose: 'attack' | 'miss') => {
+    if (avatarPoseTimerRef.current) clearTimeout(avatarPoseTimerRef.current);
+    setAvatarPose(pose);
+    avatarPoseTimerRef.current = setTimeout(() => {
+      setAvatarPose('idle');
+      avatarPoseTimerRef.current = null;
+    }, pose === 'miss' ? 320 : 420);
+  }, []);
+
+  /** Efek benturan anime-style di arena (tap kena / miss) */
+  const spawnImpact = useCallback((clientX: number, clientY: number, kind: 'hit' | 'miss') => {
+    const arena = arenaRef.current;
+    const layer = impactLayerRef.current;
+    if (!arena || !layer) return;
+    const r = arena.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return;
+    const x = ((clientX - r.left) / r.width) * 100;
+    const y = ((clientY - r.top) / r.height) * 100;
+    const el = document.createElement('span');
+    el.className = `tap-impact ${kind === 'hit' ? 'is-hit' : 'is-miss'}`;
+    el.style.left = `${x}%`;
+    el.style.top = `${y}%`;
+    el.innerHTML =
+      '<i class="tap-impact-core"></i>' +
+      '<i class="tap-impact-ring"></i>' +
+      '<i class="tap-impact-ring delay"></i>' +
+      '<i class="tap-impact-spark s1"></i>' +
+      '<i class="tap-impact-spark s2"></i>' +
+      '<i class="tap-impact-spark s3"></i>' +
+      '<i class="tap-impact-spark s4"></i>';
+    layer.appendChild(el);
+    while (layer.childElementCount > 8) {
+      layer.removeChild(layer.firstElementChild as Node);
+    }
+    window.setTimeout(() => {
+      if (el.parentNode === layer) layer.removeChild(el);
+    }, 480);
+  }, []);
 
   const handleNumberTap = useCallback(
     (num: FloatingNumber) => {
@@ -504,12 +833,25 @@ export default function Game({
       if (!state.question) return;
       // countdown selesai dulu baru boleh aksi
 
+      // Avatar + efek benturan di posisi bola
+      pulseAvatar(num.isBomb ? 'miss' : 'attack');
+      if (mode === 'tap' && arenaRef.current) {
+        const btn = arenaRef.current.querySelector(
+          `[data-num-id="${num.id}"]`
+        ) as HTMLElement | null;
+        if (btn) {
+          const br = btn.getBoundingClientRect();
+          spawnImpact(br.left + br.width / 2, br.top + br.height / 2, num.isBomb ? 'miss' : 'hit');
+        }
+      }
+
       setState((prev) => {
         if (!prev.question) return prev;
 
         // Bom → nyawa −1, bom hilang, SEMUA bola non-bom yang sempat hilang MUNCUL LANGSUNG
         if (num.isBomb) {
           mistakesRef.current += 1;
+          questionHadMistakeRef.current = true;
           sfx.boom();
           clearNextQuestionTimeout();
           const token = Date.now();
@@ -536,10 +878,14 @@ export default function Game({
             stopAllMusic();
             playEndSound(prev.score, targetScore);
             const grade = calcGrade(
-              prev.score,
-              prev.questionsSolved,
-              prev.maxCombo
-            );
+          prev.score,
+          prev.questionsSolved,
+          prev.maxCombo,
+          {
+            targetScore,
+            isAdventure: typeof targetScore === 'number' && targetScore > 0,
+          }
+        );
             setTimeout(
               () =>
                 onFinish(prev.score, grade, {
@@ -591,26 +937,62 @@ export default function Game({
         // Cek jawaban
         if (isValidSelection(prev.question, selectedValues)) {
           const newCombo = prev.combo + 1;
-          const comboBonus = agility ? COMBO_BONUS_AGILITY : COMBO_BONUS_STATIC;
-          const points =
-            POINTS_PER_SOLVE +
-            (newCombo > 1 ? (newCombo - 1) * comboBonus : 0);
+          const elapsedMs = performance.now() - questionShownAtRef.current;
+          const fastSolve =
+            !questionHadMistakeRef.current &&
+            elapsedMs > 0 &&
+            elapsedMs < 1000;
+          const points = computeSolvePoints({
+            combo: newCombo,
+            agility: isMoving,
+            tempoId: tempoIdRef.current,
+            levelId: levelIdRef.current,
+            forceOps: forceOpsRef.current,
+            fastSolve,
+            inputMode: mode,
+          });
           if (mode === 'slice') sfx.slash();
           if (newCombo > 1) sfx.combo();
           else sfx.correct();
           const bonus = timeBonusSec > 0 ? timeBonusSec : 0;
+          const solved = prev.questionsSolved + 1;
           const next: GameState = {
             ...prev,
             score: prev.score + points,
             combo: newCombo,
             maxCombo: Math.max(prev.maxCombo, newCombo),
-            questionsSolved: prev.questionsSolved + 1,
-            timeLeft: bonus > 0 ? prev.timeLeft + bonus : prev.timeLeft,
+            questionsSolved: solved,
+            timeLeft:
+              isSprint
+                ? prev.timeLeft
+                : bonus > 0
+                  ? prev.timeLeft + bonus
+                  : prev.timeLeft,
             numbers: updatedNumbers,
             selectedIds: newSelectedIds,
           };
-          // Hanya benar → ganti soal setelah jeda singkat
           clearNextQuestionTimeout();
+          if (isSprint && solved >= sprintGoal) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            stopAllMusic();
+            playEndSound(next.score, targetScore);
+            const sprintMs = Math.round(
+              performance.now() - sprintStartedAtRef.current
+            );
+            const grade = calcGrade(next.score, solved, next.maxCombo, {});
+            setTimeout(
+              () =>
+                onFinish(next.score, grade, {
+                  maxCombo: next.maxCombo,
+                  perfect: mistakesRef.current === 0 && solved > 0,
+                  sprintMs,
+                  sessionKind: 'sprint',
+                  sprintLength: sprintGoal,
+                }),
+              100
+            );
+            return { ...next, status: 'won' };
+          }
           nextQuestionTimeoutRef.current = setTimeout(() => {
             nextQuestionTimeoutRef.current = null;
             setState((p) => spawnNextQuestion(p));
@@ -620,6 +1002,7 @@ export default function Game({
 
         // Salah → nyawa −1, bola muncul lagi, SOAL TETAP; tempo Berani: −waktu
         mistakesRef.current += 1;
+          questionHadMistakeRef.current = true;
         sfx.wrong();
         let withTime = prev;
         if (timePenaltySec > 0) {
@@ -630,10 +1013,14 @@ export default function Game({
             stopAllMusic();
             playEndSound(prev.score, targetScore);
             const grade = calcGrade(
-              prev.score,
-              prev.questionsSolved,
-              prev.maxCombo
-            );
+          prev.score,
+          prev.questionsSolved,
+          prev.maxCombo,
+          {
+            targetScore,
+            isAdventure: typeof targetScore === 'number' && targetScore > 0,
+          }
+        );
             setTimeout(
               () =>
                 onFinish(prev.score, grade, {
@@ -666,13 +1053,19 @@ export default function Game({
       timePenaltySec,
       mode,
       targetScore,
+      pulseAvatar,
+      spawnImpact,
+      isSprint,
+      sprintGoal,
+      isMoving,
+      arenaStyle,
     ]
   );
 
 
-  // Mode ketangkasan: bola mantul di arena
+  // Mode Pantul (bounce) + Lewat (pass)
   useEffect(() => {
-    if (!agility || state.status !== 'playing') return;
+    if (!isMoving || state.status !== 'playing') return;
 
     let raf = 0;
     let last = performance.now();
@@ -686,7 +1079,38 @@ export default function Game({
       last = now;
 
       setState((prev) => {
-        if (prev.status !== 'playing') return prev;
+        if (prev.status !== 'playing' || !prev.question) return prev;
+        if (arenaStyle === 'pass') {
+          let numbers = prev.numbers.map((n) => {
+            if (n.sliced) return n;
+            const vx = n.vx ?? 0;
+            const vy = n.vy ?? 0;
+            let x = n.x + vx * dt;
+            let y = n.y + vy * dt;
+            let nvy = vy;
+            // pantul tipis di atas/bawah, horizontal terus
+            if (y < yMin) {
+              y = yMin;
+              nvy = Math.abs(vy);
+            } else if (y > yMax) {
+              y = yMax;
+              nvy = -Math.abs(vy);
+            }
+            return { ...n, x, y, vy: nvy };
+          });
+          // Buang yang sudah keluar kiri/kanan
+          numbers = numbers.filter(
+            (n) => n.sliced || (n.x > -12 && n.x < 112)
+          );
+          // Jamin solusi masih ada di layar
+          if (!hasCorrectOnScreen(prev.question, numbers)) {
+            const scale = mode === 'tap' ? 0.7 : 1;
+            numbers = createNumbersFromQuestion(prev.question, 'pass', scale);
+          }
+          return { ...prev, numbers };
+        }
+
+        // agility bounce
         let changed = false;
         let numbers = prev.numbers.map((n) => {
           if (n.sliced) return n;
@@ -714,42 +1138,15 @@ export default function Game({
           }
           return { ...n, x, y, vx: nvx, vy: nvy };
         });
-
-        // Tolak pelan antar bola supaya jarang numpuk exact (kurangi double-hit)
-        const minDist = 11;
-        for (let i = 0; i < numbers.length; i++) {
-          if (numbers[i].sliced) continue;
-          for (let j = i + 1; j < numbers.length; j++) {
-            if (numbers[j].sliced) continue;
-            const dx = numbers[j].x - numbers[i].x;
-            const dy = numbers[j].y - numbers[i].y;
-            const d = Math.hypot(dx, dy) || 0.01;
-            if (d >= minDist) continue;
-            changed = true;
-            const push = ((minDist - d) / 2) * 0.35;
-            const nx = dx / d;
-            const ny = dy / d;
-            const a = { ...numbers[i] };
-            const b = { ...numbers[j] };
-            a.x = Math.max(xMin, Math.min(xMax, a.x - nx * push));
-            a.y = Math.max(yMin, Math.min(yMax, a.y - ny * push));
-            b.x = Math.max(xMin, Math.min(xMax, b.x + nx * push));
-            b.y = Math.max(yMin, Math.min(yMax, b.y + ny * push));
-            numbers[i] = a;
-            numbers[j] = b;
-          }
-        }
-
         if (!changed) return prev;
         return { ...prev, numbers };
       });
-
       raf = requestAnimationFrame(tick);
     };
-
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [agility, state.status]);
+  }, [isMoving, arenaStyle, state.status, mode]);
+
 
   const hearts = Array.from({ length: INITIAL_LIVES }, (_, i) =>
     i < state.lives ? '❤️' : '🖤'
@@ -762,11 +1159,21 @@ export default function Game({
   const displayText = state.question
     ? fillDisplay(state.question.display, selectedValues)
     : '...';
-  const levelLabel = getLevelById(level).labelId;
-  const arenaRef = useRef<HTMLDivElement | null>(null);
-  const isSlicingRef = useRef(false);
-  const slicedThisGestureRef = useRef<Set<string>>(new Set());
 
+  // Flash kotak soal saat jenis operasi berganti (mata "reset")
+  useEffect(() => {
+    const op = state.question?.operation;
+    if (!op || state.status !== 'playing') return;
+    if (prevOpRef.current != null && prevOpRef.current !== op) {
+      setOpFlash(true);
+      const tid = window.setTimeout(() => setOpFlash(false), 380);
+      prevOpRef.current = op;
+      return () => window.clearTimeout(tid);
+    }
+    prevOpRef.current = op;
+  }, [state.question?.operation, state.question?.display, state.status]);
+
+  const levelLabel = getLevelById(level).labelId;
   /**
    * Mode Slice: hit-test geometri.
    * Jika beberapa bola tumpuk di titik yang sama → hanya 1 bola
@@ -823,13 +1230,39 @@ export default function Game({
   );
 
   const onArenaPointerDown = (e: React.PointerEvent) => {
-    if (mode !== 'slice' || state.status !== 'playing') return;
-    // Jangan mulai drag dari tombol keluar dll.
+    if (state.status !== 'playing') return;
+    // Tap mode: ketuk area kosong → efek “nonjok miss” + avatar
+    if (mode === 'tap') {
+      // Kalau target adalah bola, event sudah di-stop di tombol bola
+      e.preventDefault();
+      pulseAvatar('miss');
+      spawnImpact(e.clientX, e.clientY, 'miss');
+      sfx.tap();
+      return;
+    }
+    if (mode !== 'slice') return;
+    // Slice: mulai drag — jejak tetap mengalir meski belum kena bola
     e.preventDefault();
     isSlicingRef.current = true;
     slicedThisGestureRef.current = new Set();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     handleSliceMove(e.clientX, e.clientY);
+    // titik awal jejak
+    const arena = arenaRef.current;
+    const layer = trailLayerRef.current;
+    if (arena && layer) {
+      const r = arena.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 100;
+      const y = ((e.clientY - r.top) / r.height) * 100;
+      const dot = document.createElement('span');
+      dot.className = 'slice-trail-dot';
+      dot.style.left = `${x}%`;
+      dot.style.top = `${y}%`;
+      layer.appendChild(dot);
+      window.setTimeout(() => {
+        if (dot.parentNode === layer) layer.removeChild(dot);
+      }, 360);
+    }
   };
 
   const onArenaPointerMove = (e: React.PointerEvent) => {
@@ -876,16 +1309,19 @@ export default function Game({
         <div className="game-hud">
           <div className="hud-left">
             <div className="hud-identity">
-              {character?.imageCloseSrc || character?.imageSrc ? (
+              {character?.imageSrc || character?.imageCloseSrc ? (
                 <img
-                  src={character.imageCloseSrc || character.imageSrc}
+                  src={character.imageSrc || character.imageCloseSrc}
                   alt=""
-                  className="hud-avatar"
-                  width={40}
-                  height={40}
+                  className={`hud-avatar hud-avatar-full pose-${avatarPose} style-${attackStyle}`}
+                  width={72}
+                  height={90}
                 />
               ) : (
-                <span className="hud-avatar-emoji" aria-hidden>
+                <span
+                  className={`hud-avatar-emoji pose-${avatarPose} style-${attackStyle}`}
+                  aria-hidden
+                >
                   {character?.emoji ?? '🥋'}
                 </span>
               )}
@@ -893,15 +1329,16 @@ export default function Game({
                 <strong className="hud-name">{displayName}</strong>
                 <span className="hud-meta">
                   {mode === 'slice' ? t('modeSlice') : t('modeTap')}
-                  {agility ? ` · ${t('modeMoving')}` : ` · ${t('modeStill')}`}
+                  {arenaStyle === 'pass'
+                    ? ` · ${t('modePass')}`
+                    : arenaStyle === 'agility'
+                      ? ` · ${t('modeAgility')}`
+                      : ` · ${t('modeStatic')}`}
                 </span>
                 <span className="hud-lives-row">
                   <span className="hud-lives">{hearts.join('')}</span>
                   <span className="hud-context">
                     {cityName ? cityName : levelLabel}
-                    {cityName && typeof targetScore === 'number'
-                      ? ` · ≥${targetScore}`
-                      : ''}
                     {timePenaltySec > 0 ? ` · salah −${timePenaltySec}s` : ''}
                     {timeBonusSec > 0 ? ` · +${timeBonusSec}s` : ''}
                   </span>
@@ -910,19 +1347,18 @@ export default function Game({
             </div>
           </div>
           <div className="hud-center">
-            <span className="hud-timer">{state.timeLeft}s</span>
+            <span className="hud-timer">
+              {isSprint
+                ? `${state.timeLeft}s · ${state.questionsSolved}/${sprintGoal}`
+                : `${state.timeLeft}s`}
+            </span>
           </div>
           <div className="hud-right">
-            <button type="button" className="btn-exit-top" onClick={onExit}>
-              {t('exit')}
-            </button>
-            <div className="hud-right-row">
-              <span className="hud-score">{state.score}</span>
-              {state.combo >= 2 && (
-                <span className="hud-combo" aria-live="polite">
-                  ×{state.combo}
-                </span>
-              )}
+            {/* Baris 1: Keluar + Suara bersebelahan */}
+            <div className="hud-right-row hud-right-actions">
+              <button type="button" className="btn-exit-top" onClick={onExit}>
+                {t('exit')}
+              </button>
               <button
                 type="button"
                 className={`btn-mute-hud ${soundMuted ? 'is-muted' : ''}`}
@@ -933,20 +1369,42 @@ export default function Game({
                 {soundMuted ? '🔇' : '🔊'}
               </button>
             </div>
+            {/* Baris 2: Skor + combo bersebelahan */}
+            <div className="hud-right-row hud-right-score">
+              <span className="hud-score">{state.score}</span>
+              {state.combo >= 2 && (
+                <span className="hud-combo" aria-live="polite">
+                  ×{state.combo}
+                </span>
+              )}
+            </div>
+            {/* Baris 3: target kota (petualangan) */}
+            {cityName && typeof targetScore === 'number' && (
+              <div className="hud-target" title={cityName}>
+                ≥{targetScore}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="game-question">
-          <p className="question-text">{displayText}</p>
-          <p className="question-hint">
-            {mode === 'tap'
-              ? t('hintTap')
-              : t('hintSlice')}
+        <div className={`game-question ${opFlash ? 'op-flash' : ''}`}>
+          {state.question?.operation && (
+            <span
+              className={`op-chip op-chip-${state.question.operation}`}
+              aria-label={opChipLabel(state.question.operation)}
+            >
+              {opChipLabel(state.question.operation)}
+            </span>
+          )}
+          <p className="question-text">
+            {state.question
+              ? renderQuestionParts(displayText, state.question.operation)
+              : displayText}
           </p>
         </div>
 
         <div
-          className={`game-arena city-bg ${mode === 'slice' ? 'slice-mode' : ''} ${agility ? 'agility-mode' : ''}`}
+          className={`game-arena city-bg ${!resolvedBgUrl && bgReady ? 'game-arena-plain' : ''} ${mode === 'slice' ? 'slice-mode' : ''} ${isMoving ? 'agility-mode' : ''} ${arenaStyle === 'pass' ? 'pass-mode' : ''}`}
           data-city={cityId || 'default'}
           style={{
             /* Tunggu probe OK — jangan tampil dojo/broken sebentar */
@@ -979,9 +1437,22 @@ export default function Game({
               </span>
             </div>
           )}
+
+          {state.status === 'paused' && bgPaused && (
+            <div className="countdown-overlay pause-overlay" onClick={resumeFromBgPause} role="button" tabIndex={0}>
+              <div className="countdown-label is-ready">{t('pausedTitle')}</div>
+              <p className="pause-hint">{t('pausedHint')}</p>
+            </div>
+          )}
+
           <div
             ref={trailLayerRef}
             className="slice-trail-layer"
+            aria-hidden
+          />
+          <div
+            ref={impactLayerRef}
+            className="tap-impact-layer"
             aria-hidden
           />
           {state.combo >= 2 && state.status === 'playing' && (
@@ -1019,6 +1490,11 @@ export default function Game({
               </button>
             );
           })}
+        </div>
+
+        {/* Bar tipis portrait: isi ruang (arena lebih pendek) — tanpa link */}
+        <div className="game-chrome-footer" aria-hidden="true">
+          <span className="game-chrome-copy">© Lim Edmon 2026</span>
         </div>
       </div>
     </div>

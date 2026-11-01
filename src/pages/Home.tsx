@@ -3,16 +3,19 @@
 import { useState, useEffect , useRef} from 'react';
 import type {
   ArenaStyle,
+  PracticeSessionKind,
+  SprintLength,
   CharacterId,
   DisplayMode,
   InputMode,
 } from '../lib/types';
 import {
-  ADVENTURE_CITIES,
+ADVENTURE_CITIES,
   ADVENTURE_DIFFICULTIES,
   ADVENTURE_REGIONS,
   getCountryNameId,
   getCountryNameEn,
+  resolveFocusCityId,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS, getLevelById } from '../lib/levels';
@@ -117,9 +120,16 @@ interface HomeProps {
     arena: ArenaStyle,
     playKind: PlayKind,
     adventureDiffId?: string,
-    forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>
+    forceOps?: Array<'add' | 'sub' | 'mul' | 'div'>,
+    /** Kota petualangan yang terlihat aktif di UI — wajib disimpan saat start */
+    adventureCityId?: string,
+    /** Latihan: grade 60s vs sprint N soal */
+    sessionKind?: PracticeSessionKind,
+    sprintLength?: SprintLength
   ) => void;
   initialPlayKind?: PlayKind;
+  /** true = kunci petualangan & bola bergerak, paksa latihan diam */
+  offline?: boolean;
 }
 
 function lastUnlockedCityId(unlocked: string[]): string {
@@ -131,11 +141,13 @@ function lastUnlockedCityId(unlocked: string[]): string {
   return 'jakarta';
 }
 
-export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
+export default function Home({ onStartGame, initialPlayKind, offline = false }: HomeProps) {
   const [step, setStep] = useState<WizardStep>(1);
   /** null = belum dipilih (kecuali default yang diizinkan) */
   const [mode, setMode] = useState<InputMode | null>(null);
   const [arena, setArena] = useState<ArenaStyle | null>(null);
+  const [sessionKind, setSessionKind] = useState<PracticeSessionKind>('grade');
+  const [sprintLength, setSprintLength] = useState<SprintLength>(5);
   const [opsMode, setOpsMode] = useState<'random' | 'focus'>(() =>
     loadProgress().practiceOpsMode === 'focus' ? 'focus' : 'random'
   );
@@ -174,8 +186,11 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
   const [exitDebugConfirm, setExitDebugConfirm] = useState(false);
   /** Highlight field yang belum diisi (scroll + shake) */
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [offlinePopupOpen, setOfflinePopupOpen] = useState(false);
   /** Popup kota terkunci (chip / pin) */
   const [lockedCityName, setLockedCityName] = useState<string | null>(null);
+  /** Tips skor: default tertutup biar page 1 tetap pendek */
+  const [tipsOpen, setTipsOpen] = useState(false);
   const fieldRefs = {
     mode: useRef<HTMLDivElement>(null),
     character: useRef<HTMLDivElement>(null),
@@ -190,6 +205,42 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
    * dan isi ulang slice/tap + pendekar + arena + level + tempo dari pilihan terakhir
    * supaya tidak harus mundur ke langkah 1 lagi.
    */
+  /** Saat masuk Petualangan: fokus ke kota terjauh terbuka (atau terakhir klik jika sudah tamat) */
+  useEffect(() => {
+    if (playKind !== 'petualangan' || mapDebug) return;
+    const p = loadProgress();
+    const focus = resolveFocusCityId(
+      p.adventureUnlocked?.length ? p.adventureUnlocked : ['jakarta'],
+      p.adventureCityId,
+      p.adventureHighScores
+    );
+    setCityId(focus);
+    // Samakan storage dengan UI — hindari game baca kota lama (mis. Manado vs Singapura)
+    if (focus && focus !== (loadProgress().adventureCityId || 'jakarta')) {
+      updateProgress({ adventureCityId: focus });
+    }
+    setRegionPanel('current');
+    const city = ADVENTURE_CITIES.find((c) => c.id === focus);
+    if (city) setOpenSubRegion(city.regionId);
+  }, [playKind, mapDebug]);
+
+  /** Chip kota aktif selalu di-scroll ke tengah baris (jangan tertinggal di kanan) */
+  useEffect(() => {
+    if (playKind !== 'petualangan' || step !== 3) return;
+    const t = window.setTimeout(() => {
+      const active = document.querySelector(
+        '.city-pick .city-chip.active, .city-region-stack .city-chip.active'
+      ) as HTMLElement | null;
+      if (!active) return;
+      active.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [cityId, playKind, step, regionPanel]);
+
   useEffect(() => {
     if (!initialPlayKind) return;
     setPlayKind(initialPlayKind);
@@ -201,7 +252,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     if (p.preferredCharacter) {
       setSelectedCharacterId(p.preferredCharacter);
     }
-    if (p.preferredArena === 'static' || p.preferredArena === 'agility') {
+    if (p.preferredArena === 'static' || p.preferredArena === 'agility' || p.preferredArena === 'pass') {
       setArena(p.preferredArena);
     }
     if (p.preferredLevel) {
@@ -213,7 +264,23 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
     } else if (initialPlayKind === 'petualangan') {
       setAdventureDiffId('normal');
     }
+    if (initialPlayKind === 'petualangan') {
+      const focus = resolveFocusCityId(
+        p.adventureUnlocked?.length ? p.adventureUnlocked : ['jakarta'],
+        p.adventureCityId,
+        p.adventureHighScores
+      );
+      setCityId(focus);
+      setRegionPanel('current');
+    }
   }, [initialPlayKind]);
+
+  /** Offline: hanya latihan + bola diam */
+  useEffect(() => {
+    if (!offline) return;
+    setPlayKind((pk) => (pk === 'petualangan' ? 'latihan' : pk));
+    setArena((a) => (a === 'agility' || a === 'pass' ? 'static' : a));
+  }, [offline]);
 
   /** Mode debug peta: langsung step 2 petualangan, fokus URL opsional */
   useEffect(() => {
@@ -263,13 +330,15 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
       progress.displayMode || 'siang'
     );
     const unlocked = progress.adventureUnlocked || ['jakarta'];
-    const focusCity =
-      progress.adventureCityId &&
-      (progress.adventureCityId === 'jakarta' ||
-        unlocked.includes(progress.adventureCityId))
-        ? progress.adventureCityId
-        : lastUnlockedCityId(unlocked);
+    const focusCity = resolveFocusCityId(
+      unlocked,
+      progress.adventureCityId,
+      progress.adventureHighScores
+    );
     setCityId(focusCity);
+    if (focusCity && focusCity !== (loadProgress().adventureCityId || 'jakarta')) {
+      updateProgress({ adventureCityId: focusCity });
+    }
     setRegionPanel('current');
     setOpenSubRegion(null);
     setPlayerName(progress.playerName ?? '');
@@ -489,6 +558,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                           type="button"
                           key={c.id}
                           role="listitem"
+                          data-city-id={c.id}
                           className={`city-chip ${cityId === c.id ? 'active' : ''}`}
                           onClick={() => {
                             setCityId(c.id);
@@ -734,19 +804,71 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               >
                 <span className="mode-icon">📚</span>
                 <span className="mode-name">{t('playLatihan')}</span>
-                <span className="mode-desc">{t('playLatihanDesc')}</span>
+                <span className="mode-desc">
+                  {offline ? t('offlinePlayOnly') : t('playLatihanDesc')}
+                </span>
               </button>
               <button
                 type="button"
-                className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''}`}
-                onClick={() => { setPlayKind('petualangan'); setFieldError(null); }}
+                className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                onClick={() => {
+                  if (offline) {
+                    setOfflinePopupOpen(true);
+                    return;
+                  }
+                  setPlayKind('petualangan');
+                  setFieldError(null);
+                }}
               >
                 <span className="mode-icon">🌏</span>
                 <span className="mode-name">{t('playPetualangan')}</span>
-                <span className="mode-desc">{t('playPetualanganDesc')}</span>
+                <span className="mode-desc">
+                  {offline ? t('offlineLockedAdventure') : t('playPetualanganDesc')}
+                </span>
               </button>
             </div>
             </div>
+
+            {playKind === 'latihan' && (
+              <div className="ops-mode-block session-kind-block">
+                <h3 className="subsection-title">{t('sessionTitle')}</h3>
+                <div className="mode-buttons mode-buttons-2">
+                  <button
+                    type="button"
+                    className={`mode-btn ${sessionKind === 'grade' ? 'active' : ''}`}
+                    onClick={() => setSessionKind('grade')}
+                  >
+                    <span className="mode-icon">🏆</span>
+                    <span className="mode-name">{t('sessionGrade')}</span>
+                    <span className="mode-desc">{t('sessionGradeDesc')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${sessionKind === 'sprint' ? 'active' : ''}`}
+                    onClick={() => setSessionKind('sprint')}
+                  >
+                    <span className="mode-icon">⏱️</span>
+                    <span className="mode-name">{t('sessionSprint')}</span>
+                    <span className="mode-desc">{t('sessionSprintDesc')}</span>
+                  </button>
+                </div>
+                {sessionKind === 'sprint' && (
+                  <div className="sprint-length-row" role="group" aria-label={t('sprintLengthTitle')}>
+                    <span className="sprint-length-label">{t('sprintLengthTitle')}</span>
+                    {([5, 10] as SprintLength[]).map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`level-btn ${sprintLength === n ? 'active' : ''}`}
+                        onClick={() => setSprintLength(n)}
+                      >
+                        {n} {t('sprintQuestions')}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Pemula = hanya + → Acak/Fokus disembunyikan. Muncul dari Dasar ke atas. */}
             {playKind === 'latihan' &&
@@ -925,6 +1047,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                               type="button"
                               key={c.id}
                               role="listitem"
+                              data-city-id={c.id}
                               className={`city-chip ${cityId === c.id ? 'active' : ''} ${!unlocked ? 'disabled' : ''}`}
                               aria-disabled={!unlocked}
                               onClick={() => {
@@ -1100,7 +1223,7 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
               className={`wizard-field ${fieldError === 'arena' ? 'field-error' : ''}`}
             >
               <h2 className="wizard-panel-title">{t('modeTitle')}</h2>
-              <div className="mode-buttons">
+              <div className="mode-buttons mode-buttons-3">
                 <button
                   type="button"
                   className={`mode-btn ${arena === 'static' ? 'active' : ''}`}
@@ -1116,8 +1239,12 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 </button>
                 <button
                   type="button"
-                  className={`mode-btn ${arena === 'agility' ? 'active' : ''}`}
+                  className={`mode-btn ${arena === 'agility' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
                   onClick={() => {
+                    if (offline) {
+                      setOfflinePopupOpen(true);
+                      return;
+                    }
                     setArena('agility');
                     setFieldError(null);
                     updateProgress({ preferredArena: 'agility' });
@@ -1125,7 +1252,24 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                 >
                   <span className="mode-icon">⚡</span>
                   <span className="mode-name">{t('modeAgility')}</span>
-                  <span className="mode-desc">{t('modeAgilityDesc')}</span>
+                  <span className="mode-desc">{offline ? t('offlineLockedAgility') : t('modeAgilityDesc')}</span>
+                </button>
+                <button
+                  type="button"
+                  className={`mode-btn ${arena === 'pass' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                  onClick={() => {
+                    if (offline) {
+                      setOfflinePopupOpen(true);
+                      return;
+                    }
+                    setArena('pass');
+                    setFieldError(null);
+                    updateProgress({ preferredArena: 'pass' });
+                  }}
+                >
+                  <span className="mode-icon">🌊</span>
+                  <span className="mode-name">{t('modePass')}</span>
+                  <span className="mode-desc">{offline ? t('offlineLockedAgility') : t('modePassDesc')}</span>
                 </button>
               </div>
             </div>
@@ -1158,6 +1302,27 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
 
         {step === 1 && (
           <section className="wizard-panel step-character">
+            <div className="home-tips-block">
+              <button
+                type="button"
+                className="home-tips-toggle"
+                onClick={() => setTipsOpen((o) => !o)}
+                aria-expanded={tipsOpen}
+              >
+                <span className="home-tips-toggle-left">
+                  <span className="home-tips-info" aria-hidden>i</span>
+                  <span>{t('tipsTitle')}</span>
+                </span>
+                <span className="home-tips-chevron" aria-hidden>
+                  {tipsOpen ? '▾' : '▸'}
+                </span>
+              </button>
+              {tipsOpen && (
+                <ul className="home-tips-list">
+                  <li>{t('tipScore')}</li>
+                </ul>
+              )}
+            </div>
             <div
               ref={fieldRefs.mode}
               className={`wizard-field ${fieldError === 'mode' ? 'field-error' : ''}`}
@@ -1344,23 +1509,38 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
                   !playKind
                 )
                   return;
+                if (offline && (playKind === 'petualangan' || arena === 'agility')) {
+                  setFieldError('arena');
+                  return;
+                }
+                const startKind = offline ? 'latihan' : playKind;
+                const startArena = offline ? 'static' : arena;
+                // Offline: hanya Grade + Diam
+                const startSession: PracticeSessionKind = offline
+                  ? 'grade'
+                  : startKind === 'latihan'
+                    ? sessionKind
+                    : 'grade';
                 onStartGame(
                   mode,
                   selectedCharacterId,
                   level,
-                  arena,
-                  playKind,
-                  playKind === 'petualangan'
+                  startArena,
+                  startKind,
+                  startKind === 'petualangan'
                     ? adventureDiffId || undefined
                     : undefined,
-                  playKind === 'latihan' &&
+                  startKind === 'latihan' &&
                   opsMode === 'focus' &&
                   level &&
                   getLevelById(level).operations.length > 1
                     ? focusOps.filter((op) =>
                         (getLevelById(level).operations as string[]).includes(op)
                       )
-                    : undefined
+                    : undefined,
+                  startKind === 'petualangan' ? cityId : undefined,
+                  startSession,
+                  startSession === 'sprint' ? sprintLength : undefined
                 );
               }}
             >
@@ -1369,6 +1549,33 @@ export default function Home({ onStartGame, initialPlayKind }: HomeProps) {
           )}
         </div>
       </div>
+      )}
+
+      {offlinePopupOpen && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="offline-need-net-title"
+          onClick={() => setOfflinePopupOpen(false)}
+        >
+          <div
+            className="offline-need-net-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p id="offline-need-net-title" className="offline-need-net-title">
+              {t('offlineTitle')}
+            </p>
+            <p className="offline-need-net-body">{t('offlinePopup')}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setOfflinePopupOpen(false)}
+            >
+              {t('offlinePopupOk')}
+            </button>
+          </div>
+        </div>
       )}
 
       <InstallHint />

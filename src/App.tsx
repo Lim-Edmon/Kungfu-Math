@@ -18,7 +18,7 @@
  * ---------------------------------------------------------------------
  */
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Home, { type PlayKind } from './pages/Home';
 import Game from './pages/Game';
 import Settings from './pages/Settings';
@@ -26,8 +26,9 @@ import Tutorial from './components/Tutorial';
 import Dojo from './pages/Dojo';
 import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
-import { playMenuBgm, stopAllMusic } from './lib/sound';
-import type { ArenaStyle, CharacterId, InputMode } from './lib/types';
+import AdventureMap from './components/AdventureMap';
+import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
+import type { ArenaStyle, CharacterId, InputMode, PracticeSessionKind, SprintLength} from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
 import {
@@ -39,14 +40,19 @@ import {
 import {
   ADVENTURE_CITIES,
   getCityById,
+  getCountryNameId,
+  getCountryNameEn,
   getNextCityId,
   getNextPlayableCityId,
   getAdventureDifficulty,
   pickCityFunFact,
+  cityBgCandidates,
   MVP_REGION_LAST_CITY_ID,
   MVP_REGION_UNLOCK_MSG,
 } from './lib/adventure';
 import { setLang, detectLangFromDevice, t, getLang } from './lib/i18n';
+import { useOnline, getIsOnline } from './lib/offline';
+import OfflineBanner from './components/OfflineBanner';
 import {
   nextDailyStreak,
   evaluateNewBadges,
@@ -55,7 +61,79 @@ import {
 import './styles/theme.css';
 import './App.css';
 
+
+/** Tangkap error render Progres agar tidak blank full app */
+class DojoErrorBoundary extends React.Component<
+  { children: React.ReactNode; onError?: () => void },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: unknown) {
+    console.error('Dojo crash', err);
+    this.props.onError?.();
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="dojo-page" style={{ padding: '1.25rem' }}>
+          <p role="alert">{t('dojoLoadError')}</p>
+          <button type="button" className="btn-primary" onClick={() => this.setState({ hasError: false })}>
+            {t('offlinePopupOk')}
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 type Screen = 'home' | 'game' | 'result' | 'settings' | 'dojo';
+
+
+/** Nama kota saja (tanpa negara) */
+function formatCityName(city: { nameId: string; nameEn: string } | null | undefined): string {
+  if (!city) return '';
+  return getLang() === 'en' ? city.nameEn : city.nameId;
+}
+
+/** Nama negara lengkap */
+function formatCountryName(city: { countryId: string } | null | undefined): string {
+  if (!city) return '';
+  return getLang() === 'en'
+    ? getCountryNameEn(city.countryId)
+    : getCountryNameId(city.countryId);
+}
+
+/** Kota + negara satu baris (teks biasa / headline) */
+function formatCityCountry(city: { nameId: string; nameEn: string; countryId: string } | null | undefined): string {
+  if (!city) return '';
+  const name = formatCityName(city);
+  const country = formatCountryName(city);
+  return getLang() === 'en' ? `${name} (${country})` : `${name} (negara: ${country})`;
+}
+
+/** Label tombol 2 baris: baris1 + (negara) di bawah — hindari kepotong nama panjang */
+function CityCountryButtonLabel({
+  prefix,
+  city,
+}: {
+  prefix: string;
+  city: { nameId: string; nameEn: string; countryId: string };
+}) {
+  const name = formatCityName(city);
+  const country = formatCountryName(city);
+  return (
+    <span className="btn-city-stack">
+      <span className="btn-city-line1">
+        {prefix} {name}
+      </span>
+      <span className="btn-city-line2">({country})</span>
+    </span>
+  );
+}
 
 function resultHeadline(
   grade: string,
@@ -122,20 +200,39 @@ function App() {
   const [screen, setScreen] = useState<Screen>('home');
   const [selectedMode, setSelectedMode] = useState<InputMode>('slice');
   const [selectedArena, setSelectedArena] = useState<ArenaStyle>('static');
+  const [practiceSessionKind, setPracticeSessionKind] = useState<PracticeSessionKind>('grade');
+  const [sprintLength, setSprintLength] = useState<SprintLength>(5);
   const [playKind, setPlayKind] = useState<PlayKind>('latihan');
   const [adventureDiffId, setAdventureDiffId] = useState('ringan');
   const [passedCity, setPassedCity] = useState(false);
+  /** Gagal tembus target kota beruntun (session) → hint mode lebih sulit */
+  const [cityFailStreak, setCityFailStreak] = useState(0);
   const [funFact, setFunFact] = useState<string | null>(null);
   /** Fun fact: popup manual close (anak sempat baca) */
   const [funFactOpen, setFunFactOpen] = useState(false);
   const [nextCityId, setNextCityId] = useState<string | null>(null);
+  /** Transisi full-screen peta + pesawat sebelum masuk kota berikutnya */
+  const [travelOverlay, setTravelOverlay] = useState<
+    null | { fromId: string; toId: string; phase: 'in' | 'out' }
+  >(null);
+  /** BG kota tujuan — standby di belakang peta saat transisi */
+  const [travelCityBg, setTravelCityBg] = useState<string | null>(null);
   const [lastCityId, setLastCityId] = useState('jakarta');
+  /** Sesi dimulai saat offline → jangan rekam rekor/badge/streak */
+  const [offlineSession, setOfflineSession] = useState(false);
+  const online = useOnline();
+  const [offlineNavPopup, setOfflineNavPopup] = useState(false);
+  /** Internet putus di tengah mode yang butuh koneksi */
+  const [offlineMidOpen, setOfflineMidOpen] = useState(false);
+  const wasOnlineRef = useRef(true);
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [newBadges, setNewBadges] = useState<string[]>([]);
   const [lastMaxCombo, setLastMaxCombo] = useState(0);
+  const [lastSprintMs, setLastSprintMs] = useState<number | null>(null);
+  const [lastSprintLen, setLastSprintLen] = useState<number | null>(null);
   const [forceOps, setForceOps] = useState<
     Array<'add' | 'sub' | 'mul' | 'div'> | undefined
   >(undefined);
@@ -181,11 +278,24 @@ function App() {
     }
   }, []);
 
+  // Musik ikut pause saat minimize / ganti app (home + in-game)
+  useEffect(() => {
+    installMusicBackgroundGuard();
+  }, []);
+
   // Menu / hasil: BGM default volume rendah. Jangan stop saat pindah tab (home↔dojo↔settings).
   // Hanya stop saat masuk game — Game.tsx yang atur musik kota / BGM main.
+  // Delay singkat: cleanup unmount Game (stopAllMusic) bisa jalan setelah effect ini
+  // kalau tanpa delay — musik hasil/adventure mati total.
   useEffect(() => {
     if (screen === 'game') return;
     playMenuBgm();
+    const t = window.setTimeout(() => playMenuBgm(), 120);
+    const t2 = window.setTimeout(() => playMenuBgm(), 400);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(t2);
+    };
   }, [screen]);
 
   // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
@@ -202,7 +312,10 @@ function App() {
     arena: ArenaStyle = 'static',
     kind: PlayKind = 'latihan',
     diffId: string = 'normal',
-    opsForce?: Array<'add' | 'sub' | 'mul' | 'div'>
+    opsForce?: Array<'add' | 'sub' | 'mul' | 'div'>,
+    adventureCityIdArg?: string,
+    sessionKind: PracticeSessionKind = 'grade',
+    sprintLen: SprintLength = 5
   ) => {
     setSelectedMode(mode);
     setSelectedArena(arena);
@@ -211,6 +324,17 @@ function App() {
     setPlayKind(kind);
     setAdventureDiffId(diffId || 'normal');
     setForceOps(kind === 'latihan' ? opsForce : undefined);
+    setPracticeSessionKind(kind === 'latihan' ? sessionKind : 'grade');
+    setSprintLength(sprintLen || 5);
+    // Kota petualangan: pakai yang terlihat di UI (cityId), jangan andalkan storage lama
+    const cityForRun =
+      kind === 'petualangan'
+        ? adventureCityIdArg || loadProgress().adventureCityId || 'jakarta'
+        : undefined;
+    if (cityForRun) {
+      setLastCityId(cityForRun);
+      updateProgress({ adventureCityId: cityForRun });
+    }
     // Simpan pilihan terakhir → "Kembali ke peta" bisa isi default lagi
     updateProgress({
       preferredMode: mode,
@@ -218,7 +342,9 @@ function App() {
       preferredLevel: level,
       preferredArena: arena,
       preferredAdventureDiff: diffId || 'normal',
+      ...(cityForRun ? { adventureCityId: cityForRun } : {}),
     });
+    setOfflineSession(!getIsOnline());
     setScreen('game');
   };
 
@@ -231,9 +357,31 @@ function App() {
 
   const handleContinueNextCity = () => {
     if (!nextCityId || !selectedCharacterId) return;
-    updateProgress({ adventureCityId: nextCityId });
+    const fromId = lastCityId || loadProgress().adventureCityId || 'jakarta';
+    const toId = nextCityId;
+    updateProgress({ adventureCityId: toId });
+    setLastCityId(toId);
     setPassedCity(false);
+    setNextCityId(null);
+    setFunFact(null);
+    setFunFactOpen(false);
+    // Game kota tujuan mount di belakang peta (holdStart) — BG/HUD ready
     setScreen('game');
+    setTravelOverlay({ fromId, toId, phase: 'in' });
+  };
+
+  const finishTravelToGame = () => {
+    // Lepas peta → countdown game mulai (sudah ready di belakang)
+    setTravelOverlay(null);
+    setScreen('game');
+  };
+
+  const handleTravelOverlayDone = () => {
+    // Dipanggil setelah pesawat landed + 0.5s — fade peta singkat
+    setTravelOverlay((prev) => (prev ? { ...prev, phase: 'out' } : null));
+    window.setTimeout(() => {
+      finishTravelToGame();
+    }, 700);
   };
 
   const handleBackToAdventureMap = () => {
@@ -249,9 +397,58 @@ function App() {
   const handleFinishGame = (
     score: number,
     grade: string,
-    runMeta?: { maxCombo: number; perfect: boolean }
+    runMeta?: {
+      maxCombo: number;
+      perfect: boolean;
+      sprintMs?: number;
+      sessionKind?: string;
+      sprintLength?: number;
+    }
   ) => {
     const prog0 = loadProgress();
+    const maxCombo = runMeta?.maxCombo ?? 0;
+    setLastMaxCombo(maxCombo);
+    // Sprint rekor waktu (latihan, online)
+    if (
+      !offlineSession &&
+      playKind === 'latihan' &&
+      runMeta?.sessionKind === 'sprint' &&
+      typeof runMeta.sprintMs === 'number' &&
+      runMeta.sprintMs > 0
+    ) {
+      const len = runMeta.sprintLength === 10 ? 10 : 5;
+      const key = `${selectedLevel}|${len}|${selectedArena}`;
+      const prevBest = prog0.sprintBestMs?.[key];
+      if (prevBest == null || runMeta.sprintMs < prevBest) {
+        updateProgress({
+          sprintBestMs: { ...(prog0.sprintBestMs || {}), [key]: runMeta.sprintMs },
+        });
+        setIsNewRecord(true);
+      }
+      setLastSprintMs(runMeta.sprintMs);
+      setLastSprintLen(len);
+    } else {
+      setLastSprintMs(null);
+      setLastSprintLen(null);
+    }
+
+    // Offline session: latihan murni, tidak ubah progress / rekor / badge
+    if (offlineSession) {
+      setLastScore(score);
+      setLastGrade(grade);
+      setLastHighScore(prog0.highScores?.[selectedLevel] ?? 0);
+      setIsNewRecord(false);
+      setPassedCity(false);
+      setNextCityId(null);
+      setFunFact(null);
+      setFunFactOpen(false);
+      setJourneyEndOpen(false);
+      setNewBadges([]);
+      setCelebrateOpen(false);
+      setScreen('result');
+      return;
+    }
+
     const meta = {
       playerName: prog0.playerName,
       inputMode: selectedMode,
@@ -274,8 +471,6 @@ function App() {
     setJourneyEndOpen(false);
     setNewBadges([]);
 
-    const maxCombo = runMeta?.maxCombo ?? 0;
-    setLastMaxCombo(maxCombo);
     const perfect = !!runMeta?.perfect;
     let passed = false;
     let nextId: string | null = null;
@@ -323,6 +518,8 @@ function App() {
       updateProgress(progressPatch);
       setPassedCity(passed);
       setNextCityId(nextId);
+      if (passed) setCityFailStreak(0);
+      else setCityFailStreak((n) => n + 1);
       const fact = passed ? pickCityFunFact(cityId) : null;
       setFunFact(fact);
       // Normal: ujung = Port Moresby. Playdebug: ujung = New York (data penuh).
@@ -406,12 +603,44 @@ function App() {
   };
 
   const handleNav = (tab: NavTab) => {
+    // Offline: Progres tidak dibuka (bisa blank kalau screen=dojo & online=false).
+    // Selalu paksa beranda + popup — jangan setScreen('dojo').
+    if (!online && tab === 'dojo') {
+      setScreen('home');
+      setOfflineNavPopup(true);
+      scrollToTop();
+      return;
+    }
     if (tab === 'home') setScreen('home');
     else if (tab === 'dojo') setScreen('dojo');
     else setScreen('settings');
-    // Langsung scroll saat klik tab (jangan tunggu effect saja)
     scrollToTop();
   };
+
+
+
+  // Offline + screen dojo → beranda + popup (hindari main kosong)
+  useEffect(() => {
+    if (!online && screen === 'dojo') {
+      setScreen('home');
+      setOfflineNavPopup(true);
+    }
+  }, [online, screen]);
+
+  // Internet putus di tengah petualangan / bola gerak → beri tahu, jangan paksa keluar
+  useEffect(() => {
+    const prev = wasOnlineRef.current;
+    wasOnlineRef.current = online;
+    if (prev && !online && screen === 'game') {
+      const needsNet =
+        playKind === 'petualangan' ||
+        selectedArena === 'agility' ||
+        selectedArena === 'pass';
+      if (needsNet) setOfflineMidOpen(true);
+    }
+    // Online lagi → tutup soft notice
+    if (online) setOfflineMidOpen(false);
+  }, [online, screen, playKind, selectedArena]);
 
   // Setiap ganti layar → mulai dari atas
   useEffect(() => {
@@ -439,6 +668,56 @@ function App() {
     }
   })();
   const showChrome = screen !== 'game' && !mapDebugMode;
+
+  // Safety: jika animasi tidak selesai, tetap masuk game
+  useEffect(() => {
+    if (!travelOverlay || travelOverlay.phase !== 'in') return;
+    const safety = window.setTimeout(() => {
+      finishTravelToGame();
+    }, 15000);
+    return () => window.clearTimeout(safety);
+  }, [travelOverlay?.fromId, travelOverlay?.toId, travelOverlay?.phase]);
+
+  // Preload + set BG kota tujuan di belakang peta (siap sebelum fade)
+  useEffect(() => {
+    if (!travelOverlay?.toId) {
+      setTravelCityBg(null);
+      return;
+    }
+    let cancelled = false;
+    const list = cityBgCandidates(travelOverlay.toId).filter(
+      (u) => !u.includes('/dojo.')
+    );
+    const probe = (url: string) =>
+      new Promise<boolean>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    (async () => {
+      for (const url of list) {
+        if (cancelled) return;
+        if (await probe(url)) {
+          if (!cancelled) setTravelCityBg(url);
+          return;
+        }
+      }
+      if (!cancelled) {
+        for (const fb of ['/cities/bg/default.webp', '/cities/bg/default.jpg']) {
+          if (await probe(fb)) {
+            if (!cancelled) setTravelCityBg(fb);
+            return;
+          }
+        }
+        if (!cancelled) setTravelCityBg(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [travelOverlay?.toId]);
+
   const showBottomNav = showChrome;
   const _lv = getLevelById(selectedLevel);
   const levelLabel = getLang() === 'en' ? _lv.labelEn : _lv.labelId;
@@ -449,16 +728,45 @@ function App() {
         showChrome ? 'has-bottom-nav' : ''
       }`}
     >
+      <OfflineBanner online={online} />
       <main className="app-main">
         {screen === 'home' && (
           <Home
             key={`${homeKey}-${langTick}`}
             onStartGame={handleStartGame}
             initialPlayKind={homePlayKind}
+            offline={!online}
           />
         )}
 
-        {screen === 'dojo' && <Dojo key={langTick} />}
+        {screen === 'dojo' && (
+          online ? (
+            <DojoErrorBoundary
+              key={langTick}
+              onError={() => {
+                setScreen('home');
+                setOfflineNavPopup(true);
+              }}
+            >
+              <Dojo offline={false} />
+            </DojoErrorBoundary>
+          ) : (
+            <div className="dojo-page offline-dojo-gate" role="status">
+              <h1>{t('navProgres')}</h1>
+              <p className="offline-need-net-body">{t('offlineProgressPopup')}</p>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  setScreen('home');
+                  setOfflineNavPopup(false);
+                }}
+              >
+                {t('offlinePopupOk')}
+              </button>
+            </div>
+          )
+        )}
 
         {screen === 'settings' && (
           <Settings
@@ -469,15 +777,24 @@ function App() {
             key={langTick}
             onBack={() => setScreen('home')}
             onLangChange={() => setLangTick((n) => n + 1)}
+            offline={!online}
           />
         )}
 
         {screen === 'game' && selectedCharacterId && (
           <Game
+            key={`game-${lastCityId}-${playKind}`}
             mode={selectedMode}
             characterId={selectedCharacterId}
             level={selectedLevel}
-            agility={selectedArena === 'agility'}
+            holdStart={!!travelOverlay}
+            arenaStyle={selectedArena}
+            practiceSession={playKind === 'latihan' ? practiceSessionKind : 'grade'}
+            sprintTarget={
+              playKind === 'latihan' && practiceSessionKind === 'sprint'
+                ? sprintLength
+                : undefined
+            }
             timeBonusSec={
               playKind === 'petualangan'
                 ? getAdventureDifficulty(adventureDiffId).timeBonus
@@ -490,27 +807,29 @@ function App() {
             }
             cityName={
               playKind === 'petualangan'
-                ? (getLang()==='en' ? getCityById(loadProgress().adventureCityId || 'jakarta').nameEn : getCityById(loadProgress().adventureCityId || 'jakarta').nameId)
+                ? formatCityCountry(getCityById(lastCityId || 'jakarta'))
                 : undefined
             }
             cityId={
               playKind === 'petualangan'
-                ? loadProgress().adventureCityId || 'jakarta'
+                ? lastCityId || 'jakarta'
                 : undefined
             }
             targetScore={
               playKind === 'petualangan'
-                ? getCityById(loadProgress().adventureCityId || 'jakarta')
-                    .targetScore
+                ? getCityById(lastCityId || 'jakarta').targetScore
                 : undefined
             }
             onExit={handleExitGame}
             forceOps={forceOps}
+            tempoId={
+              playKind === 'petualangan' ? adventureDiffId : undefined
+            }
             onFinish={handleFinishGame}
           />
         )}
 
-        {screen === 'result' && (() => {
+        {screen === 'result' && !travelOverlay && (() => {
           const city =
             playKind === 'petualangan' ? getCityById(lastCityId) : null;
           const nextCity = nextCityId ? getCityById(nextCityId) : null;
@@ -518,7 +837,7 @@ function App() {
             playKind === 'petualangan' && passedCity && !nextCity;
           const headline = resultHeadline(lastGrade, isNewRecord, lastScore, {
             passedCity: playKind === 'petualangan' && passedCity && !journeyComplete,
-            cityName: getLang()==='en' ? city?.nameEn : city?.nameId,
+            cityName: city ? formatCityCountry(city) : undefined,
             journeyComplete,
           });
           const celebrate =
@@ -607,13 +926,36 @@ function App() {
               <div className="result-summary">
                 <p className="result-level">
                   {playKind === 'petualangan' && city
-                    ? `${t('playPetualangan')} · ${getLang()==='en' ? city.nameEn : city.nameId}`
+                    ? `${t('playPetualangan')} · ${formatCityCountry(city)}`
                     : `${t('levelTitle')}: ${levelLabel}`}
                 </p>
+                {offlineSession && (
+                  <p className="offline-result-hint" role="status">
+                    {t('offlineResultHint')}
+                  </p>
+                )}
                 <p className="result-score-line">
                   <strong>{t('score')} {lastScore}</strong>
                   <span> · {lastGrade}</span>
                 </p>
+                {lastSprintMs != null && lastSprintLen != null && (
+                  <p className="result-sprint-line">
+                    <strong>
+                      {t('sprintTimeLabel')}:{' '}
+                      {(lastSprintMs / 1000).toFixed(1)}s
+                    </strong>
+                    <span>
+                      {' '}
+                      · {lastSprintLen} {t('sprintQuestions')}
+                    </span>
+                    {isNewRecord && practiceSessionKind === 'sprint' && (
+                      <span> · {t('sprintNewRecord')}</span>
+                    )}
+                  </p>
+                )}
+                {lastSprintMs != null && (
+                  <p className="result-combo-note">{t('resultSprintHint')}</p>
+                )}
                 <p className="result-combo-note">
                   {t('runMaxCombo')}: ×{lastMaxCombo}
                 </p>
@@ -621,10 +963,10 @@ function App() {
                   <p className="result-high">
                     {passedCity
                       ? getLang() === 'en'
-                        ? `Target ${city.targetScore} points in ${city.nameEn} reached${
+                        ? `Target ${city.targetScore} points in ${formatCityCountry(city)} reached${
                             nextCity ? '. You can continue to the next city.' : '.'
                           }`
-                        : `Target ${city.targetScore} poin ${city.nameId} tercapai${
+                        : `Target ${city.targetScore} poin ${formatCityCountry(city)} tercapai${
                             nextCity ? ', kamu bisa lanjut ke kota berikut.' : '.'
                           }`
                       : getLang() === 'en'
@@ -637,7 +979,17 @@ function App() {
                       : ''}
                   </p>
                 )}
-                {playKind !== 'petualangan' && (
+
+                {playKind === 'petualangan' &&
+                  city &&
+                  !passedCity &&
+                  cityFailStreak >= 2 && (
+                  <p className="result-fail-hint" role="status">
+                    {t('failHintHarder')}
+                  </p>
+                )}
+
+                {playKind !== 'petualangan' && !offlineSession && (
                   <p className="result-high">
                     {t('highScore')}: {lastHighScore}
                     {isNewRecord
@@ -677,20 +1029,32 @@ function App() {
                 {playKind === 'petualangan' && passedCity && nextCity && (
                   <button
                     type="button"
-                    className="btn-primary"
+                    className="btn-primary btn-city-wrap"
                     onClick={handleContinueNextCity}
                   >
-                    {t('continueCity')} {getLang() === 'en' ? nextCity.nameEn : nextCity.nameId}
+                    <CityCountryButtonLabel
+                      prefix={t('continueCity')}
+                      city={nextCity}
+                    />
                   </button>
                 )}
                 <button
                   type="button"
-                  className="btn-primary"
+                  className={`btn-primary${playKind === 'petualangan' && city ? ' btn-city-wrap' : ''}`}
                   onClick={handlePlayAgain}
                 >
-                  {playKind === 'petualangan' && city
-                    ? (getLang()==='en' ? `${t('playAgain')} in ${city.nameEn}` : `${t('playAgain')} di ${city.nameId}`)
-                    : t('playAgain')}
+                  {playKind === 'petualangan' && city ? (
+                    <CityCountryButtonLabel
+                      prefix={
+                        getLang() === 'en'
+                          ? `${t('playAgain')} in`
+                          : `${t('playAgain')} di`
+                      }
+                      city={city}
+                    />
+                  ) : (
+                    t('playAgain')
+                  )}
                 </button>
                 {playKind === 'petualangan' ? (
                   <button
@@ -698,7 +1062,9 @@ function App() {
                     className="btn-ghost"
                     onClick={handleBackToAdventureMap}
                   >
-                    {getLang()==='en' ? 'Back to map' : 'Kembali ke peta'}
+                    {passedCity && nextCity
+                      ? t('chooseOtherCity')
+                      : t('backToMap')}
                   </button>
                 ) : (
                   <button
@@ -709,13 +1075,15 @@ function App() {
                     {t('backToPractice')}
                   </button>
                 )}
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => setScreen('dojo')}
-                >
-                  {t('seeProgress')}
-                </button>
+                {!offlineSession && (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => { if (!online) { setOfflineNavPopup(true); return; } setScreen('dojo'); }}
+                  >
+                    {t('seeProgress')}
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -735,8 +1103,83 @@ function App() {
       )}
 
       {showChrome && <Footer />}
+
+      {travelOverlay && (
+        <div
+          className={`travel-overlay travel-overlay-${travelOverlay.phase}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('continueCity')}
+        >
+          <div className="travel-overlay-inner">
+            <AdventureMap
+              fillViewport
+              unlockedIds={
+                loadProgress().adventureUnlocked?.length
+                  ? loadProgress().adventureUnlocked
+                  : ['jakarta']
+              }
+              wonIds={ADVENTURE_CITIES.filter((c) => {
+                const hs = loadProgress().adventureHighScores?.[c.id] ?? 0;
+                return hs >= c.targetScore;
+              }).map((c) => c.id)}
+              activeId={travelOverlay.toId}
+              travelFromId={travelOverlay.fromId}
+              travelToId={travelOverlay.toId}
+              onTravelDone={handleTravelOverlayDone}
+            />
+          </div>
+        </div>
+      )}
+
       {showBottomNav && (
-        <BottomNav key={langTick} active={navActive} onChange={handleNav} />
+        <BottomNav key={langTick} active={navActive} onChange={handleNav} offline={!online} />
+      )}
+
+      {offlineMidOpen && screen === 'game' && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setOfflineMidOpen(false)}
+        >
+          <div className="offline-need-net-box" onClick={(e) => e.stopPropagation()}>
+            <p className="offline-need-net-title">{t('offlineMidTitle')}</p>
+            <p className="offline-need-net-body">
+              {playKind === 'petualangan'
+                ? t('offlineMidBodyAdventure')
+                : t('offlineMidBody')}
+            </p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setOfflineMidOpen(false)}
+            >
+              {t('offlineMidOk')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {offlineNavPopup && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setOfflineNavPopup(false)}
+        >
+          <div className="offline-need-net-box" onClick={(e) => e.stopPropagation()}>
+            <p className="offline-need-net-title">{t('offlineTitle')}</p>
+            <p className="offline-need-net-body">{t('offlineProgressPopup')}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => setOfflineNavPopup(false)}
+            >
+              {t('offlinePopupOk')}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -4,8 +4,12 @@
 
 export type InputMode = 'slice' | 'tap';
 
-/** Diam = bola statis; agility = bola bergerak (mantul) */
-export type ArenaStyle = 'static' | 'agility';
+/** Diam / Pantul / Lewat */
+export type ArenaStyle = 'static' | 'agility' | 'pass';
+
+/** Latihan: Grade = skor 60 dtk; Sprint = waktu N soal */
+export type PracticeSessionKind = 'grade' | 'sprint';
+export type SprintLength = 5 | 10;
 
 export type DisplayMode = 'siang' | 'malam' | 'nyaman';
 
@@ -47,8 +51,12 @@ export interface ScoreRecord {
   at: string;
   /** Slice / Tap */
   inputMode: InputMode;
-  /** Diam / Ketangkasan */
+  /** Diam / Pantul / Lewat */
   arena: ArenaStyle;
+  /** Latihan grade vs sprint */
+  sessionKind?: PracticeSessionKind;
+  /** Sprint: jumlah soal (5/10) */
+  sprintLength?: SprintLength;
   /** Level soal (latihan) */
   levelId?: string;
   /** Tempo petualangan (santai/ringan/normal/berani) */
@@ -87,6 +95,8 @@ export interface PlayerProgress {
   tutorialSeen: boolean;
   /** Latihan: acak operasi atau fokus operasi tertentu */
   practiceOpsMode: 'random' | 'focus';
+  /** Best sprint time ms keyed by `${levelId}|${len}|${arena}` */
+  sprintBestMs: Record<string, number>;
   /** Operasi yang difokuskan (jika focus) */
   focusOps: Array<'add' | 'sub' | 'mul' | 'div'>;
   /** Streak harian (hari berturut main) */
@@ -125,6 +135,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   adventureScoreRecords: {},
   tutorialSeen: false,
   practiceOpsMode: 'random',
+  sprintBestMs: {},
   focusOps: ['add'],
   dailyStreak: 0,
   lastPlayDate: '',

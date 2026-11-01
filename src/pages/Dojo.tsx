@@ -16,8 +16,10 @@ import {
   getCityById,
   getCountryNameId,
   getCountryNameEn,
+  resolveFocusCityId,
 } from '../lib/adventure';
-import type { ScoreRecord } from '../lib/types';
+import type { ScoreRecord, PlayerProgress } from '../lib/types';
+import { DEFAULT_PROGRESS } from '../lib/types';
 import { t, getLang } from '../lib/i18n';
 import { BADGE_DEFS } from '../lib/badges';
 
@@ -58,9 +60,37 @@ function formatRecordMeta(
   return parts.join(' · ');
 }
 
-export default function Dojo() {
+export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
   const [badgesOpen, setBadgesOpen] = useState(false);
-  const progress = loadProgress();
+  let progress: PlayerProgress;
+  try {
+    progress = loadProgress();
+  } catch (e) {
+    console.error('Dojo loadProgress', e);
+    progress = {
+      ...DEFAULT_PROGRESS,
+      highScores: { ...DEFAULT_PROGRESS.highScores },
+      highScoreRecords: {},
+      adventureHighScores: {},
+      adventureScoreRecords: {},
+      badges: [],
+      adventureUnlocked: ['jakarta'],
+    };
+  }
+  // Pastikan field wajib ada (data import / offline aneh)
+  if (!progress || typeof progress !== 'object') {
+    progress = { ...DEFAULT_PROGRESS, highScores: {}, badges: [], adventureUnlocked: ['jakarta'] };
+  }
+  if (!Array.isArray(progress.badges)) progress = { ...progress, badges: [] };
+  if (!progress.highScores || typeof progress.highScores !== 'object') {
+    progress = { ...progress, highScores: {} };
+  }
+  if (!progress.adventureHighScores || typeof progress.adventureHighScores !== 'object') {
+    progress = { ...progress, adventureHighScores: {} };
+  }
+  if (!Array.isArray(progress.adventureUnlocked) || progress.adventureUnlocked.length === 0) {
+    progress = { ...progress, adventureUnlocked: ['jakarta'] };
+  }
   // Belum main / belum pilih: tampilkan Yu Jin (bukan Hong Yi warisan data lama)
   const preferredId =
     progress.totalGamesPlayed > 0 && progress.preferredCharacter
@@ -71,7 +101,6 @@ export default function Dojo() {
     progress.playerName?.trim() || character?.name || t('playerDefault');
 
   const [tab, setTab] = useState<DojoTab>('level');
-  const [tipsOpen, setTipsOpen] = useState(false);
   const [openRegions, setOpenRegions] = useState<Record<string, boolean>>({});
   const regionListRef = useRef<HTMLDivElement>(null);
 
@@ -93,8 +122,13 @@ export default function Dojo() {
     ? progress.adventureUnlocked
     : ['jakarta'];
   const unlockedCount = unlockedList.length;
+  /** Fokus UI: kota terjauh terbuka (bukan terakhir diklik), kecuali jalur konten sudah tamat */
   const currentCity = getCityById(
-    progress.adventureCityId || 'jakarta'
+    resolveFocusCityId(
+      unlockedList,
+      progress.adventureCityId,
+      progress.adventureHighScores
+    )
   );
   const passedCount = ADVENTURE_CITIES.filter((c) => {
     const hs = progress.adventureHighScores?.[c.id] ?? 0;
@@ -156,6 +190,9 @@ export default function Dojo() {
       <header className="dojo-header">
         <h1>{t('dojoTitle')}</h1>
         <p className="dojo-sub">{t('dojoSub')}</p>
+        {offline && (
+          <p className="offline-dojo-note" role="status">{t('offlineNoRecord')}</p>
+        )}
       </header>
 
       <section className="dojo-card dojo-hero">
@@ -314,10 +351,24 @@ export default function Dojo() {
               const openCount = cities.filter(
                 (c) => c.id === 'jakarta' || unlockedList.includes(c.id)
               ).length;
+              // Region terkunci: hanya nama region, tidak bocorkan daftar kota
+              if (!regionUnlocked) {
+                return (
+                  <div key={reg.id} className="dojo-region is-locked is-secret">
+                    <div
+                      className="dojo-region-head dojo-region-locked-only"
+                      aria-disabled="true"
+                    >
+                      <span>🔒 {label}</span>
+                      <span className="dojo-region-meta">{t('locked')}</span>
+                    </div>
+                  </div>
+                );
+              }
               return (
                 <div
                   key={reg.id}
-                  className={`dojo-region ${regionUnlocked ? '' : 'is-locked'}`}
+                  className="dojo-region"
                 >
                   <button
                     type="button"
@@ -335,7 +386,6 @@ export default function Dojo() {
                     </span>
                     <span className="dojo-region-meta">
                       {openCount}/{cities.length}
-                      {!regionUnlocked ? ` · ${t('locked')}` : ''}
                     </span>
                   </button>
                   {open && (
@@ -394,29 +444,6 @@ export default function Dojo() {
           </div>
         </section>
       )}
-
-      <section className="dojo-tips-section">
-        <button
-          type="button"
-          className="dojo-tips-toggle"
-          onClick={() => setTipsOpen((o) => !o)}
-          aria-expanded={tipsOpen}
-        >
-          <span>{t('tipsTitle')}</span>
-          <span className="dojo-tips-chevron" aria-hidden>
-            {tipsOpen ? '▾' : '▸'}
-          </span>
-        </button>
-        {tipsOpen && (
-          <ul className="dojo-tips">
-            <li>{t('tipSlice')}</li>
-            <li>{t('tipTap')}</li>
-            <li>{t('tipAgility')}</li>
-            <li>{t('tipAdventure')}</li>
-            <li>{t('tipExport')}</li>
-          </ul>
-        )}
-      </section>
 
       
     </div>

@@ -5,6 +5,8 @@ Latihan hitung cepat dengan gaya pendekar China kuno versi imut — mode **Slice
 
 **Main online:** [https://kungfu-math.vercel.app/](https://kungfu-math.vercel.app/)
 
+**Ownership / no reverse-engineering:** See [NOTICE.txt](public/NOTICE.txt) and [LICENSE](LICENSE) (English). Collaboration or permission: [Trakteer](https://trakteer.id/lim.edmon).
+
 Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di perangkat.
 
 ## Cara menjalankan (lokal / Codespaces)
@@ -133,11 +135,11 @@ Vite + React + TypeScript · Deploy: Vercel
 
 ## Akses uji (developer)
 
-Di **Pengaturan → Masukkan Kode Progress**, ketik salah satu (abaikan spasi/kapital):
+Kode buka-semua untuk pengujian **tidak dipublikasikan di README**.  
+Gunakan hanya dari catatan internal / Codespace. Jangan bagikan ke pemain.
 
-- `edmon halim the great`
-- `unlock all`
-- `buka semua`
+Mode debug peta (koordinat/aset) tetap: `?mapdebug=1` — lihat bagian Debug peta di atas.
 
-Efek: **semua kota petualangan** + **semua lencana** terbuka. Skor/rekor **tidak** diisi palsu.  
-Untuk kondisi fresh lagi: **Hapus semua data** di Pengaturan.
+## Skor & target kota
+
+Lihat [docs/SCORING.md](docs/SCORING.md) — pengali tempo/level/arena/fokus, combo, soft-reset region (−100), pause saat keluar app.
