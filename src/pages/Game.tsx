@@ -1131,6 +1131,44 @@ export default function Game({
               }
               return { ...n, x, y, vy: nvy };
             });
+          // Benturan antar bola — pisahkan + ubah arah relatif (mirip pantul)
+          const minDist = 9; // % arena (~diameter visual)
+          for (let i = 0; i < numbers.length; i++) {
+            for (let j = i + 1; j < numbers.length; j++) {
+              const a = numbers[i];
+              const b = numbers[j];
+              let dx = b.x - a.x;
+              let dy = b.y - a.y;
+              let dist = Math.hypot(dx, dy);
+              if (dist < 0.01) {
+                dx = 0.01;
+                dy = 0;
+                dist = 0.01;
+              }
+              if (dist >= minDist) continue;
+              const nx = dx / dist;
+              const ny = dy / dist;
+              const overlap = (minDist - dist) / 2;
+              a.x -= nx * overlap;
+              a.y -= ny * overlap;
+              b.x += nx * overlap;
+              b.y += ny * overlap;
+              // Tukar komponen kecepatan sepanjang normal
+              const avx = a.vx ?? 0;
+              const avy = a.vy ?? 0;
+              const bvx = b.vx ?? 0;
+              const bvy = b.vy ?? 0;
+              const va = avx * nx + avy * ny;
+              const vb = bvx * nx + bvy * ny;
+              const dv = va - vb;
+              a.vx = avx - dv * nx;
+              a.vy = avy - dv * ny;
+              b.vx = bvx + dv * nx;
+              b.vy = bvy + dv * ny;
+              numbers[i] = { ...a };
+              numbers[j] = { ...b };
+            }
+          }
           // Yang sudah lewat tepi → hilang (nanti diganti gelombang baru)
           numbers = numbers.filter((n) => n.x > -18 && n.x < 118);
           // Jika jawaban benar belum ada di arena: tambah gelombang dari tepi
@@ -1388,13 +1426,12 @@ export default function Game({
             </div>
           </div>
           <div className="hud-center">
-            <span className="hud-timer">
-              {isSprint ? `${state.timeLeft}s` : `${state.timeLeft}s`}
-            </span>
-            {isSprint && (
-              <span className="hud-sprint-progress" aria-live="polite">
+            {isSprint ? (
+              <span className="hud-sprint-progress hud-sprint-center" aria-live="polite">
                 {state.questionsSolved}/{sprintGoal}
               </span>
+            ) : (
+              <span className="hud-timer">{state.timeLeft}s</span>
             )}
           </div>
           <div className="hud-right">
@@ -1413,17 +1450,25 @@ export default function Game({
                 {soundMuted ? '🔇' : '🔊'}
               </button>
             </div>
-            {/* Baris 2: Skor + combo bersebelahan */}
-            <div className="hud-right-row hud-right-score">
-              <span className="hud-score">{state.score}</span>
-              {state.combo >= 2 && (
-                <span className="hud-combo" aria-live="polite">
-                  ×{state.combo}
+            {/* Sprint: waktu di kanan (goal = tercepat). Grade: skor + combo */}
+            {isSprint ? (
+              <div className="hud-right-row hud-right-score">
+                <span className="hud-score hud-sprint-time" aria-live="polite">
+                  {state.timeLeft}s
                 </span>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="hud-right-row hud-right-score">
+                <span className="hud-score">{state.score}</span>
+                {state.combo >= 2 && (
+                  <span className="hud-combo" aria-live="polite">
+                    {t('comboInline').replace('{n}', String(state.combo))}
+                  </span>
+                )}
+              </div>
+            )}
             {/* Baris 3: target kota (petualangan) */}
-            {cityName && typeof targetScore === 'number' && (
+            {!isSprint && cityName && typeof targetScore === 'number' && (
               <div className="hud-target" title={cityName}>
                 ≥{targetScore}
               </div>
@@ -1499,9 +1544,9 @@ export default function Game({
             className="tap-impact-layer"
             aria-hidden
           />
-          {state.combo >= 2 && state.status === 'playing' && (
+          {state.combo >= 2 && state.status === 'playing' && !isSprint && (
             <div className="combo-float" key={`c-${state.combo}-${state.questionsSolved}`} aria-hidden>
-              ×{state.combo}
+              {t('comboInline').replace('{n}', String(state.combo))}
             </div>
           )}
           {state.numbers.map((num, index) => {

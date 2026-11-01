@@ -62,6 +62,7 @@ function formatRecordMeta(
 
 export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
   const [badgesOpen, setBadgesOpen] = useState(false);
+  const [sprintOpen, setSprintOpen] = useState(false);
   let progress: PlayerProgress;
   try {
     progress = loadProgress();
@@ -248,6 +249,55 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
             <strong>{progress.perfectCityStreak || 0}</strong>
           </li>
         </ul>
+      </section>
+
+      <section className="dojo-stats-card" aria-label="Sprint records">
+        <button
+          type="button"
+          className="dojo-collapse-btn"
+          onClick={() => setSprintOpen((v) => !v)}
+          aria-expanded={sprintOpen}
+        >
+          <h3 className="dojo-section-title dojo-collapse-row">
+            <span>{t('sprintBestSection')}</span>
+            <span className="dojo-collapse-hint">
+              {sprintOpen ? '▴' : '▾'}
+            </span>
+          </h3>
+        </button>
+        {sprintOpen && (
+          <ul className="dojo-record-list">
+            {(() => {
+              const best = progress.sprintBestMs || {};
+              const byLen: Record<string, number> = {};
+              Object.entries(best).forEach(([key, ms]) => {
+                if (typeof ms !== 'number' || ms <= 0) return;
+                const parts = key.split('|');
+                const len = parts[1] || parts[0] || '?';
+                const prev = byLen[len];
+                if (prev == null || ms < prev) byLen[len] = ms;
+              });
+              const lens = Object.keys(byLen).sort(
+                (a, b) => Number(a) - Number(b)
+              );
+              if (lens.length === 0) {
+                return (
+                  <li className="settings-note">{t('sprintBestEmpty')}</li>
+                );
+              }
+              return lens.map((len) => {
+                const ms = byLen[len];
+                const sec = (ms / 1000).toFixed(1);
+                return (
+                  <li key={len}>
+                    {t('sprintBestN').replace('{n}', len)}:{' '}
+                    <strong>{sec}s</strong>
+                  </li>
+                );
+              });
+            })()}
+          </ul>
+        )}
       </section>
 
       <section className="dojo-stats-card" aria-label="Badges">

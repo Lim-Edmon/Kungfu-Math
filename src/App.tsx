@@ -112,7 +112,7 @@ function formatCityCountry(city: { nameId: string; nameEn: string; countryId: st
   if (!city) return '';
   const name = formatCityName(city);
   const country = formatCountryName(city);
-  return getLang() === 'en' ? `${name} (${country})` : `${name} (negara: ${country})`;
+  return `${name} (${country})`;
 }
 
 /** Label tombol 2 baris: baris1 + (negara) di bawah — hindari kepotong nama panjang */

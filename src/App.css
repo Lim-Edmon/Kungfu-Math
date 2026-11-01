@@ -447,6 +447,17 @@
   letter-spacing: 0.04em;
   line-height: 1.1;
 }
+.hud-sprint-center {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+}
+.hud-sprint-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.05rem;
+}
 
 .hud-right {
   flex: 1 1 0;
@@ -626,14 +637,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.2rem;
-  padding: 2px 8px;
+  min-width: 0;
+  padding: 2px 7px;
   border-radius: 999px;
-  font-weight: 800;
-  font-size: 0.95rem;
-  color: #fff;
-  background: linear-gradient(135deg, #e85d04, #c41e3a);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--color-text);
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-card));
+  box-shadow: none;
+  white-space: nowrap;
 }
 
 .btn-mute-hud {
