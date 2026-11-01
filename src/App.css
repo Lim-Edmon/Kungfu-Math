@@ -4403,17 +4403,31 @@ a.is-offline-locked {
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
 }
-.sprint-length-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem;
+.sprint-length-block {
   margin-top: 0.55rem;
+  width: 100%;
 }
 .sprint-length-label {
+  display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  margin-right: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+.sprint-length-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.4rem;
+  width: 100%;
+}
+.sprint-len-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  font-size: 0.82rem;
 }
 .game-arena.pass-mode .number-ball {
   /* sedikit beda feel lewat */

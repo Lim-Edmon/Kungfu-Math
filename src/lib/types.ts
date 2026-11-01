@@ -9,7 +9,7 @@ export type ArenaStyle = 'static' | 'agility' | 'pass';
 
 /** Latihan: Grade = skor 60 dtk; Sprint = waktu N soal */
 export type PracticeSessionKind = 'grade' | 'sprint';
-export type SprintLength = 5 | 10;
+export type SprintLength = 5 | 10 | 20;
 
 export type DisplayMode = 'siang' | 'malam' | 'nyaman';
 

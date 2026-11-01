@@ -853,18 +853,20 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                   </button>
                 </div>
                 {sessionKind === 'sprint' && (
-                  <div className="sprint-length-row" role="group" aria-label={t('sprintLengthTitle')}>
+                  <div className="sprint-length-block" role="group" aria-label={t('sprintLengthTitle')}>
                     <span className="sprint-length-label">{t('sprintLengthTitle')}</span>
-                    {([5, 10] as SprintLength[]).map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        className={`level-btn ${sprintLength === n ? 'active' : ''}`}
-                        onClick={() => setSprintLength(n)}
-                      >
-                        {n} {t('sprintQuestions')}
-                      </button>
-                    ))}
+                    <div className="sprint-length-row">
+                      {([5, 10, 20] as SprintLength[]).map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          className={`level-btn sprint-len-btn ${sprintLength === n ? 'active' : ''}`}
+                          onClick={() => setSprintLength(n)}
+                        >
+                          {n} {t('sprintQuestions')}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

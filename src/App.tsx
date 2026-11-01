@@ -416,7 +416,12 @@ function App() {
       typeof runMeta.sprintMs === 'number' &&
       runMeta.sprintMs > 0
     ) {
-      const len = runMeta.sprintLength === 10 ? 10 : 5;
+      const len: SprintLength =
+        runMeta.sprintLength === 20
+          ? 20
+          : runMeta.sprintLength === 10
+            ? 10
+            : 5;
       const key = `${selectedLevel}|${len}|${selectedArena}`;
       const prevBest = prog0.sprintBestMs?.[key];
       if (prevBest == null || runMeta.sprintMs < prevBest) {
