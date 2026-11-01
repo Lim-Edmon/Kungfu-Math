@@ -669,10 +669,21 @@ export default function Game({
   const spawnNextQuestion = useCallback((prev: GameState): GameState => {
     // Tetap di level yang dipilih user (tidak auto-naik mid-game)
     const q = generateQuestion(levelRef.current, { forceOps: forceOpsRef.current });
+    const scale = mode === 'tap' && isMoving ? 0.7 : 1;
+    // Mode Lewat: soal baru = gelombang baru dari tepi (nilai acak soal baru)
+    // Jangan pakai bola sisa soal lama di tengah layar
+    if (arenaStyle === 'pass') {
+      return {
+        ...prev,
+        question: q,
+        numbers: createNumbersFromQuestion(q, 'pass', scale),
+        selectedIds: [],
+      };
+    }
     return {
       ...prev,
       question: q,
-      numbers: createNumbersFromQuestion(q, arenaStyle, mode === 'tap' && isMoving ? 0.7 : 1),
+      numbers: createNumbersFromQuestion(q, arenaStyle, scale),
       selectedIds: [],
     };
   }, [arenaStyle, mode, isMoving]);
@@ -703,22 +714,28 @@ export default function Game({
             (12 + Math.random() * 22) *
             (mode === 'tap' && isMoving ? 0.7 : 1);
           const angle = Math.random() * Math.PI * 2;
+          // Mode Lewat: setelah salah, bola masuk lagi dari tepi (bukan teleport di tengah)
+          if (arenaStyle === 'pass') {
+            const fromLeft = Math.random() < 0.5;
+            const passSpeed =
+              (18 + Math.random() * 16) *
+              (mode === 'tap' && isMoving ? 0.7 : 1);
+            return {
+              ...n,
+              sliced: false,
+              id: `${n.id}-r${token}`,
+              x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
+              y: 18 + Math.random() * 54,
+              vx: fromLeft ? passSpeed : -passSpeed,
+              vy: (Math.random() - 0.5) * 6,
+            };
+          }
           return {
             ...n,
             sliced: false,
             id: `${n.id}-r${token}`,
-            vx:
-              arenaStyle === 'agility'
-                ? Math.cos(angle) * speed
-                : arenaStyle === 'pass'
-                  ? (Math.random() < 0.5 ? speed : -speed)
-                  : 0,
-            vy:
-              arenaStyle === 'agility'
-                ? Math.sin(angle) * speed
-                : arenaStyle === 'pass'
-                  ? (Math.random() - 0.5) * 6
-                  : 0,
+            vx: arenaStyle === 'agility' ? Math.cos(angle) * speed : 0,
+            vy: arenaStyle === 'agility' ? Math.sin(angle) * speed : 0,
           };
         });
       }
@@ -726,6 +743,7 @@ export default function Game({
       const newLives = prev.lives - 1;
       if (newLives <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
+        clearNextQuestionTimeout();
         stopAllMusic();
         playEndSound(prev.score, targetScore);
         const grade = calcGrade(
@@ -737,21 +755,22 @@ export default function Game({
             isAdventure: typeof targetScore === 'number' && targetScore > 0,
           }
         );
-        setTimeout(
-              () =>
-                onFinish(prev.score, grade, {
-                  maxCombo: prev.maxCombo,
-                  perfect:
-                    mistakesRef.current === 0 && prev.questionsSolved > 0,
-                }),
-              100
-            );
+        // Langsung ke hasil — hindari layar blank di status 'lost'
+        const finalScore = prev.score;
+        const finalCombo = prev.maxCombo;
+        const finalSolved = prev.questionsSolved;
+        window.setTimeout(() => {
+          onFinish(finalScore, grade, {
+            maxCombo: finalCombo,
+            perfect: mistakesRef.current === 0 && finalSolved > 0,
+          });
+        }, 80);
         return {
           ...prev,
           lives: 0,
           combo: 0,
           status: 'lost',
-          question: prev.question, // tetap soal yang sama
+          question: prev.question,
           numbers,
           selectedIds: [],
         };
@@ -863,38 +882,51 @@ export default function Game({
             if (n.isBomb) return n;
             // kembalikan semua non-bom yang sudah sliced (termasuk yang baru dipilih)
             if (n.sliced) {
-              return {
+              const base = {
                 ...n,
                 sliced: false,
-                // id baru = komponen baru, animasi opacity 0 tidak nempel
                 id: `restored-${token}-${n.value}-${Math.random().toString(36).slice(2, 6)}`,
               };
+              if (arenaStyle === 'pass') {
+                const fromLeft = Math.random() < 0.5;
+                const passSpeed =
+                  (18 + Math.random() * 16) * (mode === 'tap' ? 0.7 : 1);
+                return {
+                  ...base,
+                  x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
+                  y: 18 + Math.random() * 54,
+                  vx: fromLeft ? passSpeed : -passSpeed,
+                  vy: (Math.random() - 0.5) * 6,
+                };
+              }
+              return base;
             }
             return n;
           });
           const newLives = prev.lives - 1;
           if (newLives <= 0) {
             if (timerRef.current) clearInterval(timerRef.current);
+            clearNextQuestionTimeout();
             stopAllMusic();
             playEndSound(prev.score, targetScore);
             const grade = calcGrade(
-          prev.score,
-          prev.questionsSolved,
-          prev.maxCombo,
-          {
-            targetScore,
-            isAdventure: typeof targetScore === 'number' && targetScore > 0,
-          }
-        );
-            setTimeout(
-              () =>
-                onFinish(prev.score, grade, {
-                  maxCombo: prev.maxCombo,
-                  perfect:
-                    mistakesRef.current === 0 && prev.questionsSolved > 0,
-                }),
-              100
+              prev.score,
+              prev.questionsSolved,
+              prev.maxCombo,
+              {
+                targetScore,
+                isAdventure: typeof targetScore === 'number' && targetScore > 0,
+              }
             );
+            const finalScore = prev.score;
+            const finalCombo = prev.maxCombo;
+            const finalSolved = prev.questionsSolved;
+            window.setTimeout(() => {
+              onFinish(finalScore, grade, {
+                maxCombo: finalCombo,
+                perfect: mistakesRef.current === 0 && finalSolved > 0,
+              });
+            }, 80);
             return {
               ...prev,
               lives: 0,
@@ -1081,31 +1113,40 @@ export default function Game({
       setState((prev) => {
         if (prev.status !== 'playing' || !prev.question) return prev;
         if (arenaStyle === 'pass') {
-          let numbers = prev.numbers.map((n) => {
-            if (n.sliced) return n;
-            const vx = n.vx ?? 0;
-            const vy = n.vy ?? 0;
-            let x = n.x + vx * dt;
-            let y = n.y + vy * dt;
-            let nvy = vy;
-            // pantul tipis di atas/bawah, horizontal terus
-            if (y < yMin) {
-              y = yMin;
-              nvy = Math.abs(vy);
-            } else if (y > yMax) {
-              y = yMax;
-              nvy = -Math.abs(vy);
-            }
-            return { ...n, x, y, vy: nvy };
-          });
-          // Buang yang sudah keluar kiri/kanan
-          numbers = numbers.filter(
-            (n) => n.sliced || (n.x > -12 && n.x < 112)
-          );
-          // Jamin solusi masih ada di layar
+          // Gerak kontinu; bola yang sudah ditebas dibuang (tidak “nempel”)
+          let numbers = prev.numbers
+            .filter((n) => !n.sliced)
+            .map((n) => {
+              const vx = n.vx ?? 0;
+              const vy = n.vy ?? 0;
+              let x = n.x + vx * dt;
+              let y = n.y + vy * dt;
+              let nvy = vy;
+              if (y < yMin) {
+                y = yMin;
+                nvy = Math.abs(vy || 4);
+              } else if (y > yMax) {
+                y = yMax;
+                nvy = -Math.abs(vy || 4);
+              }
+              return { ...n, x, y, vy: nvy };
+            });
+          // Yang sudah lewat tepi → hilang (nanti diganti gelombang baru)
+          numbers = numbers.filter((n) => n.x > -18 && n.x < 118);
+          // Jika jawaban benar belum ada di arena: tambah gelombang dari tepi
+          // (jangan ganti total — biar yang masih di layar tetap jalan)
           if (!hasCorrectOnScreen(prev.question, numbers)) {
             const scale = mode === 'tap' ? 0.7 : 1;
-            numbers = createNumbersFromQuestion(prev.question, 'pass', scale);
+            const wave = createNumbersFromQuestion(
+              prev.question,
+              'pass',
+              scale
+            );
+            numbers = [...numbers, ...wave];
+            // Batasi biar tidak numpuk
+            if (numbers.length > 16) {
+              numbers = numbers.slice(numbers.length - 16);
+            }
           }
           return { ...prev, numbers };
         }
@@ -1348,10 +1389,13 @@ export default function Game({
           </div>
           <div className="hud-center">
             <span className="hud-timer">
-              {isSprint
-                ? `${state.timeLeft}s · ${state.questionsSolved}/${sprintGoal}`
-                : `${state.timeLeft}s`}
+              {isSprint ? `${state.timeLeft}s` : `${state.timeLeft}s`}
             </span>
+            {isSprint && (
+              <span className="hud-sprint-progress" aria-live="polite">
+                {state.questionsSolved}/{sprintGoal}
+              </span>
+            )}
           </div>
           <div className="hud-right">
             {/* Baris 1: Keluar + Suara bersebelahan */}
