@@ -755,23 +755,24 @@ export default function Game({
             isAdventure: typeof targetScore === 'number' && targetScore > 0,
           }
         );
-        // Langsung ke hasil — hindari layar blank di status 'lost'
+        // Langsung ke hasil — jangan andalkan delay (anti layar blank)
         const finalScore = prev.score;
         const finalCombo = prev.maxCombo;
         const finalSolved = prev.questionsSolved;
-        window.setTimeout(() => {
+        queueMicrotask(() => {
           onFinish(finalScore, grade, {
             maxCombo: finalCombo,
             perfect: mistakesRef.current === 0 && finalSolved > 0,
           });
-        }, 80);
+        });
         return {
           ...prev,
           lives: 0,
           combo: 0,
           status: 'lost',
           question: prev.question,
-          numbers,
+          // Pertahankan bola di layar supaya tidak "kosong total" sebelum result
+          numbers: numbers.length ? numbers : prev.numbers,
           selectedIds: [],
         };
       }
@@ -921,18 +922,18 @@ export default function Game({
             const finalScore = prev.score;
             const finalCombo = prev.maxCombo;
             const finalSolved = prev.questionsSolved;
-            window.setTimeout(() => {
+            queueMicrotask(() => {
               onFinish(finalScore, grade, {
                 maxCombo: finalCombo,
                 perfect: mistakesRef.current === 0 && finalSolved > 0,
               });
-            }, 80);
+            });
             return {
               ...prev,
               lives: 0,
               combo: 0,
               status: 'lost' as const,
-              numbers: updated,
+              numbers: updated.length ? updated : prev.numbers,
               selectedIds: [],
             };
           }
@@ -1531,6 +1532,18 @@ export default function Game({
             <div className="countdown-overlay pause-overlay" onClick={resumeFromBgPause} role="button" tabIndex={0}>
               <div className="countdown-label is-ready">{t('pausedTitle')}</div>
               <p className="pause-hint">{t('pausedHint')}</p>
+            </div>
+          )}
+
+          {(state.status === 'lost' || state.status === 'won') && (
+            <div className="countdown-overlay end-overlay" aria-live="polite">
+              <span className="countdown-text is-ready">
+                {state.status === 'won' ? '✓' : t('timeUp') || 'TIME UP'}
+              </span>
+              <p className="pause-hint">
+                {state.score} · {state.questionsSolved}
+                {isSprint ? `/${sprintGoal}` : ''}
+              </p>
             </div>
           )}
 

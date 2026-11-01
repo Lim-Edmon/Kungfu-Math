@@ -405,6 +405,28 @@ function App() {
       sprintLength?: number;
     }
   ) => {
+    // Selalu ke result — jangan biarkan layar game blank jika error di tengah
+    try {
+      handleFinishGameInner(score, grade, runMeta);
+    } catch (err) {
+      console.error('handleFinishGame', err);
+      setLastScore(score);
+      setLastGrade(grade || 'C');
+      setScreen('result');
+    }
+  };
+
+  const handleFinishGameInner = (
+    score: number,
+    grade: string,
+    runMeta?: {
+      maxCombo: number;
+      perfect: boolean;
+      sprintMs?: number;
+      sessionKind?: string;
+      sprintLength?: number;
+    }
+  ) => {
     const prog0 = loadProgress();
     const maxCombo = runMeta?.maxCombo ?? 0;
     setLastMaxCombo(maxCombo);
