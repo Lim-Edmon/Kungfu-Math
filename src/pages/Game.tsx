@@ -435,7 +435,8 @@ export default function Game({
     score: 0,
     combo: 0,
     maxCombo: 0,
-    timeLeft: ROUND_SECONDS,
+    // Sprint = count-up dari 0 sejak READY; Grade = count-down 60
+    timeLeft: practiceSession === 'sprint' ? 0 : ROUND_SECONDS,
     question: null,
     numbers: [],
     selectedIds: [],

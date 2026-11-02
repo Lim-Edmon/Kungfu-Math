@@ -4424,6 +4424,10 @@ a.is-offline-locked {
 .sprint-len-btn {
   flex: 1 1 0;
   min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding-left: 0.35rem;
   padding-right: 0.35rem;
