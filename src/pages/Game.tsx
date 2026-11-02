@@ -77,14 +77,22 @@ interface GameProps {
  * Posisikan angka di area aman (tidak kepotong atas/bawah).
  * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol {t('exit')}.
  */
+/** Cek apakah sisa jawaban (setelah partial select) masih ada di arena */
 function hasCorrectOnScreen(
   question: MathQuestion,
-  numbers: FloatingNumber[]
+  numbers: FloatingNumber[],
+  alreadySelected: number[] = []
 ): boolean {
   const pool = numbers
     .filter((n) => !n.sliced && !n.isBomb)
     .map((n) => n.value);
-  for (const v of question.correctNumbers) {
+  // Sisa angka yang masih perlu diambil
+  const needed = [...question.correctNumbers];
+  for (const v of alreadySelected) {
+    const i = needed.indexOf(v);
+    if (i >= 0) needed.splice(i, 1);
+  }
+  for (const v of needed) {
     const i = pool.indexOf(v);
     if (i < 0) return false;
     pool.splice(i, 1);
@@ -431,6 +439,7 @@ export default function Game({
     question: null,
     numbers: [],
     selectedIds: [],
+    selectedValues: [],
     questionsSolved: 0,
     stage: 1,
   }));
@@ -586,6 +595,7 @@ export default function Game({
             mode === 'tap' && isMoving ? 0.7 : 1
           ),
           selectedIds: [],
+          selectedValues: [],
         }));
         return;
       }
@@ -678,6 +688,7 @@ export default function Game({
         question: q,
         numbers: createNumbersFromQuestion(q, 'pass', scale),
         selectedIds: [],
+        selectedValues: [],
       };
     }
     return {
@@ -685,6 +696,7 @@ export default function Game({
       question: q,
       numbers: createNumbersFromQuestion(q, arenaStyle, scale),
       selectedIds: [],
+      selectedValues: [],
     };
   }, [arenaStyle, mode, isMoving]);
 
@@ -704,7 +716,11 @@ export default function Game({
       clearNextQuestionTimeout();
 
       let numbers = updatedNumbers;
-      if (restoreIds.length > 0) {
+      // Mode Lewat: bola yang dipilih sudah dihapus visual — spawn ulang gelombang soal yang sama
+      if (arenaStyle === 'pass' && prev.question) {
+        const scale = mode === 'tap' && isMoving ? 0.7 : 1;
+        numbers = createNumbersFromQuestion(prev.question, 'pass', scale);
+      } else if (restoreIds.length > 0) {
         const restoreSet = new Set(restoreIds);
         // Kembalikan bola + token baru agar animasi "hilang" tidak nempel (opacity 0)
         const token = Date.now();
@@ -714,22 +730,6 @@ export default function Game({
             (12 + Math.random() * 22) *
             (mode === 'tap' && isMoving ? 0.7 : 1);
           const angle = Math.random() * Math.PI * 2;
-          // Mode Lewat: setelah salah, bola masuk lagi dari tepi (bukan teleport di tengah)
-          if (arenaStyle === 'pass') {
-            const fromLeft = Math.random() < 0.5;
-            const passSpeed =
-              (18 + Math.random() * 16) *
-              (mode === 'tap' && isMoving ? 0.7 : 1);
-            return {
-              ...n,
-              sliced: false,
-              id: `${n.id}-r${token}`,
-              x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
-              y: 18 + Math.random() * 54,
-              vx: fromLeft ? passSpeed : -passSpeed,
-              vy: (Math.random() - 0.5) * 6,
-            };
-          }
           return {
             ...n,
             sliced: false,
@@ -774,6 +774,7 @@ export default function Game({
           // Pertahankan bola di layar supaya tidak "kosong total" sebelum result
           numbers: numbers.length ? numbers : prev.numbers,
           selectedIds: [],
+          selectedValues: [],
         };
       }
 
@@ -785,6 +786,7 @@ export default function Game({
         question: prev.question,
         numbers,
         selectedIds: [],
+        selectedValues: [],
       };
     },
     [onFinish, clearNextQuestionTimeout, isMoving, mode, arenaStyle]
@@ -935,6 +937,7 @@ export default function Game({
               status: 'lost' as const,
               numbers: updated.length ? updated : prev.numbers,
               selectedIds: [],
+              selectedValues: [],
             };
           }
           return {
@@ -943,30 +946,36 @@ export default function Game({
             combo: 0,
             numbers: updated,
             selectedIds: [],
+            selectedValues: [],
             question: prev.question,
           };
         }
 
-        const updatedNumbers = prev.numbers.map((n) =>
+        // Simpan NILAI (bukan bola visual). Bola langsung dihapus dari arena.
+        const newSelectedIds = [...prev.selectedIds, num.id];
+        const newSelectedValues = [...(prev.selectedValues || []), num.value];
+        let updatedNumbers = prev.numbers.map((n) =>
           n.id === num.id ? { ...n, sliced: true } : n
         );
-        const newSelectedIds = [...prev.selectedIds, num.id];
-        const selectedValues = newSelectedIds.map(
-          (id) => prev.numbers.find((n) => n.id === id)!.value
-        );
+        // Mode Lewat: buang bola yang sudah ditebas supaya tidak menghalangi
+        if (arenaStyle === 'pass') {
+          updatedNumbers = updatedNumbers.filter((n) => !n.sliced);
+        }
         const needed = getNeededCount(prev.question);
 
         // Belum cukup angka → tunggu klik berikutnya
-        if (selectedValues.length < needed) {
+        if (newSelectedValues.length < needed) {
           if (mode === 'slice') sfx.slash();
           else sfx.tap();
           return {
             ...prev,
             numbers: updatedNumbers,
             selectedIds: newSelectedIds,
+            selectedValues: newSelectedValues,
           };
         }
 
+        const selectedValues = newSelectedValues;
         // Cek jawaban
         if (isValidSelection(prev.question, selectedValues)) {
           const newCombo = prev.combo + 1;
@@ -1003,6 +1012,7 @@ export default function Game({
                   : prev.timeLeft,
             numbers: updatedNumbers,
             selectedIds: newSelectedIds,
+            selectedValues: newSelectedValues,
           };
           clearNextQuestionTimeout();
           if (isSprint && solved >= sprintGoal) {
@@ -1069,6 +1079,7 @@ export default function Game({
               status: 'won' as const,
               numbers: updatedNumbers,
               selectedIds: [],
+              selectedValues: [],
             };
           }
           withTime = { ...prev, timeLeft: newTime };
@@ -1114,7 +1125,8 @@ export default function Game({
       setState((prev) => {
         if (prev.status !== 'playing' || !prev.question) return prev;
         if (arenaStyle === 'pass') {
-          // Gerak kontinu; bola yang sudah ditebas dibuang (tidak “nempel”)
+          // Bola yang sudah ditebas sudah dihapus di handleNumberTap.
+          // Nilai jawaban ada di selectedValues — tidak perlu tahan bola diam di arena.
           let numbers = prev.numbers
             .filter((n) => !n.sliced)
             .map((n) => {
@@ -1132,8 +1144,8 @@ export default function Game({
               }
               return { ...n, x, y, vy: nvy };
             });
-          // Benturan antar bola — pisahkan + ubah arah relatif (mirip pantul)
-          const minDist = 9; // % arena (~diameter visual)
+          // Benturan antar bola
+          const minDist = 9;
           for (let i = 0; i < numbers.length; i++) {
             for (let j = i + 1; j < numbers.length; j++) {
               const a = numbers[i];
@@ -1154,7 +1166,6 @@ export default function Game({
               a.y -= ny * overlap;
               b.x += nx * overlap;
               b.y += ny * overlap;
-              // Tukar komponen kecepatan sepanjang normal
               const avx = a.vx ?? 0;
               const avy = a.vy ?? 0;
               const bvx = b.vx ?? 0;
@@ -1170,11 +1181,9 @@ export default function Game({
               numbers[j] = { ...b };
             }
           }
-          // Yang sudah lewat tepi → hilang (nanti diganti gelombang baru)
           numbers = numbers.filter((n) => n.x > -18 && n.x < 118);
-          // Jika jawaban benar belum ada di arena: tambah gelombang dari tepi
-          // (jangan ganti total — biar yang masih di layar tetap jalan)
-          if (!hasCorrectOnScreen(prev.question, numbers)) {
+          // Pastikan sisa jawaban masih bisa dipilih di arena
+          if (!hasCorrectOnScreen(prev.question, numbers, prev.selectedValues)) {
             const scale = mode === 'tap' ? 0.7 : 1;
             const wave = createNumbersFromQuestion(
               prev.question,
@@ -1182,7 +1191,6 @@ export default function Game({
               scale
             );
             numbers = [...numbers, ...wave];
-            // Batasi biar tidak numpuk
             if (numbers.length > 16) {
               numbers = numbers.slice(numbers.length - 16);
             }
@@ -1232,10 +1240,8 @@ export default function Game({
     i < state.lives ? '❤️' : '🖤'
   );
 
-  // Angka yang sudah dipilih → tampilkan di soal menggantikan ?
-  const selectedValues = state.selectedIds.map(
-    (id) => state.numbers.find((n) => n.id === id)?.value ?? 0
-  );
+  // Angka yang sudah dipilih (disimpan terpisah dari bola visual)
+  const selectedValues = state.selectedValues || [];
   const displayText = state.question
     ? fillDisplay(state.question.display, selectedValues)
     : '...';

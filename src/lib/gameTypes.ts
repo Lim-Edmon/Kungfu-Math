@@ -28,8 +28,10 @@ export interface GameState {
   timeLeft: number; // detik
   question: MathQuestion | null;
   numbers: FloatingNumber[];
-  /** id bola yang sudah dipilih di soal ini */
+  /** id bola yang sudah dipilih di soal ini (anti double-tap) */
   selectedIds: string[];
+  /** Nilai yang sudah dipilih — disimpan terpisah agar bola bisa hilang visual */
+  selectedValues: number[];
   questionsSolved: number;
   stage: number;
 }
