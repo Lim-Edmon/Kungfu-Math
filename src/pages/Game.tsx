@@ -716,26 +716,47 @@ export default function Game({
       clearNextQuestionTimeout();
 
       let numbers = updatedNumbers;
-      // Mode Lewat: bola yang dipilih sudah dihapus visual — spawn ulang gelombang soal yang sama
-      if (arenaStyle === 'pass' && prev.question) {
-        const scale = mode === 'tap' && isMoving ? 0.7 : 1;
-        numbers = createNumbersFromQuestion(prev.question, 'pass', scale);
-      } else if (restoreIds.length > 0) {
+      if (restoreIds.length > 0) {
         const restoreSet = new Set(restoreIds);
-        // Kembalikan bola + token baru agar animasi "hilang" tidak nempel (opacity 0)
         const token = Date.now();
+        const scale = mode === 'tap' && isMoving ? 0.7 : 1;
         numbers = updatedNumbers.map((n) => {
           if (!(restoreSet.has(n.id) && !n.isBomb)) return n;
-          const speed =
-            (12 + Math.random() * 22) *
-            (mode === 'tap' && isMoving ? 0.7 : 1);
-          const angle = Math.random() * Math.PI * 2;
+          // Diam: posisi sama. Pantul: titik terakhir + arah baru. Lewat: masuk dari tepi.
+          if (arenaStyle === 'pass') {
+            const fromLeft = Math.random() < 0.5;
+            const passSpeed = (18 + Math.random() * 16) * scale;
+            return {
+              ...n,
+              sliced: false,
+              id: `${n.id}-r${token}`,
+              x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
+              y: Math.min(72, Math.max(18, n.y)),
+              vx: fromLeft ? passSpeed : -passSpeed,
+              vy: (Math.random() - 0.5) * 6,
+            };
+          }
+          if (arenaStyle === 'agility') {
+            const speed = (12 + Math.random() * 22) * scale;
+            const angle = Math.random() * Math.PI * 2;
+            return {
+              ...n,
+              sliced: false,
+              id: `${n.id}-r${token}`,
+              // titik terakhir saat ditebas
+              x: n.x,
+              y: n.y,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+            };
+          }
+          // static: posisi sama, diam
           return {
             ...n,
             sliced: false,
             id: `${n.id}-r${token}`,
-            vx: arenaStyle === 'agility' ? Math.cos(angle) * speed : 0,
-            vy: arenaStyle === 'agility' ? Math.sin(angle) * speed : 0,
+            vx: 0,
+            vy: 0,
           };
         });
       }
@@ -951,16 +972,13 @@ export default function Game({
           };
         }
 
-        // Simpan NILAI (bukan bola visual). Bola langsung dihapus dari arena.
+        // Simpan NILAI. Bola ditandai sliced → tidak dirender / tidak tabrakan
+        // (tetap di data supaya kalau salah bisa muncul lagi di posisi yang tepat).
         const newSelectedIds = [...prev.selectedIds, num.id];
         const newSelectedValues = [...(prev.selectedValues || []), num.value];
-        let updatedNumbers = prev.numbers.map((n) =>
+        const updatedNumbers = prev.numbers.map((n) =>
           n.id === num.id ? { ...n, sliced: true } : n
         );
-        // Mode Lewat: buang bola yang sudah ditebas supaya tidak menghalangi
-        if (arenaStyle === 'pass') {
-          updatedNumbers = updatedNumbers.filter((n) => !n.sliced);
-        }
         const needed = getNeededCount(prev.question);
 
         // Belum cukup angka → tunggu klik berikutnya
@@ -1125,29 +1143,32 @@ export default function Game({
       setState((prev) => {
         if (prev.status !== 'playing' || !prev.question) return prev;
         if (arenaStyle === 'pass') {
-          // Bola yang sudah ditebas sudah dihapus di handleNumberTap.
-          // Nilai jawaban ada di selectedValues — tidak perlu tahan bola diam di arena.
-          let numbers = prev.numbers
-            .filter((n) => !n.sliced)
-            .map((n) => {
-              const vx = n.vx ?? 0;
-              const vy = n.vy ?? 0;
-              let x = n.x + vx * dt;
-              let y = n.y + vy * dt;
-              let nvy = vy;
-              if (y < yMin) {
-                y = yMin;
-                nvy = Math.abs(vy || 4);
-              } else if (y > yMax) {
-                y = yMax;
-                nvy = -Math.abs(vy || 4);
-              }
-              return { ...n, x, y, vy: nvy };
-            });
-          // Benturan antar bola
+          // Gerak hanya bola aktif; sliced tetap di data (posisi terakhir) tapi tidak gerak
+          let numbers = prev.numbers.map((n) => {
+            if (n.sliced) return n;
+            const vx = n.vx ?? 0;
+            const vy = n.vy ?? 0;
+            let x = n.x + vx * dt;
+            let y = n.y + vy * dt;
+            let nvy = vy;
+            if (y < yMin) {
+              y = yMin;
+              nvy = Math.abs(vy || 4);
+            } else if (y > yMax) {
+              y = yMax;
+              nvy = -Math.abs(vy || 4);
+            }
+            return { ...n, x, y, vy: nvy };
+          });
+          // Benturan antar bola aktif saja
           const minDist = 9;
-          for (let i = 0; i < numbers.length; i++) {
-            for (let j = i + 1; j < numbers.length; j++) {
+          const liveIdx = numbers
+            .map((n, i) => (!n.sliced ? i : -1))
+            .filter((i) => i >= 0);
+          for (let ii = 0; ii < liveIdx.length; ii++) {
+            for (let jj = ii + 1; jj < liveIdx.length; jj++) {
+              const i = liveIdx[ii];
+              const j = liveIdx[jj];
               const a = numbers[i];
               const b = numbers[j];
               let dx = b.x - a.x;
@@ -1181,8 +1202,10 @@ export default function Game({
               numbers[j] = { ...b };
             }
           }
-          numbers = numbers.filter((n) => n.x > -18 && n.x < 118);
-          // Pastikan sisa jawaban masih bisa dipilih di arena
+          // Buang yang lewat tepi HANYA jika belum dipilih (sliced tetap untuk restore)
+          numbers = numbers.filter(
+            (n) => n.sliced || (n.x > -18 && n.x < 118)
+          );
           if (!hasCorrectOnScreen(prev.question, numbers, prev.selectedValues)) {
             const scale = mode === 'tap' ? 0.7 : 1;
             const wave = createNumbersFromQuestion(
@@ -1191,8 +1214,11 @@ export default function Game({
               scale
             );
             numbers = [...numbers, ...wave];
-            if (numbers.length > 16) {
-              numbers = numbers.slice(numbers.length - 16);
+            if (numbers.length > 18) {
+              // jangan potong yang sliced (butuh restore)
+              const kept = numbers.filter((n) => n.sliced);
+              const rest = numbers.filter((n) => !n.sliced).slice(-12);
+              numbers = [...kept, ...rest];
             }
           }
           return { ...prev, numbers };
@@ -1569,26 +1595,22 @@ export default function Game({
             </div>
           )}
           {state.numbers.map((num, index) => {
-            const hitClass = num.sliced
-              ? mode === 'slice'
-                ? 'hit-slice'
-                : 'hit-tap'
-              : '';
+            // Sudah dipilih: tidak dirender = hilang visual + tembus (slice/pantul)
+            if (num.sliced) return null;
             return (
               <button
                 type="button"
                 key={num.id}
-                data-num-id={num.sliced ? undefined : num.id}
-                className={`floating-number ${num.isBomb ? 'is-bomb' : ''} ${hitClass}`}
+                data-num-id={num.id}
+                className={`floating-number ${num.isBomb ? 'is-bomb' : ''}`}
                 style={{
                   left: `${num.x}%`,
                   top: `${num.y}%`,
-                  opacity: num.sliced ? undefined : 1,
-                  zIndex: num.sliced ? 0 : index + 1,
+                  opacity: 1,
+                  zIndex: index + 1,
                 }}
-                disabled={num.sliced}
                 onPointerDown={(e) => {
-                  if (mode !== 'tap' || num.sliced) return;
+                  if (mode !== 'tap') return;
                   e.preventDefault();
                   e.stopPropagation();
                   handleNumberTap(num);
