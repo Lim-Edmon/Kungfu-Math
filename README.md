@@ -81,6 +81,26 @@ Prompt musik/BG: file Excel di repo / project notes (`kungfu-math-jalur-musik-ko
 
 
 
+
+
+## Catatan operasional (hosting)
+
+- Hosting di **domain/paket gratis (personal)**.
+- **Bukan** database server — progress tersimpan di HP/browser pengguna (localStorage + kode export).
+- Gambar & musik kota memakai **bandwidth** saat dimainkan (diunduh per kota, bukan semua sekaligus saat install).
+
+## Smoke test sebelum rilis
+
+Setelah `npm run build`, cek cepat di browser/HP:
+
+1. Mode **Diam** — main 1 ronde, tidak blank/crash  
+2. Mode **Pantul** — bola bergerak, bisa dijawab  
+3. Mode **Lewat** — tebas 2 angka, salah → bola muncul lagi  
+4. **Pengaturan → masukkan kode progress** (atau export lalu import) — tab Progres tidak blank  
+
+Baru kemudian `git add` / `commit` / `push`.
+
+
 ## Debug peta & aset kota (dev)
 
 Untuk mengatur pin koordinat dan cek file BG/musik **tanpa main**:

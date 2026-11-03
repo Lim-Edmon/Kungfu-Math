@@ -13,6 +13,7 @@
  */
 
 import { loadProgress } from './storage';
+import { onCityAssetsEnter } from './cityCache';
 
 let audioCtx: AudioContext | null = null;
 let bgmTimer: ReturnType<typeof setInterval> | null = null;
@@ -295,8 +296,10 @@ function playDefaultBgmLoop(): void {
  */
 export function playCityMusic(cityId: string | undefined): void {
   stopAllMusic();
-  if (isMuted()) return;
   const id = (cityId || '').toLowerCase();
+  // Hapus cache kota sebelumnya; kota ini akan di-fetch & cache ulang
+  onCityAssetsEnter(id || undefined);
+  if (isMuted()) return;
   if (!id || cityMissing[id]) {
     playDefaultBgmLoop();
     return;

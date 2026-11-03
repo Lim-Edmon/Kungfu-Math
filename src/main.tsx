@@ -23,27 +23,68 @@ function hideBootSplash() {
   el.classList.add('boot-hide');
   window.setTimeout(() => el.remove(), 300);
 }
-// Setelah frame pertama
 // Biarkan splash (logo + judul + ©) sempat terbaca
 window.setTimeout(hideBootSplash, 600);
 
 /**
+ * Banner update: user klik “Muat ulang” (bukan auto-reload diam-diam).
+ * Banyak orang tidak tahu pull-to-refresh.
+ */
+function showUpdateBanner() {
+  if (document.getElementById('km-update-banner')) return;
+
+  let lang = 'id';
+  try {
+    const raw = localStorage.getItem('kungfu-math-progress');
+    if (raw) {
+      const j = JSON.parse(raw) as { language?: string };
+      if (j.language === 'en') lang = 'en';
+    } else if (!(navigator.language || '').toLowerCase().startsWith('id')) {
+      lang = 'en';
+    }
+  } catch {
+    /* ignore */
+  }
+
+  const msg =
+    lang === 'en'
+      ? 'Update available. Reload for new cities and features.'
+      : 'Ada pembaruan. Muat ulang untuk kota/fitur baru.';
+  const btnLabel = lang === 'en' ? 'Reload' : 'Muat ulang';
+
+  const bar = document.createElement('div');
+  bar.id = 'km-update-banner';
+  bar.setAttribute('role', 'status');
+  bar.innerHTML =
+    '<span class="km-update-msg"></span>' +
+    '<button type="button" class="km-update-btn"></button>';
+  const msgEl = bar.querySelector('.km-update-msg');
+  const btnEl = bar.querySelector('.km-update-btn') as HTMLButtonElement | null;
+  if (msgEl) msgEl.textContent = msg;
+  if (btnEl) {
+    btnEl.textContent = btnLabel;
+    btnEl.addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
+  document.body.appendChild(bar);
+}
+
+/**
  * Service Worker (PWA):
  * - Cek update saat buka app
- * - Versi baru aktif → hapus cache lama (di sw.js) + reload sekali
- * User tidak perlu "Clear site data" manual untuk aset baru (peta, dll.)
+ * - Versi baru → tampilkan banner + tombol Muat ulang (bukan reload paksa)
  */
 if ('serviceWorker' in navigator) {
-  let reloading = false;
-  const reloadOnce = () => {
-    if (reloading) return;
-    reloading = true;
-    window.location.reload();
-  };
-
-  navigator.serviceWorker.addEventListener('controllerchange', reloadOnce);
   navigator.serviceWorker.addEventListener('message', (ev) => {
-    if (ev.data && ev.data.type === 'SW_ACTIVATED') reloadOnce();
+    if (ev.data && ev.data.type === 'SW_ACTIVATED') {
+      showUpdateBanner();
+    }
+  });
+
+  // controllerchange: SW baru mengontrol halaman — tawarkan reload, jangan paksa
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    showUpdateBanner();
   });
 
   window.addEventListener('load', () => {
@@ -51,11 +92,23 @@ if ('serviceWorker' in navigator) {
       .register('/sw.js')
       .then((reg) => {
         reg.update().catch(() => {});
-        // Cek update lagi saat tab kembali fokus
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState === 'visible') {
             reg.update().catch(() => {});
           }
+        });
+        // Ada worker menunggu (update terpasang)?
+        if (reg.waiting) {
+          showUpdateBanner();
+        }
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
         });
       })
       .catch((err) => {
