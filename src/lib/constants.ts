@@ -3,6 +3,8 @@
 import { t } from './i18n';
 
 export const TRAKTEER_URL = 'https://trakteer.id/lim.edmon';
+/** Dukungan internasional (kartu / PayPal lewat Ko-fi) */
+export const KOFI_URL = 'https://ko-fi.com/limedmon';
 export const APP_URL = 'https://kungfu-math.vercel.app/';
 
 export function buildInviteText(): string {

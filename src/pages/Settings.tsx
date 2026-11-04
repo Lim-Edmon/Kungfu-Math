@@ -10,7 +10,7 @@ import {
   isDevLockCode,
   clearAllGameData,
 } from '../lib/storage';
-import { TRAKTEER_URL, buildInviteText } from '../lib/constants';
+import { TRAKTEER_URL, KOFI_URL, buildInviteText } from '../lib/constants';
 import { t, getLang, setLang, type Lang } from '../lib/i18n';
 
 interface SettingsProps {
@@ -298,14 +298,24 @@ export default function Settings({
       <section className="settings-section">
         <h2>{t('settingsSupport')}</h2>
         <p className="settings-note">{t('settingsSupportNote')}</p>
-        <a
-          href={TRAKTEER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-trakteer btn-trakteer-full"
-        >
-          {t('btnTrakteer')}
-        </a>
+        <div className="support-links">
+          <a
+            href={TRAKTEER_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-trakteer btn-trakteer-full"
+          >
+            {t('btnTrakteer')}
+          </a>
+          <a
+            href={KOFI_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-kofi btn-trakteer-full"
+          >
+            {t('btnKofi')}
+          </a>
+        </div>
       </section>
 
       {/* 7. Ajak keluarga */}

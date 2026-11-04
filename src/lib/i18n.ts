@@ -42,8 +42,9 @@ const STRINGS = {
       'Tidak mengumpulkan data pribadi. Progress hanya di HP ini (localStorage). Tidak ada login. Analytics kunjungan tanpa cookie (hanya hitungan halaman).',
     settingsSupport: 'Saran & Dukung',
     settingsSupportNote:
-      'Suka mainnya atau punya saran? Bisa dukung lewat Trakteer. Tulis pesan di kolom Trakteer (saran & feedback boleh).',
-    btnTrakteer: '☕ Buka Trakteer',
+      'Suka mainnya atau punya saran? Dukung lewat Trakteer (Indonesia) atau Ko-fi (internasional). Boleh tulis pesan/saran di sana.',
+    btnTrakteer: '☕ Trakteer (Indonesia)',
+    btnKofi: '🌍 Ko-fi (International)',
     msgExportReady: 'Kode siap — salin atau kirim WhatsApp ke HP lain',
     msgCopied: 'Kode disalin! Tempel di Pengaturan HP lain.',
     msgCopyFail: 'Gagal menyalin otomatis. Pilih teks di bawah lalu salin manual.',
@@ -327,8 +328,9 @@ const STRINGS = {
       'No personal data collected. Progress stays on this device only (localStorage). No login. Page-view analytics are cookieless.',
     settingsSupport: 'Feedback & Support',
     settingsSupportNote:
-      'Enjoying it or have ideas? Support via Trakteer — you can leave a note there.',
-    btnTrakteer: '☕ Open Trakteer',
+      'Enjoying it or have ideas? Support via Trakteer (Indonesia) or Ko-fi (international). You can leave a note there.',
+    btnTrakteer: '☕ Trakteer (Indonesia)',
+    btnKofi: '🌍 Ko-fi (International)',
     msgExportReady: 'Code ready — copy or send via WhatsApp to another phone',
     msgCopied: 'Code copied! Paste it in Settings on the other phone.',
     msgCopyFail: 'Could not copy automatically. Select the text below and copy manually.',
