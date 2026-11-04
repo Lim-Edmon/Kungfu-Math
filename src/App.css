@@ -4678,3 +4678,71 @@ a.is-offline-locked {
 .btn-kofi:hover {
   filter: brightness(1.05);
 }
+
+
+/* Footer support → popup */
+button.footer-support-btn {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.support-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.support-modal {
+  width: min(22rem, 100%);
+  background: var(--bg-card, #fff);
+  color: var(--text, #1c1917);
+  border-radius: 16px;
+  padding: 1.15rem 1.1rem 1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+.support-modal h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  text-align: center;
+}
+.support-modal-note {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  opacity: 0.9;
+  text-align: center;
+}
+.support-modal .support-links {
+  margin-bottom: 0.75rem;
+}
+.support-modal-close {
+  width: 100%;
+  appearance: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: transparent;
+  border-radius: 10px;
+  padding: 0.55rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: inherit;
+}
+[data-theme='malam'] .support-modal,
+.theme-malam .support-modal {
+  background: #292524;
+  color: #fafaf9;
+}
+[data-theme='malam'] .support-modal-close,
+.theme-malam .support-modal-close {
+  border-color: rgba(255, 255, 255, 0.2);
+}

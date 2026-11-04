@@ -11,6 +11,10 @@ const STRINGS = {
     appVersionLabel: 'Versi app',
     tagline: 'Hitung ala pendekar',
     footerSupport: '☕ Dukung project ini',
+    supportModalTitle: 'Dukung project ini',
+    supportModalNote:
+      'Kalau suka, boleh dukung supaya project ini terus berkembang — perbaikan, fitur baru, atau karya menarik berikutnya. Terima kasih!',
+    supportModalClose: 'Tutup',
     footerNotice: 'Hak cipta & larangan salin',
     footerCopy: '© Lim Edmon 2026',
     footerNoticeAria: '© Lim Edmon 2026 — buka pemberitahuan hak cipta dan larangan salin/clone',
@@ -42,7 +46,7 @@ const STRINGS = {
       'Tidak mengumpulkan data pribadi. Progress hanya di HP ini (localStorage). Tidak ada login. Analytics kunjungan tanpa cookie (hanya hitungan halaman).',
     settingsSupport: 'Saran & Dukung',
     settingsSupportNote:
-      'Suka mainnya atau punya saran? Dukung lewat Trakteer (Indonesia) atau Ko-fi (internasional). Boleh tulis pesan/saran di sana.',
+      'Suka mainnya atau punya saran? Boleh dukung lewat Trakteer (Indonesia) atau Ko-fi (internasional) supaya project terus berkembang. Boleh tulis pesan/saran di sana.',
     btnTrakteer: '☕ Trakteer (Indonesia)',
     btnKofi: '🌍 Ko-fi (International)',
     msgExportReady: 'Kode siap — salin atau kirim WhatsApp ke HP lain',
@@ -297,6 +301,10 @@ const STRINGS = {
     appVersionLabel: 'App version',
     tagline: 'Math like a hero',
     footerSupport: '☕ Support this project',
+    supportModalTitle: 'Support this project',
+    supportModalNote:
+      'If you enjoy this, you can support ongoing work — fixes, new features, or the next interesting project. Thank you!',
+    supportModalClose: 'Close',
     footerNotice: 'Copyright & no-copy notice',
     footerCopy: '© Lim Edmon 2026',
     footerNoticeAria: '© Lim Edmon 2026 — open copyright and no-copy / no-clone notice',
@@ -328,7 +336,7 @@ const STRINGS = {
       'No personal data collected. Progress stays on this device only (localStorage). No login. Page-view analytics are cookieless.',
     settingsSupport: 'Feedback & Support',
     settingsSupportNote:
-      'Enjoying it or have ideas? Support via Trakteer (Indonesia) or Ko-fi (international). You can leave a note there.',
+      'Enjoying it or have ideas? Support via Trakteer (Indonesia) or Ko-fi (international) so the project can keep improving. You can leave a note there.',
     btnTrakteer: '☕ Trakteer (Indonesia)',
     btnKofi: '🌍 Ko-fi (International)',
     msgExportReady: 'Code ready — copy or send via WhatsApp to another phone',
