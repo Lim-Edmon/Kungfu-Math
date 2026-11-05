@@ -4915,32 +4915,21 @@ html[data-season*='lebaran'] .season-pattern-layer {
   opacity: 0.14;
 }
 /* Irisan: dua pola ditumpuk tipis */
+/* Irisan: 1 file pola gabungan (bukan 2 webp ditumpuk) */
 html[data-season='imlek-lebaran'] .season-pattern-layer,
 html[data-season='lebaran-imlek'] .season-pattern-layer {
-  background-image:
-    url('/seasons/imlek-pattern.webp'),
-    url('/seasons/lebaran-pattern.webp');
-  background-size: 300px auto, 340px auto;
-  background-position: 0 0, 40px 60px;
-  opacity: 0.11;
+  background-image: url('/seasons/imlek-lebaran-pattern.webp');
+  opacity: 0.15;
 }
 html[data-season='natal-imlek'] .season-pattern-layer,
 html[data-season='imlek-natal'] .season-pattern-layer {
-  background-image:
-    url('/seasons/natal-pattern.webp'),
-    url('/seasons/imlek-pattern.webp');
-  background-size: 300px auto, 320px auto;
-  background-position: 0 0, 50px 40px;
-  opacity: 0.11;
+  background-image: url('/seasons/natal-imlek-pattern.webp');
+  opacity: 0.15;
 }
 html[data-season='natal-lebaran'] .season-pattern-layer,
 html[data-season='lebaran-natal'] .season-pattern-layer {
-  background-image:
-    url('/seasons/natal-pattern.webp'),
-    url('/seasons/lebaran-pattern.webp');
-  background-size: 300px auto, 320px auto;
-  background-position: 0 0, 40px 50px;
-  opacity: 0.11;
+  background-image: url('/seasons/natal-lebaran-pattern.webp');
+  opacity: 0.15;
 }
 html[data-season*='natal'] .app-header {
   box-shadow: inset 0 -3px 0 rgba(220, 38, 38, 0.28);

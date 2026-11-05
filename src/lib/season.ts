@@ -8,6 +8,7 @@
  *   (Umm al-Qura / HKO), ±1 bulan sebelum → +1 minggu sesudah.
  *   Bisa ±1 hari vs penetapan resmi (hilal) — jendela lebar meng-cover itu.
  *
+ * Setelah 2050: hanya Natal otomatis; Imlek/Lebaran tidak muncul (tabel habis).
  * Irisan: data-season "imlek-lebaran" | "natal-lebaran" | "natal-imlek"
  *   → CSS menumpuk 2 pola line-art (bukan 1 file gabungan).
  *

@@ -103,9 +103,10 @@ function hasCorrectOnScreen(
 
 /** Skala kecepatan arena gerak: desktop lebih pelan (terasa setara HP). */
 function arenaMoveSpeedScale(extra = 1): number {
-  let base = 0.72;
+  // Titik tengah: ~70% kecepatan awal. Desktop sedikit lebih pelan dari HP.
+  let base = 0.92;
   try {
-    if (typeof window !== 'undefined' && window.innerWidth >= 900) base = 0.48;
+    if (typeof window !== 'undefined' && window.innerWidth >= 900) base = 0.78;
   } catch {
     /* ignore */
   }
@@ -119,15 +120,15 @@ function createNumbersFromQuestion(
   speedScale = 1
 ): FloatingNumber[] {
   const count = question.candidates.length;
-  const yMin = 18;
-  const yMax = 72;
+  const yMin = 8;
+  const yMax = 90;
 
   if (arenaStyle === 'pass') {
     // Spawn dari kiri atau kanan, bergerak horizontal ke sisi lawan
     return question.candidates.map((value, index) => {
       const isBomb = question.bombIndexes.includes(index);
       const fromLeft = Math.random() < 0.5;
-      const speed = (10 + Math.random() * 9) * speedScale * arenaMoveSpeedScale();
+      const speed = (14 + Math.random() * 12) * speedScale * arenaMoveSpeedScale();
       const y = yMin + Math.random() * (yMax - yMin);
       const x = fromLeft ? -4 - Math.random() * 8 : 104 + Math.random() * 8;
       return {
@@ -138,7 +139,7 @@ function createNumbersFromQuestion(
         isBomb,
         sliced: false,
         vx: fromLeft ? speed : -speed,
-        vy: (Math.random() - 0.5) * 3.5 * speedScale * arenaMoveSpeedScale(),
+        vy: (Math.random() - 0.5) * 5 * speedScale * arenaMoveSpeedScale(),
       };
     });
   }
@@ -173,7 +174,7 @@ function createNumbersFromQuestion(
   const agility = arenaStyle === 'agility';
   return question.candidates.map((value, index) => {
     const isBomb = question.bombIndexes.includes(index);
-    const speed = (7 + Math.random() * 11) * speedScale * arenaMoveSpeedScale();
+    const speed = (10 + Math.random() * 14) * speedScale * arenaMoveSpeedScale();
     const angle = Math.random() * Math.PI * 2;
     return {
       id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
@@ -738,7 +739,7 @@ export default function Game({
           // Diam: posisi sama. Pantul: titik terakhir + arah baru. Lewat: masuk dari tepi.
           if (arenaStyle === 'pass') {
             const fromLeft = Math.random() < 0.5;
-            const passSpeed = (10 + Math.random() * 9) * scale * arenaMoveSpeedScale();
+            const passSpeed = (14 + Math.random() * 12) * scale * arenaMoveSpeedScale();
             return {
               ...n,
               sliced: false,
@@ -746,7 +747,7 @@ export default function Game({
               x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
               y: Math.min(72, Math.max(18, n.y)),
               vx: fromLeft ? passSpeed : -passSpeed,
-              vy: (Math.random() - 0.5) * 3.5 * arenaMoveSpeedScale(),
+              vy: (Math.random() - 0.5) * 5 * arenaMoveSpeedScale(),
             };
           }
           if (arenaStyle === 'agility') {
@@ -927,7 +928,7 @@ export default function Game({
               if (arenaStyle === 'pass') {
                 const fromLeft = Math.random() < 0.5;
                 const passSpeed =
-                  (10 + Math.random() * 9) *
+                  (14 + Math.random() * 12) *
                   (mode === 'tap' ? 0.7 : 1) *
                   arenaMoveSpeedScale();
                 return {
@@ -935,7 +936,7 @@ export default function Game({
                   x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
                   y: 18 + Math.random() * 54,
                   vx: fromLeft ? passSpeed : -passSpeed,
-                  vy: (Math.random() - 0.5) * 3.5 * arenaMoveSpeedScale(),
+                  vy: (Math.random() - 0.5) * 5 * arenaMoveSpeedScale(),
                 };
               }
               return base;
@@ -1146,10 +1147,11 @@ export default function Game({
 
     let raf = 0;
     let last = performance.now();
-    const xMin = 12;
-    const xMax = 88;
-    const yMin = 18;
-    const yMax = 72;
+    // Margin ~5%: bola pantul sampai dekat tepi arena (bukan “tembok” di 12/88)
+    const xMin = 5;
+    const xMax = 95;
+    const yMin = 8;
+    const yMax = 90;
 
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
