@@ -100,6 +100,18 @@ function hasCorrectOnScreen(
   return true;
 }
 
+
+/** Skala kecepatan arena gerak: desktop lebih pelan (terasa setara HP). */
+function arenaMoveSpeedScale(extra = 1): number {
+  let base = 0.72;
+  try {
+    if (typeof window !== 'undefined' && window.innerWidth >= 900) base = 0.48;
+  } catch {
+    /* ignore */
+  }
+  return base * extra;
+}
+
 function createNumbersFromQuestion(
   question: MathQuestion,
   arenaStyle: 'static' | 'agility' | 'pass' = 'static',
@@ -115,7 +127,7 @@ function createNumbersFromQuestion(
     return question.candidates.map((value, index) => {
       const isBomb = question.bombIndexes.includes(index);
       const fromLeft = Math.random() < 0.5;
-      const speed = (18 + Math.random() * 16) * speedScale;
+      const speed = (10 + Math.random() * 9) * speedScale * arenaMoveSpeedScale();
       const y = yMin + Math.random() * (yMax - yMin);
       const x = fromLeft ? -4 - Math.random() * 8 : 104 + Math.random() * 8;
       return {
@@ -126,7 +138,7 @@ function createNumbersFromQuestion(
         isBomb,
         sliced: false,
         vx: fromLeft ? speed : -speed,
-        vy: (Math.random() - 0.5) * 6 * speedScale,
+        vy: (Math.random() - 0.5) * 3.5 * speedScale * arenaMoveSpeedScale(),
       };
     });
   }
@@ -161,7 +173,7 @@ function createNumbersFromQuestion(
   const agility = arenaStyle === 'agility';
   return question.candidates.map((value, index) => {
     const isBomb = question.bombIndexes.includes(index);
-    const speed = (12 + Math.random() * 22) * speedScale;
+    const speed = (7 + Math.random() * 11) * speedScale * arenaMoveSpeedScale();
     const angle = Math.random() * Math.PI * 2;
     return {
       id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
@@ -726,7 +738,7 @@ export default function Game({
           // Diam: posisi sama. Pantul: titik terakhir + arah baru. Lewat: masuk dari tepi.
           if (arenaStyle === 'pass') {
             const fromLeft = Math.random() < 0.5;
-            const passSpeed = (18 + Math.random() * 16) * scale;
+            const passSpeed = (10 + Math.random() * 9) * scale * arenaMoveSpeedScale();
             return {
               ...n,
               sliced: false,
@@ -734,11 +746,11 @@ export default function Game({
               x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
               y: Math.min(72, Math.max(18, n.y)),
               vx: fromLeft ? passSpeed : -passSpeed,
-              vy: (Math.random() - 0.5) * 6,
+              vy: (Math.random() - 0.5) * 3.5 * arenaMoveSpeedScale(),
             };
           }
           if (arenaStyle === 'agility') {
-            const speed = (12 + Math.random() * 22) * scale;
+            const speed = (7 + Math.random() * 11) * scale * arenaMoveSpeedScale();
             const angle = Math.random() * Math.PI * 2;
             return {
               ...n,
@@ -915,13 +927,15 @@ export default function Game({
               if (arenaStyle === 'pass') {
                 const fromLeft = Math.random() < 0.5;
                 const passSpeed =
-                  (18 + Math.random() * 16) * (mode === 'tap' ? 0.7 : 1);
+                  (10 + Math.random() * 9) *
+                  (mode === 'tap' ? 0.7 : 1) *
+                  arenaMoveSpeedScale();
                 return {
                   ...base,
                   x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
                   y: 18 + Math.random() * 54,
                   vx: fromLeft ? passSpeed : -passSpeed,
-                  vy: (Math.random() - 0.5) * 6,
+                  vy: (Math.random() - 0.5) * 3.5 * arenaMoveSpeedScale(),
                 };
               }
               return base;
@@ -1162,7 +1176,7 @@ export default function Game({
             return { ...n, x, y, vy: nvy };
           });
           // Benturan antar bola aktif saja
-          const minDist = 9;
+          const minDist = 10;
           const liveIdx = numbers
             .map((n, i) => (!n.sliced ? i : -1))
             .filter((i) => i >= 0);
@@ -1225,7 +1239,7 @@ export default function Game({
           return { ...prev, numbers };
         }
 
-        // agility bounce
+        // agility bounce: dinding + tabrakan antar bola (tidak nembus)
         let changed = false;
         let numbers = prev.numbers.map((n) => {
           if (n.sliced) return n;
@@ -1253,6 +1267,56 @@ export default function Game({
           }
           return { ...n, x, y, vx: nvx, vy: nvy };
         });
+        // Tabrakan bola–bola (elastic sederhana + pisahkan overlap)
+        const minDist = 10;
+        const liveIdx = numbers
+          .map((n, i) => (!n.sliced ? i : -1))
+          .filter((i) => i >= 0);
+        for (let ii = 0; ii < liveIdx.length; ii++) {
+          for (let jj = ii + 1; jj < liveIdx.length; jj++) {
+            const i = liveIdx[ii];
+            const j = liveIdx[jj];
+            const a = { ...numbers[i] };
+            const b = { ...numbers[j] };
+            let dx = b.x - a.x;
+            let dy = b.y - a.y;
+            let dist = Math.hypot(dx, dy);
+            if (dist < 0.01) {
+              dx = 0.01;
+              dy = 0;
+              dist = 0.01;
+            }
+            if (dist >= minDist) continue;
+            changed = true;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const overlap = (minDist - dist) / 2 + 0.15;
+            a.x -= nx * overlap;
+            a.y -= ny * overlap;
+            b.x += nx * overlap;
+            b.y += ny * overlap;
+            a.x = Math.max(xMin, Math.min(xMax, a.x));
+            a.y = Math.max(yMin, Math.min(yMax, a.y));
+            b.x = Math.max(xMin, Math.min(xMax, b.x));
+            b.y = Math.max(yMin, Math.min(yMax, b.y));
+            const avx = a.vx ?? 0;
+            const avy = a.vy ?? 0;
+            const bvx = b.vx ?? 0;
+            const bvy = b.vy ?? 0;
+            const va = avx * nx + avy * ny;
+            const vb = bvx * nx + bvy * ny;
+            // Hanya tukar komponen sepanjang normal jika mendekat
+            if (va - vb > 0) {
+              const dv = va - vb;
+              a.vx = avx - dv * nx;
+              a.vy = avy - dv * ny;
+              b.vx = bvx + dv * nx;
+              b.vy = bvy + dv * ny;
+            }
+            numbers[i] = a;
+            numbers[j] = b;
+          }
+        }
         if (!changed) return prev;
         return { ...prev, numbers };
       });
