@@ -10,12 +10,14 @@ import type {
   InputMode,
 } from '../lib/types';
 import {
-ADVENTURE_CITIES,
+  ADVENTURE_CITIES,
   ADVENTURE_DIFFICULTIES,
   ADVENTURE_REGIONS,
   getCountryNameId,
   getCountryNameEn,
   resolveFocusCityId,
+  shouldShowSecretTeaser,
+  isSecretPathUnlocked,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS, getLevelById } from '../lib/levels';
@@ -974,6 +976,33 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                 </div>
 
                 <h3 className="subsection-title">{t('pickCity')}</h3>
+                {(() => {
+                  const prog = loadProgress();
+                  const unlocked = prog.adventureUnlocked || ['jakarta'];
+                  const showTeaser = shouldShowSecretTeaser(
+                    unlocked,
+                    prog.adventureHighScores
+                  );
+                  const secretOpen = isSecretPathUnlocked(unlocked);
+                  if (!showTeaser) return null;
+                  return (
+                    <div
+                      className={`secret-teaser ${secretOpen ? 'is-unlocked' : ''}`}
+                      role="status"
+                    >
+                      <strong>
+                        {secretOpen
+                          ? t('secretUnlockedTitle')
+                          : t('secretTeaserTitle')}
+                      </strong>
+                      <p>
+                        {secretOpen
+                          ? t('secretUnlockedBody')
+                          : t('secretTeaserBody')}
+                      </p>
+                    </div>
+                  );
+                })()}
                 {(() => {
                   const prog = loadProgress();
                   const unlocked = prog.adventureUnlocked || ['jakarta'];

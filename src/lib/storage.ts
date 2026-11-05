@@ -10,7 +10,11 @@ import type {
 } from './types';
 import { DEFAULT_PROGRESS } from './types';
 import { getLang, t } from './i18n';
-import { ADVENTURE_CITIES } from './adventure';
+import {
+  ADVENTURE_CITIES,
+  isSecretCityId,
+  withSecretCitiesIfEligible,
+} from './adventure';
 import { BADGE_DEFS } from './badges';
 import { getIsOnline } from './offline';
 
@@ -198,6 +202,10 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   if (next.adventureUnlocked.length === 0) {
     next.adventureUnlocked = ['jakarta'];
   }
+  next.adventureUnlocked = withSecretCitiesIfEligible(
+    next.adventureUnlocked,
+    next.adventureHighScores
+  );
   if (p.adventureHighScores && typeof p.adventureHighScores === 'object') {
     const ahs: Record<string, number> = {};
     for (const [k, v] of Object.entries(p.adventureHighScores as Record<string, unknown>)) {
@@ -475,16 +483,20 @@ function computeUnlockedFromScores(prog: PlayerProgress): string[] {
   const unlocked: string[] = ['jakarta'];
   for (let i = 0; i < ADVENTURE_CITIES.length - 1; i++) {
     const c = ADVENTURE_CITIES[i];
+    const next = ADVENTURE_CITIES[i + 1];
+    // Jangan buka kota rahasia lewat rantai linear biasa
+    if (isSecretCityId(c.id) || isSecretCityId(next.id)) break;
     const hs = prog.adventureHighScores?.[c.id] ?? 0;
     if (hs >= c.targetScore) {
-      unlocked.push(ADVENTURE_CITIES[i + 1].id);
+      unlocked.push(next.id);
     } else {
       break;
     }
   }
-  // Gabungkan dengan yang sudah di adventureUnlocked sebelum cheat
-  // (jaga-jaga skor tidak sinkron) — dipanggil hanya saat lock tanpa snap
-  return Array.from(new Set(unlocked));
+  return withSecretCitiesIfEligible(
+    Array.from(new Set(unlocked)),
+    prog.adventureHighScores
+  );
 }
 
 export function isDevUnlockCode(encoded: string): boolean {

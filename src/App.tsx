@@ -28,6 +28,7 @@ import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
 import AdventureMap from './components/AdventureMap';
 import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
+import { applySeasonToDocument, getActiveSeasonAttr, seasonHas } from './lib/season';
 import type { ArenaStyle, CharacterId, InputMode, PracticeSessionKind, SprintLength} from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
@@ -255,6 +256,7 @@ function App() {
       'data-theme',
       p.displayMode || 'siang'
     );
+    applySeasonToDocument(getActiveSeasonAttr());
     setSelectedMode(p.preferredMode || 'slice');
     setSelectedLevel(p.preferredLevel || 'pemula');
     if (p.preferredCharacter) {
@@ -1157,6 +1159,11 @@ function App() {
             />
           </div>
         </div>
+      )}
+
+      {/* Pola season: wallpaper ringan, tanpa salju (salju khusus kota rahasia nanti) */}
+      {(seasonHas('natal') || seasonHas('imlek') || seasonHas('lebaran')) && (
+        <div className="season-pattern-layer" aria-hidden="true" />
       )}
 
       {showBottomNav && (

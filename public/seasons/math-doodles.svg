@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
+  <g fill="none" stroke="#666" stroke-width="1.2" opacity="0.35">
+    <text x="20" y="40" font-size="22" font-family="serif">+</text>
+    <text x="90" y="80" font-size="20" font-family="serif">×</text>
+    <text x="160" y="35" font-size="18" font-family="serif">÷</text>
+    <text x="230" y="90" font-size="16" font-family="serif">√</text>
+    <text x="40" y="140" font-size="18" font-family="serif">=</text>
+    <text x="120" y="160" font-size="14" font-family="serif">π</text>
+    <text x="200" y="150" font-size="16" font-family="serif">?</text>
+    <text x="270" y="50" font-size="18" font-family="serif">−</text>
+    <circle cx="60" cy="100" r="12"/>
+    <rect x="250" y="120" width="22" height="22" rx="2"/>
+  </g>
+</svg>

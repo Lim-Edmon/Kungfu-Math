@@ -55,13 +55,13 @@ export const ADVENTURE_REGIONS: { id: string; labelId: string; labelEn: string }
   { id: 'central-america', labelId: 'Amerika Tengah & Karibia', labelEn: 'Central America & Caribbean' },
   { id: 'canada-north', labelId: 'Kanada & Utara', labelEn: 'Canada & the North' },
   { id: 'usa', labelId: 'Amerika Serikat', labelEn: 'United States' },
-  // Region rahasia (fase nanti): hanya terbuka jika semua kota + syarat khusus
-  // { id: 'secret-arctic', labelId: 'Kutub Utara', labelEn: 'North Pole' },
-  // { id: 'secret-antarctic', labelId: 'Kutub Selatan', labelEn: 'South Pole' },
+  /** Region rahasia — hanya setelah seluruh jalur konten publik lolos target */
+  { id: 'secret-polar', labelId: 'Jalur Misteri', labelEn: 'Mystery Path' },
 ];
 
 export const COUNTRY_NAMES_ID: Record<string, string> = {
   ae: 'Uni Emirat Arab',
+  aq: 'Antartika',
   ar: 'Argentina',
   at: 'Austria',
   au: 'Australia',
@@ -157,6 +157,7 @@ export function getCountryNameId(countryId: string): string {
 
 export const COUNTRY_NAMES_EN: Record<string, string> = {
   ae: 'United Arab Emirates',
+  aq: 'Antartika',
   ar: 'Argentina',
   at: 'Austria',
   au: 'Australia',
@@ -2610,6 +2611,52 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 28.66,
     mapY: 39.31,
   },
+  {
+    id: 'north-pole',
+    nameId: 'Kutub Utara',
+    nameEn: 'North Pole',
+    countryId: 'gl',
+    regionId: 'secret-polar',
+    theme: 'north-pole',
+    targetScore: 4600,
+    blurbId: 'Jalur misteri es',
+    landmarkId: 'Aurora & es kutub',
+    funFacts: [
+      'Kutub Utara bukan negara — wilayah laut yang tertutup es di ujung utara bumi.',
+      'Di Kutub Utara, matahari bisa tidak terbenam berbulan-bulan di musim panas.',
+      'Aurora (cahaya kutub) sering terlihat di langit dekat Kutub Utara.',
+    ],
+    funFactsEn: [
+      'The North Pole is not a country — it is an icy ocean region at the top of the Earth.',
+      'Near the North Pole, the sun can stay up for months in summer.',
+      'The aurora (northern lights) is often seen in skies near the North Pole.',
+    ],
+    mapX: 50.0,
+    mapY: 6.5,
+  },
+  {
+    id: 'south-pole',
+    nameId: 'Kutub Selatan',
+    nameEn: 'South Pole',
+    countryId: 'aq',
+    regionId: 'secret-polar',
+    theme: 'south-pole',
+    targetScore: 4650,
+    blurbId: 'Jalur misteri Antartika',
+    landmarkId: 'Benua es Antartika',
+    funFacts: [
+      'Kutub Selatan ada di benua Antartika — daratan besar yang hampir seluruhnya es.',
+      'Antartika adalah benua paling dingin di Bumi.',
+      'Hampir tidak ada penduduk tetap di Kutub Selatan; hanya peneliti sementara.',
+    ],
+    funFactsEn: [
+      'The South Pole sits on Antarctica — a huge continent covered mostly in ice.',
+      'Antarctica is the coldest continent on Earth.',
+      'Almost nobody lives permanently at the South Pole — only visiting researchers.',
+    ],
+    mapX: 50.0,
+    mapY: 94.5,
+  },
 ];
 
 /** Kota terakhir region Indonesia — lolos = buka Asia Tenggara */
@@ -2700,7 +2747,56 @@ export function getNextPlayableCityId(currentId: string): string | null {
   return next;
 }
 
-export function isCityInOpenContent(cityId: string): boolean {
+export const SECRET_CITY_IDS = ['north-pole', 'south-pole'] as const;
+
+export function isSecretCityId(id: string): boolean {
+  return (SECRET_CITY_IDS as readonly string[]).includes(id);
+}
+
+/** Teaser: sudah melewati ~60% jalur konten publik (supaya user ngeh ada misteri). */
+export function shouldShowSecretTeaser(
+  unlocked: string[] | undefined,
+  highScores?: Record<string, number>
+): boolean {
+  if (isContentPathFullyCleared(highScores)) return true;
+  const lastIdx = ADVENTURE_CITIES.findIndex((c) => c.id === CONTENT_PATH_LAST_CITY_ID);
+  if (lastIdx < 0) return false;
+  const fur = furthestUnlockedCityId(unlocked || ['jakarta']);
+  const fi = ADVENTURE_CITIES.findIndex((c) => c.id === fur);
+  return fi >= Math.floor(lastIdx * 0.6);
+}
+
+/** Semua kota rahasia sudah di daftar terbuka. */
+export function isSecretPathUnlocked(unlocked: string[] | undefined): boolean {
+  const u = unlocked || [];
+  return SECRET_CITY_IDS.every((id) => u.includes(id));
+}
+
+/**
+ * Jika jalur konten publik sudah lolos semua target → masukkan kota rahasia ke unlocked.
+ * Dipanggil saat load / setelah rekor petualangan.
+ */
+export function withSecretCitiesIfEligible(
+  unlocked: string[],
+  highScores: Record<string, number> | undefined
+): string[] {
+  const base = unlocked?.length ? [...unlocked] : ['jakarta'];
+  // Kota rahasia: early note saja. Baru bisa unlock setelah ujung jalur penuh = New York.
+  // (CONTENT_PATH_LAST masih di kota publik; MVP_PATH_LAST = new-york.)
+  const ny = highScores?.['new-york'] ?? 0;
+  const nyCity = ADVENTURE_CITIES.find((c) => c.id === 'new-york');
+  const nyOk = nyCity ? ny >= nyCity.targetScore : false;
+  if (!nyOk) return base.filter((id) => !isSecretCityId(id));
+  if (!isContentPathFullyCleared(highScores)) return base.filter((id) => !isSecretCityId(id));
+  const set = new Set(base);
+  for (const id of SECRET_CITY_IDS) set.add(id);
+  return Array.from(set);
+}
+
+export function isCityInOpenContent(cityId: string, unlocked?: string[]): boolean {
+  if (isSecretCityId(cityId)) {
+    return !!unlocked?.includes(cityId);
+  }
   const lastIdx = ADVENTURE_CITIES.findIndex((c) => c.id === CONTENT_PATH_LAST_CITY_ID);
   const i = ADVENTURE_CITIES.findIndex((c) => c.id === cityId);
   if (i < 0) return false;
@@ -2708,6 +2804,7 @@ export function isCityInOpenContent(cityId: string): boolean {
   return i <= lastIdx;
 }
 
+/** Id kota rahasia (tidak ikut rantai buka linear biasa). */
 /** Path BG kota — fallback default (Unknown Village) */
 export function cityBgCandidates(cityId: string): string[] {
   const id = (cityId || 'default').toLowerCase();

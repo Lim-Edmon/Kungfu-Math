@@ -4709,12 +4709,13 @@ button.footer-support-btn {
 .support-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 100000;
-  background: rgba(0, 0, 0, 0.45);
+  z-index: 2147483000;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  box-sizing: border-box;
 }
 .support-modal {
   width: min(22rem, 100%);
@@ -4758,4 +4759,195 @@ button.footer-support-btn {
 [data-theme='malam'] .support-modal-close,
 .theme-malam .support-modal-close {
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* —— Secret path teaser —— */
+.secret-teaser {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(99, 102, 241, 0.55);
+  background: rgba(99, 102, 241, 0.08);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+.secret-teaser strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.95rem;
+}
+.secret-teaser p {
+  margin: 0;
+  opacity: 0.92;
+}
+.secret-teaser.is-unlocked {
+  border-style: solid;
+  border-color: rgba(16, 185, 129, 0.55);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+/* —— Season: Natal (skeleton) —— */
+.season-snow {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+}
+.season-snow .snowflake {
+  position: absolute;
+  top: -12px;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  opacity: 0.75;
+  animation-name: km-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes km-snow-fall {
+  0% { transform: translateY(0) translateX(0); opacity: 0.8; }
+  100% { transform: translateY(110vh) translateX(20px); opacity: 0.15; }
+}
+html[data-season='natal'] .app-header,
+html[data-season='natal'] .home-hero {
+  box-shadow: inset 0 -2px 0 rgba(220, 38, 38, 0.25);
+}
+html[data-season='lebaran'] .app-header {
+  box-shadow: inset 0 -2px 0 rgba(5, 150, 105, 0.3);
+}
+
+
+/* —— Season ornaments (skeleton, ringan) —— */
+.season-fx {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  overflow: hidden;
+}
+.season-ornaments {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.season-ornaments .so {
+  position: absolute;
+  font-size: 1.35rem;
+  opacity: 0.55;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+}
+.season-ornaments .so-tree { top: 0.35rem; left: 0.4rem; }
+.season-ornaments .so-gift { top: 0.4rem; right: 0.5rem; }
+.season-ornaments .so-flake { top: 2.6rem; right: 1.2rem; font-size: 1rem; opacity: 0.4; }
+.season-ornaments .so-ketupat { top: 0.35rem; left: 0.45rem; }
+.season-ornaments .so-moon { top: 0.35rem; right: 0.55rem; }
+.season-ornaments .so-lantern { top: 2.5rem; left: 0.6rem; font-size: 1.1rem; opacity: 0.45; }
+.season-ornaments .so-lantern-cn { top: 0.35rem; left: 0.45rem; }
+.season-ornaments .so-angpao { top: 0.4rem; right: 0.5rem; }
+.season-ornaments .so-orange { top: 2.5rem; right: 0.7rem; font-size: 1.1rem; opacity: 0.5; }
+
+/* Header accent per season (atribut bisa gabungan: imlek-lebaran) */
+html[data-season*='natal'] .app-header {
+  box-shadow: inset 0 -3px 0 rgba(220, 38, 38, 0.35);
+}
+html[data-season*='lebaran'] .app-header {
+  box-shadow: inset 0 -3px 0 rgba(5, 150, 105, 0.4);
+}
+html[data-season*='imlek'] .app-header {
+  box-shadow: inset 0 -3px 0 rgba(220, 38, 38, 0.5);
+}
+/* Irisan imlek + lebaran: strip ganda halus */
+html[data-season='imlek-lebaran'] .app-header,
+html[data-season='lebaran-imlek'] .app-header {
+  box-shadow:
+    inset 0 -3px 0 rgba(220, 38, 38, 0.45),
+    inset 0 -6px 0 rgba(5, 150, 105, 0.35);
+}
+
+
+
+
+/* —— Season pattern: 1 layer di ATAS bg app, DI BAWAH konten/tombol/map/arena —— */
+.season-pattern-layer {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.13;
+  background-color: transparent;
+  background-repeat: repeat;
+  background-size: 320px auto;
+  background-position: center top;
+}
+.season-pattern-layer::after {
+  /* doodle math khas Kungfu Math — sangat tipis */
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.2;
+  background-image: url('/seasons/math-doodles.svg');
+  background-repeat: repeat;
+  background-size: 320px 200px;
+  pointer-events: none;
+}
+/* Konten di atas pattern (jangan ubah position:fixed milik game/nav) */
+.app { isolation: isolate; }
+.app-main,
+.home-wizard,
+.app-header,
+.app-footer {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-season*='natal'] .season-pattern-layer {
+  background-image: url('/seasons/natal-pattern.webp');
+  opacity: 0.16;
+}
+html[data-season*='imlek'] .season-pattern-layer {
+  background-image: url('/seasons/imlek-pattern.webp');
+  opacity: 0.14;
+}
+html[data-season*='lebaran'] .season-pattern-layer {
+  background-image: url('/seasons/lebaran-pattern.webp');
+  opacity: 0.14;
+}
+/* Irisan: dua pola ditumpuk tipis */
+html[data-season='imlek-lebaran'] .season-pattern-layer,
+html[data-season='lebaran-imlek'] .season-pattern-layer {
+  background-image:
+    url('/seasons/imlek-pattern.webp'),
+    url('/seasons/lebaran-pattern.webp');
+  background-size: 300px auto, 340px auto;
+  background-position: 0 0, 40px 60px;
+  opacity: 0.11;
+}
+html[data-season='natal-imlek'] .season-pattern-layer,
+html[data-season='imlek-natal'] .season-pattern-layer {
+  background-image:
+    url('/seasons/natal-pattern.webp'),
+    url('/seasons/imlek-pattern.webp');
+  background-size: 300px auto, 320px auto;
+  background-position: 0 0, 50px 40px;
+  opacity: 0.11;
+}
+html[data-season='natal-lebaran'] .season-pattern-layer,
+html[data-season='lebaran-natal'] .season-pattern-layer {
+  background-image:
+    url('/seasons/natal-pattern.webp'),
+    url('/seasons/lebaran-pattern.webp');
+  background-size: 300px auto, 320px auto;
+  background-position: 0 0, 40px 50px;
+  opacity: 0.11;
+}
+html[data-season*='natal'] .app-header {
+  box-shadow: inset 0 -3px 0 rgba(220, 38, 38, 0.28);
+}
+html[data-season*='lebaran'] .app-header {
+  box-shadow: inset 0 -3px 0 rgba(5, 150, 105, 0.32);
+}
+html[data-season*='imlek'] .app-header {
+  box-shadow: inset 0 -3px 0 rgba(185, 28, 28, 0.35);
 }

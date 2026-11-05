@@ -11,6 +11,14 @@ const STRINGS = {
     appVersionLabel: 'Versi app',
     tagline: 'Hitung ala pendekar',
     footerSupport: '☕ Dukung project ini',
+    secretTeaserTitle: 'Jalur misteri',
+    secretTeaserBody:
+      'Catatan awal: nanti ada jalur misteri di peta. Belum bisa dimainkan — dibuka setelah perjalanan sampai New York.',
+    secretUnlockedTitle: 'Jalur misteri terbuka!',
+    secretUnlockedBody:
+      'Kutub Utara & Kutub Selatan siap dijelajah. Cari pin misteri di peta.',
+    seasonNatalHint: 'Nuansa akhir tahun aktif',
+
     supportModalTitle: 'Dukung project ini',
     supportModalNote:
       'Kalau suka, boleh dukung supaya project ini terus berkembang — perbaikan, fitur baru, atau karya menarik berikutnya. Terima kasih!',
@@ -301,6 +309,14 @@ const STRINGS = {
     appVersionLabel: 'App version',
     tagline: 'Math like a hero',
     footerSupport: '☕ Support this project',
+    secretTeaserTitle: 'Mystery path',
+    secretTeaserBody:
+      'Early note: a mystery path will appear on the map later. Not playable yet — unlocks after the journey reaches New York.',
+    secretUnlockedTitle: 'Mystery path unlocked!',
+    secretUnlockedBody:
+      'North Pole & South Pole are ready. Find the mystery pins on the map.',
+    seasonNatalHint: 'End-of-year vibe is on',
+
     supportModalTitle: 'Support this project',
     supportModalNote:
       'If you enjoy this, you can support ongoing work — fixes, new features, or the next interesting project. Thank you!',
