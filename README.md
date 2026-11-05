@@ -1,13 +1,15 @@
 # Kungfu Math
 
 Game arcade edukasi matematika untuk anak (dan dewasa).  
-Latihan hitung cepat dengan gaya pendekar China kuno versi imut — mode **Slice** (geser) dan **Tap** (tekan).
+Latihan hitung cepat bergaya pendekar China kuno versi imut.
 
 **Main online:** [https://kungfu-math.vercel.app/](https://kungfu-math.vercel.app/)
 
-**Ownership / no reverse-engineering:** See [NOTICE.txt](public/NOTICE.txt) and [LICENSE](LICENSE) (English). Collaboration or permission: [Trakteer](https://trakteer.id/lim.edmon).
+**Ownership / no reverse-engineering:** lihat [NOTICE.txt](public/NOTICE.txt) dan [LICENSE](LICENSE) (English). Kolaborasi / izin: [Trakteer](https://trakteer.id/lim.edmon).
 
-Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di perangkat.
+Privacy-first: tanpa login, tanpa iklan di fase ini. Progress disimpan di perangkat (localStorage).
+
+---
 
 ## Cara menjalankan (lokal / Codespaces)
 
@@ -16,8 +18,8 @@ npm install
 npm run dev
 ```
 
-Buka di browser: **http://localhost:5173**  
-Bisa juga dari HP di jaringan yang sama (alamat Network dari Vite).
+Buka browser: **http://localhost:5173**  
+Dari HP di jaringan yang sama: pakai alamat Network yang ditampilkan Vite.
 
 Build production:
 
@@ -25,141 +27,149 @@ Build production:
 npm run build
 ```
 
-Deploy: push ke GitHub → Vercel otomatis build.
-
-## Fitur saat ini
-
-### Latihan bebas (mode bermain)
-- Mode **Slice** (geser) dan **Tap** (tekan)
-- Arena **Diam** atau **Ketangkasan** (angka bergerak)
-- Submode soal: **Acak** (default) atau **Fokus** (pilih operasi + − × ÷)
-- 6 karakter pendekar + nama pemain opsional
-- Level: Pemula → Dasar → Menengah → Mahir → Master
-- Soal matematika, nyawa, timer 60 dtk, skor, combo
-
-### Petualangan
-- Jalur **Indonesia** (Jakarta → … → Bali) lalu **Asia Tenggara** (Dili → … → Hanoi)
-- Target skor per kota; lolos = buka kota berikutnya
-- Peta + pin; animasi pindah kota
-- Fun fact singkat saat lolos kota (tutup manual)
-- Popup khusus saat mencapai **ujung jalur** saat ini
-- Latar & musik per kota (opsional):
-  - `public/cities/bg/{id}.webp` (atau .png / .jpg)
-  - `public/cities/music/{id}.mp3`
-  - Nama file = id kota (huruf kecil). Tidak ada → fallback default
-
-### Progres & motivasi
-- **Streak harian** — main berturut-turut dihitung per hari
-- **Lencana** — combo, streak, kota, run sempurna, clear region
-- Rekor **combo max** terpisah untuk latihan dan petualangan
-- Rekor skor per level + per kota (dengan detail nama/tanggal/mode)
-
-### Umum
-- Tutorial first-play (bisa dibuka lagi di Pengaturan)
-- Navigasi bawah: **Bermain · Progres · Pengaturan**
-- Tema: Siang / Malam / Nyaman
-- Bahasa: Indonesia / English (otomatis luar ID jika belum dipilih manual)
-- SFX + BGM (bisa mute)
-- PWA: pasang ke layar utama HP
-- Progress **localStorage** + kode pindah antar HP (tanpa login) di **Pengaturan**
-- Responsive: HP, tablet, laptop/PC
-- Nama negara di UI selalu lengkap (bukan kode ISO)
-
-## Ganti aset
-
-| Aset | Folder |
-|------|--------|
-| Karakter | `public/characters/` + `CARA-GANTI.txt` |
-| SFX / BGM default | `public/sounds/` |
-| Latar kota | `public/cities/bg/{id}.webp` |
-| Musik kota | `public/cities/music/{id}.mp3` (ideal ~12 dtk, loop) |
-| Peta dunia | `public/cities/map/` |
-
-Prompt musik/BG: file Excel di repo / project notes (`kungfu-math-jalur-musik-kota.xlsx`).
-
-**Polish aset** = mengganti BG/musik/karakter/logo dengan file yang lebih bagus tanpa ubah kode (cukup nama file sama).
-
-
-
-
-
-## Catatan operasional (hosting)
-
-- Hosting di **domain/paket gratis (personal)**.
-- **Bukan** database server — progress tersimpan di HP/browser pengguna (localStorage + kode export).
-- Gambar & musik kota memakai **bandwidth** saat dimainkan (diunduh per kota, bukan semua sekaligus saat install).
-
-## Smoke test sebelum rilis
-
-Setelah `npm run build`, cek cepat di browser/HP:
-
-1. Mode **Diam** — main 1 ronde, tidak blank/crash  
-2. Mode **Pantul** — bola bergerak, bisa dijawab  
-3. Mode **Lewat** — tebas 2 angka, salah → bola muncul lagi  
-4. **Pengaturan → masukkan kode progress** (atau export lalu import) — tab Progres tidak blank  
-
-Baru kemudian `git add` / `commit` / `push`.
-
-
-## Debug peta & aset kota (dev)
-
-Untuk mengatur pin koordinat dan cek file BG/musik **tanpa main**:
-
-1. Buka:
-   ```
-   https://kungfu-math.vercel.app/?mapdebug=1
-   ```
-   atau lokal: `http://localhost:5173/?mapdebug=1`
-
-2. App langsung ke **langkah Petualangan**. Semua kota **terbuka** dan bisa diklik.
-
-3. **Klik chip kota** atau **pin di peta** → peta zoom ke kota itu (tanpa refresh, tanpa mulai game).
-
-4. **Klik di peta** (tanpa drag) → snippet `mapX` / `mapY` siap tempel ke `adventure.ts` (tombol salin).
-
-5. **Geser view**: tahan & tarik peta. **Zoom**: tombol + / − (±50%), ketik %, atau scroll mouse. **100%** = zoom standar permainan (>100% lebih dekat).
-
-6. Panel **Aset kota** di bawah peta: hijau = file ada, merah = belum.  
-   - BG: `public/cities/bg/{id}.webp` (atau .png / .jpg)  
-   - Musik: `public/cities/music/{id}.mp3`
-
-**Query opsional**
-
-| Query | Arti |
-|-------|------|
-| `?mapdebug=1` | Mode debug (wajib) |
-| `&mapfocus=jakarta` | Fokus awal ke id kota |
-| `&mapzoom=0.4` | Semakin kecil semakin dekat |
-| `&mapcenter=79.28,67.01` | Center manual (persen peta) |
-
-Alias: `?advdebug=1` sama dengan `mapdebug=1`.
-
-Tombol **Mulai bermain** / Back / Next disembunyikan. Di bawah ada **Selesai debug — kembali bermain** (konfirmasi dulu).
-
-Urutan layar debug: peta → pilih kota → status aset → tombol keluar debug.
-
-Catatan singkat juga di: `public/cities/CARA-DEBUG-PETA.txt`
-
-## Catatan
-
-- Tidak ada backend / akun pengguna
-- Footer: Trakteer + © Lim Edmon 2026
-- Debug pin peta (dev): `?mapdebug=1` atau `?mapdebug=1&mapzoom=2`
-
-## Stack
-
-Vite + React + TypeScript · Deploy: Vercel
+(Pipeline: Vite build → obfuscate → verifikasi `dist`.)  
+Deploy: push branch `main` ke GitHub → Vercel build otomatis.
 
 ---
 
+## Fitur
 
-## Akses uji (developer)
+### Cara main (input)
 
-Kode buka-semua untuk pengujian **tidak dipublikasikan di README**.  
-Gunakan hanya dari catatan internal / Codespace. Jangan bagikan ke pemain.
+| Mode | Arti |
+|------|------|
+| **Slice** | Geser / tebas angka |
+| **Tap** | Tekan angka (tangan kosong) |
 
-Mode debug peta (koordinat/aset) tetap: `?mapdebug=1` — lihat bagian Debug peta di atas.
+6 karakter pendekar (3 bersenjata Slice, 3 tangan kosong Tap) + nama pemain opsional.
 
-## Skor & target kota
+### Arena (gerak bola)
 
-Lihat [docs/SCORING.md](docs/SCORING.md) — pengali tempo/level/arena/fokus, combo, soft-reset region (−100), pause saat keluar app.
+| Mode | ID internal | Arti |
+|------|-------------|------|
+| **Diam** | `static` | Angka diam di tempat |
+| **Pantul** | `agility` | Angka bergerak, pantul dinding & antar bola |
+| **Lewat** | `pass` | Angka melintas kiri↔kanan; yang lewat tepi diganti gelombang baru |
+
+### Bentuk sesi latihan
+
+| Sesi | Arti |
+|------|------|
+| **Grade** | 60 detik, kejar skor tertinggi |
+| **Sprint** | Selesaikan N soal secepat mungkin (pilihan 5 / 10 soal) |
+
+Berlaku bersama level, arena, Slice/Tap, dan submode soal.
+
+### Level soal & submode
+
+- Level: **Pemula → Dasar → Menengah → Mahir → Master**
+- Submode: **Acak** (semua operasi sesuai level) atau **Fokus** (pilih + − × ÷; opsi mengikuti level)
+- Nyawa, combo, skor dengan pengali (tempo / level / arena / fokus / Slice–Tap / jawab cepat) — detail: [docs/SCORING.md](docs/SCORING.md)
+
+### Petualangan
+
+- Rute dunia ber-region (Indonesia → Asia Tenggara → Oseania → Asia Timur → … → Amerika Serikat).
+- Ujung jalur yang **bisa dimainkan** mengikuti gate aset di kode (`CONTENT_PATH_LAST_CITY_ID` — hanya kota berurutan yang punya BG + musik).
+- Ujung data jalur penuh: **New York**. Jalur misteri (kutub) = catatan awal / syarat ketat, bukan konten utama.
+- Target skor per kota; lolos membuka kota berikutnya (+50 dalam region; soft-reset −100 di kota pertama region baru).
+- Peta + pin, animasi pesawat pindah kota, fun fact (ID/EN) saat lolos.
+- Tempo perjalanan: Santai / Ringan / Normal / Berani (pengaruh waktu & pengali skor).
+- Latar & musik per kota (opsional):
+
+| Jenis | Path |
+|-------|------|
+| Background | `public/cities/bg/{id}.webp` (atau `.png` / `.jpg`) |
+| Musik | `public/cities/music/{id}.mp3` |
+
+Nama file = **id kota** (huruf kecil). Tidak ada → fallback default / BGM menu.
+
+### Progres & motivasi
+
+- Streak harian
+- Lencana (combo, streak, kota, run sempurna, region, …)
+- Rekor combo max terpisah (latihan vs petualangan)
+- Rekor skor per level & per kota (nama, tanggal, mode, arena, tempo)
+- Kode **export / import** progress antar HP (Pengaturan) — tanpa login; bisa tempel pesan WA utuh
+
+### Umum
+
+- Tutorial first-play (bisa dibuka lagi di Pengaturan)
+- Nav bawah: **Bermain · Progres · Pengaturan**
+- Tema tampilan: Siang / Malam / Nyaman
+- Bahasa: Indonesia / English (otomatis luar ID jika belum dipilih manual)
+- SFX + BGM (bisa mute); pause + mute saat app di background
+- Offline terbatas: latihan arena **Diam** saja; petualangan & fitur online dinonaktifkan dengan pesan jelas
+- PWA installable
+- Responsive: HP, tablet, laptop/PC
+- Nama negara di UI selalu **lengkap** (bukan kode ISO)
+- Tema musiman (Natal / Imlek / Lebaran) otomatis di jendela tanggal; irisan pakai pola gabungan
+
+---
+
+## Ganti aset
+
+| Aset | Folder / file |
+|------|----------------|
+| Karakter | `public/characters/` |
+| BG kota | `public/cities/bg/{id}.…` |
+| Musik kota | `public/cities/music/{id}.mp3` |
+| Pola season | `public/seasons/*.webp` |
+| Logo / PWA icons | `public/logo.png`, `icon-*.png`, … |
+
+Panduan singkat: `CARA-GANTI-ASSET.md`, `public/cities/CARA-GANTI.txt`.
+
+---
+
+## Debug & tes (developer)
+
+### Peta & koordinat
+
+```
+?mapdebug=1
+```
+
+- Semua kota terlihat untuk cek pin / aset (tanpa “main” normal).
+- Klik peta → salin `mapX` / `mapY`; drag + zoom ±50% / ketik %.
+- Status file BG & musik per kota.
+- Opsional: `&mapfocus=jakarta`, `&mapzoom=…`, `&mapcenter=x,y`
+- Alias: `?advdebug=1`
+- Detail: `public/cities/CARA-DEBUG-PETA.txt`
+
+### Tema musiman (paksa, tanpa tunggu tanggal)
+
+| Query | Efek |
+|-------|------|
+| `?season=natal` | Pola Natal |
+| `?season=imlek` | Pola Imlek |
+| `?season=lebaran` | Pola Lebaran |
+| `?season=natal-lebaran` | Irisan Natal+Lebaran |
+| `?season=imlek-lebaran` | Irisan Imlek+Lebaran |
+| `?season=off` | Paksa netral |
+
+Jendela Imlek/Lebaran hardcode ~2025–2050; Natal otomatis 25 Nov–6 Jan tiap tahun. Di luar jendela = netral (tidak “ngaco” di tahun tanpa data).
+
+### Kode buka-semua (uji)
+
+**Tidak dipublikasikan di README.** Hanya catatan internal / Codespace. Jangan bagikan ke pemain.
+
+---
+
+## Skor & balancing
+
+Lihat **[docs/SCORING.md](docs/SCORING.md)** — pengali tempo / level / arena / fokus / input, combo, soft-reset region, pause saat keluar app, aturan insert kota baru.
+
+---
+
+## Stack & catatan
+
+- **Stack:** Vite + React + TypeScript · deploy Vercel · build + obfuscation production
+- **Tanpa** backend / akun pengguna
+- Footer: dukungan (Trakteer / Ko-fi) + © Lim Edmon 2026
+- Notice kepemilikan: `public/NOTICE.txt`, `robots.txt`, halaman notice
+
+---
+
+## Kontribusi / izin
+
+Kode dan aset untuk proyek ini. Dilarang menyalin / reverse-engineer / mengekstrak untuk klon komersial tanpa izin.  
+Minat kolaborasi: saluran di [Trakteer lim.edmon](https://trakteer.id/lim.edmon).
