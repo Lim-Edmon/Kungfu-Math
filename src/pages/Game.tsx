@@ -78,6 +78,98 @@ interface GameProps {
  * Y dibatasi ~18–72% supaya di laptop tidak terpotong tombol {t('exit')}.
  */
 /** Cek apakah sisa jawaban (setelah partial select) masih ada di arena */
+
+type PassSide = 'left' | 'right' | 'top' | 'bottom';
+
+function randomPassSide(): PassSide {
+  const sides: PassSide[] = ['left', 'right', 'top', 'bottom'];
+  return sides[Math.floor(Math.random() * 4)]!;
+}
+
+/** Spawn 1 bola lewat dari sisi acak (kiri/kanan/atas/bawah) */
+function spawnPassBall(
+  value: number,
+  isBomb: boolean,
+  speedScale = 1
+): FloatingNumber {
+  const side = randomPassSide();
+  const speed =
+    (14 + Math.random() * 12) * speedScale * arenaMoveSpeedScale();
+  const drift = (Math.random() - 0.5) * 6 * speedScale * arenaMoveSpeedScale();
+  const yMid = 12 + Math.random() * 76;
+  const xMid = 12 + Math.random() * 76;
+  switch (side) {
+    case 'left':
+      return {
+        id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        value,
+        x: -6 - Math.random() * 10,
+        y: yMid,
+        isBomb,
+        sliced: false,
+        vx: speed,
+        vy: drift,
+      };
+    case 'right':
+      return {
+        id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        value,
+        x: 106 + Math.random() * 10,
+        y: yMid,
+        isBomb,
+        sliced: false,
+        vx: -speed,
+        vy: drift,
+      };
+    case 'top':
+      return {
+        id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        value,
+        x: xMid,
+        y: -6 - Math.random() * 10,
+        isBomb,
+        sliced: false,
+        vx: drift,
+        vy: speed,
+      };
+    case 'bottom':
+    default:
+      return {
+        id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        value,
+        x: xMid,
+        y: 106 + Math.random() * 10,
+        isBomb,
+        sliced: false,
+        vx: drift,
+        vy: -speed,
+      };
+  }
+}
+
+/** Nilai jawaban yang belum ada di arena (perlu di-respawn) */
+function missingCorrectValues(
+  question: MathQuestion,
+  numbers: FloatingNumber[],
+  alreadySelected: number[] = []
+): number[] {
+  const pool = numbers
+    .filter((n) => !n.sliced && !n.isBomb)
+    .map((n) => n.value);
+  const needed = [...question.correctNumbers];
+  for (const v of alreadySelected) {
+    const i = needed.indexOf(v);
+    if (i >= 0) needed.splice(i, 1);
+  }
+  const missing: number[] = [];
+  for (const v of needed) {
+    const i = pool.indexOf(v);
+    if (i < 0) missing.push(v);
+    else pool.splice(i, 1);
+  }
+  return missing;
+}
+
 function hasCorrectOnScreen(
   question: MathQuestion,
   numbers: FloatingNumber[],
@@ -124,23 +216,10 @@ function createNumbersFromQuestion(
   const yMax = 90;
 
   if (arenaStyle === 'pass') {
-    // Spawn dari kiri atau kanan, bergerak horizontal ke sisi lawan
+    // Spawn dari 4 sisi acak
     return question.candidates.map((value, index) => {
       const isBomb = question.bombIndexes.includes(index);
-      const fromLeft = Math.random() < 0.5;
-      const speed = (14 + Math.random() * 12) * speedScale * arenaMoveSpeedScale();
-      const y = yMin + Math.random() * (yMax - yMin);
-      const x = fromLeft ? -4 - Math.random() * 8 : 104 + Math.random() * 8;
-      return {
-        id: `n-${Date.now()}-${index}-${Math.random().toString(36).slice(2, 6)}`,
-        value,
-        x,
-        y,
-        isBomb,
-        sliced: false,
-        vx: fromLeft ? speed : -speed,
-        vy: (Math.random() - 0.5) * 5 * speedScale * arenaMoveSpeedScale(),
-      };
+      return spawnPassBall(value, isBomb, speedScale);
     });
   }
 
@@ -738,17 +817,8 @@ export default function Game({
           if (!(restoreSet.has(n.id) && !n.isBomb)) return n;
           // Diam: posisi sama. Pantul: titik terakhir + arah baru. Lewat: masuk dari tepi.
           if (arenaStyle === 'pass') {
-            const fromLeft = Math.random() < 0.5;
-            const passSpeed = (14 + Math.random() * 12) * scale * arenaMoveSpeedScale();
-            return {
-              ...n,
-              sliced: false,
-              id: `${n.id}-r${token}`,
-              x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
-              y: Math.min(72, Math.max(18, n.y)),
-              vx: fromLeft ? passSpeed : -passSpeed,
-              vy: (Math.random() - 0.5) * 5 * arenaMoveSpeedScale(),
-            };
+            const nb = spawnPassBall(n.value, !!n.isBomb, scale);
+            return { ...n, ...nb, sliced: false, id: `${n.id}-r${token}` };
           }
           if (arenaStyle === 'agility') {
             const speed = (7 + Math.random() * 11) * scale * arenaMoveSpeedScale();
@@ -926,18 +996,12 @@ export default function Game({
                 id: `restored-${token}-${n.value}-${Math.random().toString(36).slice(2, 6)}`,
               };
               if (arenaStyle === 'pass') {
-                const fromLeft = Math.random() < 0.5;
-                const passSpeed =
-                  (14 + Math.random() * 12) *
-                  (mode === 'tap' ? 0.7 : 1) *
-                  arenaMoveSpeedScale();
-                return {
-                  ...base,
-                  x: fromLeft ? -6 - Math.random() * 10 : 106 + Math.random() * 10,
-                  y: 18 + Math.random() * 54,
-                  vx: fromLeft ? passSpeed : -passSpeed,
-                  vy: (Math.random() - 0.5) * 5 * arenaMoveSpeedScale(),
-                };
+                const nb = spawnPassBall(
+                  n.value,
+                  false,
+                  mode === 'tap' ? 0.7 : 1
+                );
+                return { ...base, ...nb, id: base.id, sliced: false };
               }
               return base;
             }
@@ -1165,17 +1229,14 @@ export default function Game({
             if (n.sliced) return n;
             const vx = n.vx ?? 0;
             const vy = n.vy ?? 0;
-            let x = n.x + vx * dt;
-            let y = n.y + vy * dt;
-            let nvy = vy;
-            if (y < yMin) {
-              y = yMin;
-              nvy = Math.abs(vy || 4);
-            } else if (y > yMax) {
-              y = yMax;
-              nvy = -Math.abs(vy || 4);
-            }
-            return { ...n, x, y, vy: nvy };
+            // Lewat: tidak pantul tepi — biar keluar layar, lalu di-respawn jika perlu
+            return {
+              ...n,
+              x: n.x + vx * dt,
+              y: n.y + vy * dt,
+              vx,
+              vy,
+            };
           });
           // Benturan antar bola aktif saja
           // Collision pixel-space (bola ~54px)
@@ -1226,22 +1287,38 @@ export default function Game({
               numbers[j] = { ...b };
             }
           }
-          // Buang yang lewat tepi HANYA jika belum dipilih (sliced tetap untuk restore)
+          // Buang yang lewat tepi (4 sisi). Sliced tetap (untuk restore salah).
           numbers = numbers.filter(
-            (n) => n.sliced || (n.x > -18 && n.x < 118)
+            (n) =>
+              n.sliced ||
+              (n.x > -18 && n.x < 118 && n.y > -18 && n.y < 118)
           );
-          if (!hasCorrectOnScreen(prev.question, numbers, prev.selectedValues)) {
-            const scale = mode === 'tap' ? 0.7 : 1;
-            const wave = createNumbersFromQuestion(
-              prev.question,
-              'pass',
-              scale
-            );
-            numbers = [...numbers, ...wave];
-            if (numbers.length > 18) {
-              // jangan potong yang sliced (butuh restore)
+          // Jawaban yang hilang / sudah lewat → langsung spawn lagi dari sisi acak
+          const scale = mode === 'tap' ? 0.7 : 1;
+          const missing = missingCorrectValues(
+            prev.question,
+            numbers,
+            prev.selectedValues
+          );
+          if (missing.length) {
+            for (const v of missing) {
+              numbers.push(spawnPassBall(v, false, scale));
+            }
+            // Sedikit decoy agar tidak terlalu "jelas" mana jawaban
+            if (Math.random() < 0.45 && numbers.filter((n) => !n.sliced).length < 14) {
+              const decoys = prev.question.candidates.filter(
+                (c, i) =>
+                  !prev.question.bombIndexes.includes(i) &&
+                  !prev.question.correctNumbers.includes(c)
+              );
+              if (decoys.length) {
+                const d = decoys[Math.floor(Math.random() * decoys.length)]!;
+                numbers.push(spawnPassBall(d, false, scale));
+              }
+            }
+            if (numbers.length > 20) {
               const kept = numbers.filter((n) => n.sliced);
-              const rest = numbers.filter((n) => !n.sliced).slice(-12);
+              const rest = numbers.filter((n) => !n.sliced).slice(-14);
               numbers = [...kept, ...rest];
             }
           }

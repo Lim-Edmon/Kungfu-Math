@@ -908,6 +908,13 @@ function App() {
               setTutorialFromSettings(true);
               setTutorialOpen(true);
             }}
+            onRedoOnboard={() => {
+              restartOnboarding();
+              setOnboardRedoOpen(false);
+              setOnboardIntro(true);
+              setTutorialFromSettings(false);
+              setTutorialOpen(true);
+            }}
             key={langTick}
             onBack={() => setScreen('home')}
             onLangChange={() => setLangTick((n) => n + 1)}

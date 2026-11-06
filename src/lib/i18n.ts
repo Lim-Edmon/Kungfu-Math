@@ -252,6 +252,8 @@ const STRINGS = {
     settingsTutorial: 'Cara main',
     settingsTutorialNote: 'Lihat lagi penjelasan singkat slice, tap, bom, dan petualangan.',
     btnShowTutorial: 'Lihat tutorial',
+    btnRedoOnboard: 'Ya, tempa lagi (latihan dasar)',
+    settingsRedoOnboardNote: 'Ulang intro + jalur terbimbing Dojo → Pantul → Lewat. Kota, rekor, dan mode yang sudah terbuka tetap aman — tidak dikunci ulang.',
         tut1Title: 'Hai, Pendekar!',
     tut1Body:
       'Selamat datang di arena latihan. Di sini kamu menempa ilmu Kungfu Matematika — hitung cepat, fokus tajam, gerakan tepat. Siap jadi legenda?',
@@ -577,6 +579,8 @@ const STRINGS = {
     settingsTutorial: 'How to play',
     settingsTutorialNote: 'See the short guide for slice, tap, bombs, and adventure again.',
     btnShowTutorial: 'Show tutorial',
+    btnRedoOnboard: 'Yes, train again (basic path)',
+    settingsRedoOnboardNote: 'Replay intro + guided path Dojo → Bounce → Pass-by. Cities, records, and unlocked modes stay safe — nothing is locked again.',
         tut1Title: 'Hail, Warrior!',
     tut1Body:
       'Welcome to the training arena. Here you forge Math Kungfu — fast sums, sharp focus, clean moves. Ready to become a legend?',

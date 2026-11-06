@@ -17,6 +17,7 @@ interface SettingsProps {
   onBack: () => void;
   onLangChange?: () => void;
   onShowTutorial?: () => void;
+  onRedoOnboard?: () => void;
   offline?: boolean;
 }
 
@@ -24,6 +25,7 @@ export default function Settings({
   onBack: _onBack,
   onLangChange,
   onShowTutorial,
+  onRedoOnboard,
   offline = false,
 }: SettingsProps) {
   const [soundMuted, setSoundMuted] = useState(false);
@@ -210,6 +212,15 @@ export default function Settings({
         >
           {t('btnShowTutorial')}
         </button>
+        <button
+          type="button"
+          className="btn-primary"
+          style={{ marginTop: '0.5rem' }}
+          onClick={() => onRedoOnboard?.()}
+        >
+          {t('btnRedoOnboard')}
+        </button>
+        <p className="settings-note">{t('settingsRedoOnboardNote')}</p>
       </section>
 
       {/* 3. Suara */}
