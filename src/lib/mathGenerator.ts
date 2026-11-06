@@ -52,8 +52,36 @@ function makeDistractors(correct: number[], count: number, maxVal: number): numb
   return result;
 }
 
+/** Riwayat singkat agar peluang ops tetap rata + tidak 3x sama beruntun */
+const recentOps: OperationType[] = [];
+
 function pickOp(ops: OperationType[]): OperationType {
-  return ops[randomInt(0, ops.length - 1)];
+  if (!ops.length) return 'add';
+  if (ops.length === 1) {
+    recentOps.push(ops[0]);
+    if (recentOps.length > 12) recentOps.shift();
+    return ops[0];
+  }
+  // Uniform random; tolak 3 operasi sama berturut jika ada alternatif
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const op = ops[randomInt(0, ops.length - 1)];
+    const n = recentOps.length;
+    if (
+      n >= 2 &&
+      recentOps[n - 1] === op &&
+      recentOps[n - 2] === op &&
+      ops.some((o) => o !== op)
+    ) {
+      continue;
+    }
+    recentOps.push(op);
+    if (recentOps.length > 12) recentOps.shift();
+    return op;
+  }
+  const op = ops[randomInt(0, ops.length - 1)];
+  recentOps.push(op);
+  if (recentOps.length > 12) recentOps.shift();
+  return op;
 }
 
 /**

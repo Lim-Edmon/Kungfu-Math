@@ -1178,7 +1178,10 @@ export default function Game({
             return { ...n, x, y, vy: nvy };
           });
           // Benturan antar bola aktif saja
-          const minDist = 10;
+          // Collision pixel-space (bola ~54px)
+          const aw = arenaRef.current?.clientWidth || 360;
+          const ah = arenaRef.current?.clientHeight || 400;
+          const minDistPx = 54 * 0.98;
           const liveIdx = numbers
             .map((n, i) => (!n.sliced ? i : -1))
             .filter((i) => i >= 0);
@@ -1188,22 +1191,26 @@ export default function Game({
               const j = liveIdx[jj];
               const a = numbers[i];
               const b = numbers[j];
-              let dx = b.x - a.x;
-              let dy = b.y - a.y;
+              const ax = (a.x / 100) * aw;
+              const ay = (a.y / 100) * ah;
+              const bx = (b.x / 100) * aw;
+              const by = (b.y / 100) * ah;
+              let dx = bx - ax;
+              let dy = by - ay;
               let dist = Math.hypot(dx, dy);
               if (dist < 0.01) {
                 dx = 0.01;
                 dy = 0;
                 dist = 0.01;
               }
-              if (dist >= minDist) continue;
+              if (dist >= minDistPx) continue;
               const nx = dx / dist;
               const ny = dy / dist;
-              const overlap = (minDist - dist) / 2;
-              a.x -= nx * overlap;
-              a.y -= ny * overlap;
-              b.x += nx * overlap;
-              b.y += ny * overlap;
+              const overlapPx = (minDistPx - dist) / 2 + 0.5;
+              a.x -= (nx * overlapPx / aw) * 100;
+              a.y -= (ny * overlapPx / ah) * 100;
+              b.x += (nx * overlapPx / aw) * 100;
+              b.y += (ny * overlapPx / ah) * 100;
               const avx = a.vx ?? 0;
               const avy = a.vy ?? 0;
               const bvx = b.vx ?? 0;
@@ -1269,8 +1276,10 @@ export default function Game({
           }
           return { ...n, x, y, vx: nvx, vy: nvy };
         });
-        // Tabrakan bola–bola (elastic sederhana + pisahkan overlap)
-        const minDist = 10;
+        // Tabrakan pixel-space (bola agility 64px) — selaras visual
+        const aw = arenaRef.current?.clientWidth || 360;
+        const ah = arenaRef.current?.clientHeight || 400;
+        const minDistPx = 64 * 0.98;
         const liveIdx = numbers
           .map((n, i) => (!n.sliced ? i : -1))
           .filter((i) => i >= 0);
@@ -1280,40 +1289,48 @@ export default function Game({
             const j = liveIdx[jj];
             const a = { ...numbers[i] };
             const b = { ...numbers[j] };
-            let dx = b.x - a.x;
-            let dy = b.y - a.y;
+            const ax = (a.x / 100) * aw;
+            const ay = (a.y / 100) * ah;
+            const bx = (b.x / 100) * aw;
+            const by = (b.y / 100) * ah;
+            let dx = bx - ax;
+            let dy = by - ay;
             let dist = Math.hypot(dx, dy);
             if (dist < 0.01) {
               dx = 0.01;
               dy = 0;
               dist = 0.01;
             }
-            if (dist >= minDist) continue;
+            if (dist >= minDistPx) continue;
             changed = true;
             const nx = dx / dist;
             const ny = dy / dist;
-            const overlap = (minDist - dist) / 2 + 0.15;
-            a.x -= nx * overlap;
-            a.y -= ny * overlap;
-            b.x += nx * overlap;
-            b.y += ny * overlap;
+            const overlapPx = (minDistPx - dist) / 2 + 0.5;
+            a.x -= (nx * overlapPx / aw) * 100;
+            a.y -= (ny * overlapPx / ah) * 100;
+            b.x += (nx * overlapPx / aw) * 100;
+            b.y += (ny * overlapPx / ah) * 100;
             a.x = Math.max(xMin, Math.min(xMax, a.x));
             a.y = Math.max(yMin, Math.min(yMax, a.y));
             b.x = Math.max(xMin, Math.min(xMax, b.x));
             b.y = Math.max(yMin, Math.min(yMax, b.y));
-            const avx = a.vx ?? 0;
-            const avy = a.vy ?? 0;
-            const bvx = b.vx ?? 0;
-            const bvy = b.vy ?? 0;
-            const va = avx * nx + avy * ny;
-            const vb = bvx * nx + bvy * ny;
-            // Hanya tukar komponen sepanjang normal jika mendekat
+            // Kecepatan di px/s supaya pantul selaras sumbu X/Y arena
+            const avxPx = ((a.vx ?? 0) / 100) * aw;
+            const avyPx = ((a.vy ?? 0) / 100) * ah;
+            const bvxPx = ((b.vx ?? 0) / 100) * aw;
+            const bvyPx = ((b.vy ?? 0) / 100) * ah;
+            const va = avxPx * nx + avyPx * ny;
+            const vb = bvxPx * nx + bvyPx * ny;
             if (va - vb > 0) {
               const dv = va - vb;
-              a.vx = avx - dv * nx;
-              a.vy = avy - dv * ny;
-              b.vx = bvx + dv * nx;
-              b.vy = bvy + dv * ny;
+              const navx = avxPx - dv * nx;
+              const navy = avyPx - dv * ny;
+              const nbvx = bvxPx + dv * nx;
+              const nbvy = bvyPx + dv * ny;
+              a.vx = (navx / aw) * 100;
+              a.vy = (navy / ah) * 100;
+              b.vx = (nbvx / aw) * 100;
+              b.vy = (nbvy / ah) * 100;
             }
             numbers[i] = a;
             numbers[j] = b;
