@@ -144,6 +144,35 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
   }
   if (typeof p.soundMuted === 'boolean') next.soundMuted = p.soundMuted;
   if (typeof p.tutorialSeen === 'boolean') next.tutorialSeen = p.tutorialSeen;
+  // Onboarding journey
+  const phases = new Set(['intro', 'static', 'bounce', 'pass', 'done']);
+  if (typeof p.onboardingPhase === 'string' && phases.has(p.onboardingPhase)) {
+    next.onboardingPhase = p.onboardingPhase as PlayerProgress['onboardingPhase'];
+  } else {
+    // Migrasi: sudah pernah main → anggap selesai journey
+    const played =
+      (typeof p.totalGamesPlayed === 'number' && p.totalGamesPlayed > 0) ||
+      (p.highScores && Object.keys(p.highScores as object).length > 0) ||
+      (Array.isArray(p.adventureUnlocked) && p.adventureUnlocked.length > 1) ||
+      p.tutorialSeen === true;
+    next.onboardingPhase = played ? 'done' : 'intro';
+  }
+  if (typeof p.onboardingRedoOfferSeen === 'boolean') {
+    next.onboardingRedoOfferSeen = p.onboardingRedoOfferSeen;
+  }
+  if (typeof p.onboardingRelaxed === 'boolean') {
+    next.onboardingRelaxed = p.onboardingRelaxed;
+  } else if (next.onboardingPhase === 'done') {
+    next.onboardingRelaxed = true;
+  } else {
+    // Migrasi: pernah main → jangan kunci mode
+    const played =
+      (typeof p.totalGamesPlayed === 'number' && p.totalGamesPlayed > 0) ||
+      (p.highScores && Object.keys(p.highScores as object).length > 0) ||
+      (Array.isArray(p.adventureUnlocked) && (p.adventureUnlocked as string[]).length > 1);
+    if (played) next.onboardingRelaxed = true;
+  }
+
   if (p.practiceOpsMode === 'random' || p.practiceOpsMode === 'focus') {
     next.practiceOpsMode = p.practiceOpsMode;
   }
@@ -176,6 +205,11 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
 
   if (typeof p.perfectCityStreak === 'number' && Number.isFinite(p.perfectCityStreak)) {
     next.perfectCityStreak = Math.max(0, Math.min(99, Math.floor(p.perfectCityStreak)));
+  }
+  if (Array.isArray(p.storyFirsts)) {
+    next.storyFirsts = (p.storyFirsts as unknown[])
+      .filter((x): x is string => typeof x === 'string')
+      .slice(0, 80);
   }
   if (Array.isArray(p.badges)) {
     next.badges = p.badges.filter((x): x is string => typeof x === 'string').slice(0, 40);

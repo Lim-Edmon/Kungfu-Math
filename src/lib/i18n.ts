@@ -252,18 +252,45 @@ const STRINGS = {
     settingsTutorial: 'Cara main',
     settingsTutorialNote: 'Lihat lagi penjelasan singkat slice, tap, bom, dan petualangan.',
     btnShowTutorial: 'Lihat tutorial',
-    tut1Title: 'Selamat datang!',
-    tut1Body: 'Kungfu Math adalah latihan hitung cepat yang terasa seperti game. Pilih pendekar, lalu tebas atau ketuk angka yang benar.',
-    tut2Title: 'Slice & Tap',
-    tut2Body: 'Mode Slice: geser jari memotong angka jawaban. Mode Tap: ketuk angka yang benar. Baca soal di atas arena.',
-    tut3Title: 'Hati-hati bom!',
-    tut3Body: 'Jangan tebas atau ketuk bom. Kalau salah atau kena bom, nyawa berkurang. Nyawa habis = game selesai.',
-    tut4Title: 'Petualangan kota',
-    tut4Body: 'Di mode Petualangan, capai target skor di setiap kota untuk membuka kota berikutnya. Ada fun fact singkat tentang kota itu!',
-    pausedTitle: 'Dijeda',
-    pausedHint: 'Ketuk untuk lanjut — timer dan musik berhenti saat kamu keluar sebentar.',
-    tutFinish: 'Mulai main!',
-    tutSkip: 'Tutup',
+        tut1Title: 'Hai, Pendekar!',
+    tut1Body:
+      'Selamat datang di arena latihan. Di sini kamu menempa ilmu Kungfu Matematika — hitung cepat, fokus tajam, gerakan tepat. Siap jadi legenda?',
+    tutQTitle: 'Arena soal',
+    tutQBody:
+      'Pendekar, lihat kotak besar di atas. Tanda tanya (?) menunggu bola angka yang tepat. Angka di kanan (=) adalah sasaranmu. Temukan, tebas atau ketuk — jangan tebak buta!',
+    tutSymTitle: 'Simbol rahasia',
+    tutSymBody:
+      'Jangan sampai salah baca senjata hitungmu: hijau + tambah, hitam − kurang, biru × kali, merah ÷ bagi. Baca dulu, baru serang.',
+    tut2Title: 'Tebas atau ketuk',
+    tut2Body:
+      'Pilih gaya favoritmu: Slice (geser tebas) atau Tap (ketuk). Angka salah dan bom memangkas nyawa. Jadilah pendekar tercepat yang tetap akurat.',
+    tut3Title: 'Waspada bom!',
+    tut3Body:
+      'Bom bukan lawan sepele. Jangan disentuh. Nyawa habis — latihan berakhir. Tenang, fokus, ulangi lebih bijak.',
+    tut4Title: 'Dunia menanti',
+    tut4Body:
+      'Setelah menguasai dojo, petualangan kota-kota dunia terbuka. Capai target, buka kota berikutnya, kumpulkan legenda. Dunia menanti kedatanganmu, Pendekar.',
+    tutStartDojo: 'Masuk arena Dojo',
+    tutFinish: 'Mulai bertarung!',
+    tutSkip: 'Lewati',
+    onboardBannerStatic:
+      'Latihan Dojo — mode Diam. Capai 200 poin, buka mode Pantul. Fokus, Pendekar.',
+    onboardBannerBounce:
+      'Uji mode Pantul. Capai 500 poin untuk membuka Lewat. Bola bergerak — tetap tenang.',
+    onboardBannerPass:
+      'Mode Lewat menanti. Capai 500 poin, lalu Petualangan dunia terbuka. Hampir legenda!',
+    onboardLockedArena:
+      'Selesaikan latihan sebelumnya dulu, Pendekar. Ilmu dibuka bertahap.',
+    onboardLockedAdventure:
+      'Kuasa Dojo, Pantul, dan Lewat dulu. Setelah itu dunia petualangan siap.',
+    onboardPhaseUp: 'Hebat, Pendekar! Mode berikutnya terbuka. Terus tempa ilmu!',
+    onboardAllDone:
+      'Semua mode terbuka. Dunia menanti — jadilah legenda Kungfu Matematika!',
+    onboardRedoTitle: 'Ulang latihan dasar?',
+    onboardRedoBody:
+      'Pendekar sudah pernah bertarung. Mau mengulang pengenalan singkat (Dojo → Pantul → Lewat) biar makin lihai? Kota dan rekor tetap aman — tidak direset.',
+    onboardRedoYes: 'Ya, tempa lagi',
+    onboardRedoNo: 'Tidak, lanjut main',
 
     journeyEndTitle: 'Luar biasa!',
     journeyEndBody:
@@ -550,18 +577,45 @@ const STRINGS = {
     settingsTutorial: 'How to play',
     settingsTutorialNote: 'See the short guide for slice, tap, bombs, and adventure again.',
     btnShowTutorial: 'Show tutorial',
-    tut1Title: 'Welcome!',
-    tut1Body: 'Kungfu Math is fast mental math that feels like a game. Pick a hero, then slice or tap the correct numbers.',
-    tut2Title: 'Slice & Tap',
-    tut2Body: 'Slice: swipe through answer numbers. Tap: tap the correct numbers. Read the question above the arena.',
-    tut3Title: 'Watch out for bombs!',
-    tut3Body: 'Do not slice or tap bombs. Wrong answers or bombs cost a life. No lives left = game over.',
-    tut4Title: 'City adventure',
-    tut4Body: 'In Adventure mode, hit each city’s score target to unlock the next city. You’ll also get a short fun fact about that city!',
-    pausedTitle: 'Paused',
-    pausedHint: 'Tap to continue — timer and music stop while you leave the game briefly.',
-    tutFinish: 'Let’s play!',
-    tutSkip: 'Close',
+        tut1Title: 'Hail, Warrior!',
+    tut1Body:
+      'Welcome to the training arena. Here you forge Math Kungfu — fast sums, sharp focus, clean moves. Ready to become a legend?',
+    tutQTitle: 'The question arena',
+    tutQBody:
+      'Warrior, look at the big box above. Each question mark (?) needs the right number ball. The number after (=) is your target. Find it, slice or tap — no blind guesses!',
+    tutSymTitle: 'Secret symbols',
+    tutSymBody:
+      'Don’t misread your math weapons: green + add, black − subtract, blue × multiply, red ÷ divide. Read first, then strike.',
+    tut2Title: 'Slice or tap',
+    tut2Body:
+      'Pick your style: Slice (swipe) or Tap. Wrong numbers and bombs cost lives. Be the fastest warrior who still stays accurate.',
+    tut3Title: 'Beware bombs!',
+    tut3Body:
+      'Bombs are no joke. Never touch them. Out of lives — training ends. Stay calm, refocus, try wiser.',
+    tut4Title: 'The world awaits',
+    tut4Body:
+      'Master the dojo, then city adventures unlock. Hit targets, open the next city, build your legend. The world awaits you, Warrior.',
+    tutStartDojo: 'Enter the Dojo',
+    tutFinish: 'Begin the fight!',
+    tutSkip: 'Skip',
+    onboardBannerStatic:
+      'Dojo training — Still mode. Reach 200 points to unlock Bounce. Focus, Warrior.',
+    onboardBannerBounce:
+      'Try Bounce mode. Reach 500 points to unlock Pass-by. Balls move — stay calm.',
+    onboardBannerPass:
+      'Pass-by awaits. Reach 500 points, then world Adventure unlocks. Almost legend!',
+    onboardLockedArena:
+      'Finish the earlier training first, Warrior. Skills unlock step by step.',
+    onboardLockedAdventure:
+      'Master Dojo, Bounce, and Pass-by first. Then adventure opens.',
+    onboardPhaseUp: 'Well done, Warrior! Next mode unlocked. Keep forging!',
+    onboardAllDone:
+      'All modes open. The world awaits — become a Math Kungfu legend!',
+    onboardRedoTitle: 'Redo basic training?',
+    onboardRedoBody:
+      'You’ve fought before. Want a short guided path again (Dojo → Bounce → Pass-by)? Cities and records stay safe — nothing is reset.',
+    onboardRedoYes: 'Yes, train again',
+    onboardRedoNo: 'No, just play',
 
     journeyEndTitle: 'Fantastic!',
     journeyEndBody:

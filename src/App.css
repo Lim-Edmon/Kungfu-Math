@@ -4940,3 +4940,145 @@ html[data-season*='lebaran'] .app-header {
 html[data-season*='imlek'] .app-header {
   box-shadow: inset 0 -3px 0 rgba(185, 28, 28, 0.35);
 }
+
+/* —— Onboarding journey —— */
+.onboard-banner {
+  margin: 0.5rem 0.75rem 0.25rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #78350f;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(120, 53, 15, 0.12);
+}
+html[data-theme='malam'] .onboard-banner {
+  background: linear-gradient(135deg, #44403c, #57534e);
+  color: #fef3c7;
+}
+.onboard-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 200;
+  max-width: min(92vw, 360px);
+  padding: 0.75rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  pointer-events: none;
+}
+.tutorial-demo-q {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0.25rem;
+  flex-wrap: wrap;
+}
+.tut-card {
+  display: inline-flex;
+  min-width: 2.1rem;
+  height: 2.4rem;
+  padding: 0 0.4rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid #cbd5e1;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #0f172a;
+  box-shadow: 0 2px 0 #94a3b8;
+}
+.tut-card.tut-target {
+  border-color: #2563eb;
+  color: #1d4ed8;
+}
+.tut-op, .tut-eq {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #334155;
+}
+.tutorial-demo-ops {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin: 0.75rem 0 0.25rem;
+}
+.tut-op-chip {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #fff;
+}
+.tut-op-chip.add { background: #16a34a; }
+.tut-op-chip.sub { background: #111; }
+.tut-op-chip.mul { background: #2563eb; }
+.tut-op-chip.div { background: #ef4444; }
+
+/* Region unlock story (batas kawasan) */
+.result-region-story {
+  margin: 0.75rem 0 0.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #1e3a5f 0%, #0f766e 100%);
+  color: #ecfdf5;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
+}
+.result-region-story-emoji {
+  font-size: 1.75rem;
+  margin: 0 0 0.35rem;
+}
+.result-region-story-text {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+.result-region-story-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* First clear kota — semangat pendekar */
+.result-first-clear {
+  margin: 0.65rem 0 0.35rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #7c2d12 0%, #b45309 55%, #ca8a04 100%);
+  color: #fffbeb;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(124, 45, 18, 0.28);
+}
+.result-first-clear-emoji {
+  font-size: 1.5rem;
+  margin: 0 0 0.3rem;
+}
+.result-first-clear-text {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.result-first-clear-sec {
+  margin-top: 0.55rem;
+  opacity: 0.95;
+  font-weight: 600;
+  font-size: 0.88rem;
+}

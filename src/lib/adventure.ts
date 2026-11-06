@@ -2663,7 +2663,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
 export const MVP_REGION_LAST_CITY_ID = 'bali';
 
 export const MVP_REGION_UNLOCK_MSG =
-  'Kamu sudah berhasil membuka akses ke regional lain — Asia Tenggara! Selamat menikmati petualangan barumu.';
+  'Selamat, Pendekar! Indonesia tertaklukkan. Asia Tenggara terbuka — kembali ke peta dan lanjutkan legenda!';
 
 /**
  * Ujung konten terbuka untuk pemain (Indo → SEA → Oceania → Asia Timur → Asia Tengah & Selatan → Timur Tengah).
@@ -2676,7 +2676,7 @@ export const CONTENT_PATH_LAST_CITY_ID = 'london';
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
 
 export const MVP_PATH_COMPLETE_MSG =
-  'Luar biasa! Kamu berhasil mencapai ujung perjalanan saat ini. Mohon menunggu — petualangan baru menanti berikutnya.';
+  'Luar biasa, Pendekar! Kau mencapai ujung perjalanan saat ini. Istirahat sejenak — petualangan baru akan menanti.';
 
 
 /** Kota terbuka terjauh di jalur (index terbesar di ADVENTURE_CITIES). */
@@ -2727,6 +2727,74 @@ export function resolveFocusCityId(
 
 export function getCityById(id: string): AdventureCity {
   return ADVENTURE_CITIES.find((c) => c.id === id) ?? ADVENTURE_CITIES[0];
+}
+
+
+
+/**
+ * Semangat first clear kota (baru pertama kali tembus target).
+ */
+export function buildFirstCityClearMessage(
+  cityName: string,
+  countryName: string,
+  lang: 'id' | 'en' = 'id'
+): string {
+  const place =
+    countryName && countryName !== cityName
+      ? `${cityName}, ${countryName}`
+      : cityName;
+  if (lang === 'en') {
+    return (
+      `First victory in ${place}! ` +
+      `You claimed this city for the first time, Warrior. ` +
+      `The path ahead grows brighter — keep forging your Math Kungfu legend!`
+    );
+  }
+  return (
+    `Kemenangan pertama di ${place}! ` +
+    `Pendekar baru saja menaklukkan kota ini untuk pertama kalinya. ` +
+    `Jalan di depan makin terang — terus tempa legenda Kungfu Matematikamu!`
+  );
+}
+
+/** true jika next kota beda region (batas kawasan) */
+export function isRegionCrossing(fromCityId: string, toCityId: string): boolean {
+  const a = getCityById(fromCityId);
+  const b = getCityById(toCityId);
+  return !!(a && b && a.regionId && b.regionId && a.regionId !== b.regionId);
+}
+
+export function getRegionLabel(
+  regionId: string,
+  lang: 'id' | 'en' = 'id'
+): string {
+  const r = ADVENTURE_REGIONS.find((x) => x.id === regionId);
+  if (!r) return regionId;
+  return lang === 'en' ? r.labelEn : r.labelId;
+}
+
+/**
+ * Narasi pendekar saat menaklukkan 1 region & membuka region berikutnya.
+ */
+export function buildRegionUnlockMessage(
+  fromRegionId: string,
+  toRegionId: string,
+  lang: 'id' | 'en' = 'id'
+): string {
+  const from = getRegionLabel(fromRegionId, lang);
+  const to = getRegionLabel(toRegionId, lang);
+  if (lang === 'en') {
+    return (
+      `Hail, Warrior! You have conquered the lands of ${from}. ` +
+      `A new region now opens: ${to}. ` +
+      `Return to the map — claim that frontier and write your legend!`
+    );
+  }
+  return (
+    `Selamat, Pendekar! Kamu telah menaklukkan kawasan ${from}. ` +
+    `Kini terbuka region baru: ${to}. ` +
+    `Kembalilah ke peta — berangkat dan taklukkan tanah baru itu!`
+  );
 }
 
 /** Kota berikutnya di data penuh (debug / internal) */

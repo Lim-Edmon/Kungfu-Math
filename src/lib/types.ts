@@ -93,6 +93,24 @@ export interface PlayerProgress {
   adventureScoreRecords: Record<string, ScoreRecord>;
   /** Sudah melihat tutorial first-play */
   tutorialSeen: boolean;
+  /**
+   * Journey pemula:
+   * intro → static (dojo diam target 200) → bounce (500) → pass (500) → done
+   * Pemain lama (sudah pernah main) dimigrasi ke 'done'.
+   */
+  onboardingPhase: 'intro' | 'static' | 'bounce' | 'pass' | 'done';
+  /** Pemain lama sudah ditawari / menolak ulang journey dasar */
+  onboardingRedoOfferSeen: boolean;
+  /**
+   * true = kunci mode longgar (pemain lama / sudah pernah selesai journey).
+   * Ulang latihan dasar TIDAK mengunci Pantul/Lewat/Petualangan & TIDAK reset kota.
+   */
+  onboardingRelaxed: boolean;
+  /**
+   * Kunci cerita “pertama kali” yang sudah dirayakan
+   * contoh: region:sea | mode:slice | arena:pass | session:sprint
+   */
+  storyFirsts: string[];
   /** Latihan: acak operasi atau fokus operasi tertentu */
   practiceOpsMode: 'random' | 'focus';
   /** Best sprint time ms keyed by `${levelId}|${len}|${arena}` */
@@ -134,6 +152,10 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   adventureHighScores: {},
   adventureScoreRecords: {},
   tutorialSeen: false,
+  onboardingPhase: 'intro',
+  onboardingRedoOfferSeen: false,
+  onboardingRelaxed: false,
+  storyFirsts: [],
   practiceOpsMode: 'random',
   sprintBestMs: {},
   focusOps: ['add'],

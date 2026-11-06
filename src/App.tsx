@@ -37,7 +37,14 @@ import {
   recordGameResult,
   recordAdventureScore,
   updateProgress,
-} from './lib/storage';
+} from './lib/storage'
+import {
+  getOnboardingPhase,
+  advanceOnboardingAfterRun,
+  restartOnboarding,
+  declineOnboardingRedo,
+} from './lib/onboarding';
+import { evaluateStoryFirsts } from './lib/storyFirsts';
 import {
   ADVENTURE_CITIES,
   getCityById,
@@ -50,6 +57,9 @@ import {
   cityBgCandidates,
   MVP_REGION_LAST_CITY_ID,
   MVP_REGION_UNLOCK_MSG,
+  isRegionCrossing,
+  buildRegionUnlockMessage,
+  getRegionLabel,
 } from './lib/adventure';
 import { setLang, detectLangFromDevice, t, getLang } from './lib/i18n';
 import { useOnline, getIsOnline } from './lib/offline';
@@ -212,6 +222,11 @@ function App() {
   /** Fun fact: popup manual close (anak sempat baca) */
   const [funFactOpen, setFunFactOpen] = useState(false);
   const [nextCityId, setNextCityId] = useState<string | null>(null);
+  /** Lolos kota terakhir region → wajib balik peta, bukan lanjut langsung */
+  const [regionCrossing, setRegionCrossing] = useState(false);
+  const [regionUnlockMsg, setRegionUnlockMsg] = useState('');
+  const [storyHypePrimary, setStoryHypePrimary] = useState('');
+  const [storyHypeSecondary, setStoryHypeSecondary] = useState('');
   /** Transisi full-screen peta + pesawat sebelum masuk kota berikutnya */
   const [travelOverlay, setTravelOverlay] = useState<
     null | { fromId: string; toId: string; phase: 'in' | 'out' }
@@ -250,6 +265,9 @@ function App() {
   const [langTick, setLangTick] = useState(0);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialFromSettings, setTutorialFromSettings] = useState(false);
+  const [onboardIntro, setOnboardIntro] = useState(false);
+  const [onboardRedoOpen, setOnboardRedoOpen] = useState(false);
+  const [onboardToast, setOnboardToast] = useState('');
   useEffect(() => {
     const p = loadProgress();
     document.documentElement.setAttribute(
@@ -273,10 +291,19 @@ function App() {
     }
     setLang(lang);
     setLangTick((n) => n + 1);
-    // Tutorial first-play (sekali)
-    if (!loadProgress().tutorialSeen) {
-      setTutorialOpen(true);
+    // Onboarding journey / tutorial
+    const prog0 = loadProgress();
+    const phase0 = prog0.onboardingPhase ?? (prog0.tutorialSeen ? 'done' : 'intro');
+    if (phase0 === 'intro') {
+      setOnboardIntro(true);
       setTutorialFromSettings(false);
+      setTutorialOpen(true);
+    } else if (
+      phase0 === 'done' &&
+      !prog0.onboardingRedoOfferSeen &&
+      (prog0.totalGamesPlayed > 0 || Object.keys(prog0.highScores || {}).length > 0)
+    ) {
+      setOnboardRedoOpen(true);
     }
   }, []);
 
@@ -358,6 +385,7 @@ function App() {
   };
 
   const handleContinueNextCity = () => {
+    if (regionCrossing) return; // wajib lewat peta
     if (!nextCityId || !selectedCharacterId) return;
     const fromId = lastCityId || loadProgress().adventureCityId || 'jakarta';
     const toId = nextCityId;
@@ -365,6 +393,10 @@ function App() {
     setLastCityId(toId);
     setPassedCity(false);
     setNextCityId(null);
+    setRegionCrossing(false);
+    setRegionUnlockMsg('');
+    setStoryHypePrimary('');
+    setStoryHypeSecondary('');
     setFunFact(null);
     setFunFactOpen(false);
     // Game kota tujuan mount di belakang peta (holdStart) — BG/HUD ready
@@ -391,6 +423,10 @@ function App() {
     if (passedCity && nextCityId) {
       updateProgress({ adventureCityId: nextCityId });
     }
+    setRegionCrossing(false);
+    setRegionUnlockMsg('');
+    setStoryHypePrimary('');
+    setStoryHypeSecondary('');
     setHomePlayKind('petualangan');
     setHomeKey((k) => k + 1);
     setScreen('home');
@@ -469,6 +505,10 @@ function App() {
       setIsNewRecord(false);
       setPassedCity(false);
       setNextCityId(null);
+      setRegionCrossing(false);
+      setRegionUnlockMsg('');
+      setStoryHypePrimary('');
+      setStoryHypeSecondary('');
       setFunFact(null);
       setFunFactOpen(false);
       setJourneyEndOpen(false);
@@ -504,17 +544,20 @@ function App() {
     let passed = false;
     let nextId: string | null = null;
     let cityId = prog0.adventureCityId || 'jakarta';
+    let prevCityHs = 0;
 
     if (playKind === 'petualangan') {
       const prog = loadProgress();
       cityId = prog.adventureCityId || 'jakarta';
       setLastCityId(cityId);
       const city = getCityById(cityId);
+      prevCityHs = prog.adventureHighScores?.[cityId] ?? 0;
       recordAdventureScore(cityId, score, meta);
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
       if (score >= city.targetScore) {
         passed = true;
+        
         // playdebug / ?debug=1 → jalur penuh; normal → berhenti di Oceania
         let playDbg = false;
         try {
@@ -533,6 +576,18 @@ function App() {
           unlocked = [...unlocked, nextId];
         }
       }
+      // Batas region: narasi pendekar + wajib kembali ke peta
+      if (passed && nextId && isRegionCrossing(cityId, nextId)) {
+        const fromR = getCityById(cityId).regionId;
+        const toR = getCityById(nextId).regionId;
+        setRegionCrossing(true);
+        setRegionUnlockMsg(
+          buildRegionUnlockMessage(fromR, toR, getLang() === 'en' ? 'en' : 'id')
+        );
+      } else {
+        setRegionCrossing(false);
+        setRegionUnlockMsg('');
+      }
       // Jika kota berikutnya beda region → simpan fokus ke kota itu (peta buka region baru)
       const progressPatch: {
         adventureUnlocked: string[];
@@ -547,6 +602,10 @@ function App() {
       updateProgress(progressPatch);
       setPassedCity(passed);
       setNextCityId(nextId);
+      if (!passed) {
+        setStoryHypePrimary('');
+        setStoryHypeSecondary('');
+      }
       if (passed) setCityFailStreak(0);
       else setCityFailStreak((n) => n + 1);
       const fact = passed ? pickCityFunFact(cityId) : null;
@@ -607,6 +666,52 @@ function App() {
       grade === 'A' ||
       newly.length > 0;
     setCelebrateOpen(willCelebrate);
+
+    // Cerita first-time: mode / arena / sesi / kota pertama per region
+    try {
+      if (!offlineSession) {
+        const hyp = evaluateStoryFirsts({
+          lang: getLang() === 'en' ? 'en' : 'id',
+          isAdventure: playKind === 'petualangan',
+          passedCity: playKind === 'petualangan' && passed,
+          cityId: playKind === 'petualangan' ? cityId : undefined,
+          prevCityHs: playKind === 'petualangan' ? prevCityHs : undefined,
+          cityTarget:
+            playKind === 'petualangan' ? getCityById(cityId).targetScore : undefined,
+          inputMode: selectedMode,
+          arena: selectedArena,
+          sessionKind: (runMeta?.sessionKind as string) || 'grade',
+        });
+        setStoryHypePrimary(hyp.primary || '');
+        setStoryHypeSecondary(hyp.secondary || '');
+      } else {
+        setStoryHypePrimary('');
+        setStoryHypeSecondary('');
+      }
+    } catch (e) {
+      console.warn('story firsts', e);
+    }
+
+    // Journey onboarding: maju fase jika target latihan terbimbing tercapai
+    try {
+      if (playKind === 'latihan' && !offlineSession) {
+        const before = getOnboardingPhase();
+        const nextPhase = advanceOnboardingAfterRun({
+          score,
+          arena: selectedArena,
+          isAdventure: false,
+        });
+        if (nextPhase !== before) {
+          setOnboardToast(
+            nextPhase === 'done' ? t('onboardAllDone') : t('onboardPhaseUp')
+          );
+          window.setTimeout(() => setOnboardToast(''), 3200);
+        }
+      }
+    } catch (e) {
+      console.warn('onboarding advance', e);
+    }
+
     setScreen('result');
   };
 
@@ -1009,6 +1114,20 @@ function App() {
                   </p>
                 )}
 
+                {!regionCrossing && storyHypePrimary && (
+                  <div className="result-first-clear" role="status">
+                    <p className="result-first-clear-emoji" aria-hidden>
+                      ⚔️
+                    </p>
+                    <p className="result-first-clear-text">{storyHypePrimary}</p>
+                    {storyHypeSecondary ? (
+                      <p className="result-first-clear-text result-first-clear-sec">
+                        {storyHypeSecondary}
+                      </p>
+                    ) : null}
+                  </div>
+                )}
+
                 {playKind === 'petualangan' &&
                   city &&
                   !passedCity &&
@@ -1045,17 +1164,31 @@ function App() {
                     </ul>
                   </div>
                 )}
-                {passedCity &&
-                  lastCityId === MVP_REGION_LAST_CITY_ID &&
-                  nextCity && (
-                  <div className="result-funfact result-region-unlock">
-                    <p className="result-funfact-text">{MVP_REGION_UNLOCK_MSG}</p>
-                  </div>
-                )}
+                {/* Region unlock: result-region-story di atas */}
+
               </div>
 
               <div className="result-actions">
-                {playKind === 'petualangan' && passedCity && nextCity && (
+                {playKind === 'petualangan' &&
+                  passedCity &&
+                  regionCrossing &&
+                  regionUnlockMsg && (
+                  <div className="result-region-story" role="status">
+                    <p className="result-region-story-emoji" aria-hidden>
+                      🗺️
+                    </p>
+                    <p className="result-region-story-text">{regionUnlockMsg}</p>
+                    <p className="result-region-story-hint">
+                      {getLang() === 'en'
+                        ? 'Open the map to enter the new region.'
+                        : 'Buka peta untuk memasuki region baru.'}
+                    </p>
+                  </div>
+                )}
+                {playKind === 'petualangan' &&
+                  passedCity &&
+                  nextCity &&
+                  !regionCrossing && (
                   <button
                     type="button"
                     className="btn-primary btn-city-wrap"
@@ -1065,6 +1198,17 @@ function App() {
                       prefix={t('continueCity')}
                       city={nextCity}
                     />
+                  </button>
+                )}
+                {playKind === 'petualangan' &&
+                  passedCity &&
+                  regionCrossing && (
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={handleBackToAdventureMap}
+                  >
+                    {getLang() === 'en' ? 'Return to the map' : 'Kembali ke peta'}
                   </button>
                 )}
                 <button
@@ -1122,14 +1266,56 @@ function App() {
       {tutorialOpen && (
         <Tutorial
           fromSettings={tutorialFromSettings}
+          isOnboardingIntro={onboardIntro}
           onClose={() => {
             setTutorialOpen(false);
+            setOnboardIntro(false);
             if (!tutorialFromSettings) {
               updateProgress({ tutorialSeen: true });
             }
           }}
         />
       )}
+      {onboardRedoOpen && (
+        <div className="tutorial-overlay" role="dialog" aria-modal="true">
+          <div className="tutorial-card">
+            <p className="tutorial-emoji" aria-hidden>🥋</p>
+            <h2 className="tutorial-title">{t('onboardRedoTitle')}</h2>
+            <p className="tutorial-body">{t('onboardRedoBody')}</p>
+            <div className="tutorial-actions">
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => {
+                  declineOnboardingRedo();
+                  setOnboardRedoOpen(false);
+                }}
+              >
+                {t('onboardRedoNo')}
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  restartOnboarding();
+                  setOnboardRedoOpen(false);
+                  setOnboardIntro(true);
+                  setTutorialFromSettings(false);
+                  setTutorialOpen(true);
+                }}
+              >
+                {t('onboardRedoYes')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {onboardToast ? (
+        <div className="onboard-toast" role="status">
+          {onboardToast}
+        </div>
+      ) : null}
+
 
       {showChrome && <Footer />}
 

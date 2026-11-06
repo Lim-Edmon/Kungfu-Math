@@ -21,7 +21,14 @@ import {
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
 import { LEVELS, getLevelById } from '../lib/levels';
-import { loadProgress, updateProgress } from '../lib/storage';
+import { loadProgress, updateProgress } from '../lib/storage'
+import {
+  getOnboardingPhase,
+  isAdventureAllowed,
+  isArenaAllowed,
+  targetForPhase,
+  guidedArena,
+} from '../lib/onboarding';
 import {
   getCharactersByMode,
   getCharacterById,
@@ -148,6 +155,8 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
   /** null = belum dipilih (kecuali default yang diizinkan) */
   const [mode, setMode] = useState<InputMode | null>(null);
   const [arena, setArena] = useState<ArenaStyle | null>(null);
+  const onboardPhase = getOnboardingPhase();
+  const adventureLockedByOnboard = !isAdventureAllowed(onboardPhase);
   const [sessionKind, setSessionKind] = useState<PracticeSessionKind>('grade');
   const [sprintLength, setSprintLength] = useState<SprintLength>(5);
   const [opsMode, setOpsMode] = useState<'random' | 'focus'>(() =>
@@ -812,10 +821,14 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
               </button>
               <button
                 type="button"
-                className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                className={`mode-btn ${playKind === 'petualangan' ? 'active' : ''} ${offline || adventureLockedByOnboard ? 'is-offline-locked' : ''}`}
                 onClick={() => {
                   if (offline) {
                     setOfflinePopupOpen(true);
+                    return;
+                  }
+                  if (adventureLockedByOnboard) {
+                    window.alert(t('onboardLockedAdventure'));
                     return;
                   }
                   setPlayKind('petualangan');
@@ -825,7 +838,11 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                 <span className="mode-icon">🌏</span>
                 <span className="mode-name">{t('playPetualangan')}</span>
                 <span className="mode-desc">
-                  {offline ? t('offlineLockedAdventure') : t('playPetualanganDesc')}
+                  {offline
+                    ? t('offlineLockedAdventure')
+                    : adventureLockedByOnboard
+                      ? t('onboardLockedAdventure')
+                      : t('playPetualanganDesc')}
                 </span>
               </button>
             </div>
@@ -1270,10 +1287,14 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                 </button>
                 <button
                   type="button"
-                  className={`mode-btn ${arena === 'agility' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                  className={`mode-btn ${arena === 'agility' ? 'active' : ''} ${offline || !isArenaAllowed('agility', onboardPhase) ? 'is-offline-locked' : ''}`}
                   onClick={() => {
                     if (offline) {
                       setOfflinePopupOpen(true);
+                      return;
+                    }
+                    if (!isArenaAllowed('agility', onboardPhase)) {
+                      window.alert(t('onboardLockedArena'));
                       return;
                     }
                     setArena('agility');
@@ -1283,14 +1304,18 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                 >
                   <span className="mode-icon">⚡</span>
                   <span className="mode-name">{t('modeAgility')}</span>
-                  <span className="mode-desc">{offline ? t('offlineLockedAgility') : t('modeAgilityDesc')}</span>
+                  <span className="mode-desc">{offline ? t('offlineLockedAgility') : !isArenaAllowed('agility', onboardPhase) ? t('onboardLockedArena') : t('modeAgilityDesc')}</span>
                 </button>
                 <button
                   type="button"
-                  className={`mode-btn ${arena === 'pass' ? 'active' : ''} ${offline ? 'is-offline-locked' : ''}`}
+                  className={`mode-btn ${arena === 'pass' ? 'active' : ''} ${offline || !isArenaAllowed('pass', onboardPhase) ? 'is-offline-locked' : ''}`}
                   onClick={() => {
                     if (offline) {
                       setOfflinePopupOpen(true);
+                      return;
+                    }
+                    if (!isArenaAllowed('pass', onboardPhase)) {
+                      window.alert(t('onboardLockedArena'));
                       return;
                     }
                     setArena('pass');
