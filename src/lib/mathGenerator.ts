@@ -259,7 +259,48 @@ export function generateQuestion(
   const totalBalls = randomInt(bMin, bMax);
   const distractorCount = Math.max(1, totalBalls - correctNumbers.length);
   const distractors = makeDistractors(correctNumbers, distractorCount, maxVal);
-  const allNumbers = shuffle([...correctNumbers, ...distractors]);
+  const used = new Set<number>([...correctNumbers, ...distractors]);
+
+  // Pasangan alternatif (add/mul 2 angka) agar bukan cuma 1 jalur jawaban
+  const alt: number[] = [];
+  if (correctNumbers.length === 2 && (operation === 'add' || operation === 'mul')) {
+    let tries = 0;
+    while (alt.length < 4 && tries < 40) {
+      tries++;
+      if (operation === 'add') {
+        const a = randomInt(1, Math.max(1, target - 1));
+        const b = target - a;
+        if (b < 1 || b > maxVal || a > maxVal) continue;
+        if (!used.has(a)) {
+          used.add(a);
+          alt.push(a);
+        }
+        if (a !== b && !used.has(b)) {
+          used.add(b);
+          alt.push(b);
+        }
+      } else {
+        // mul: faktor target
+        const a = randomInt(2, Math.max(2, Math.min(maxVal, Math.floor(Math.sqrt(target)) + 8)));
+        if (a === 0 || target % a !== 0) continue;
+        const b = target / a;
+        if (!Number.isInteger(b) || b < 1 || b > maxVal) continue;
+        if (!used.has(a)) {
+          used.add(a);
+          alt.push(a);
+        }
+        if (a !== b && !used.has(b)) {
+          used.add(b);
+          alt.push(b);
+        }
+      }
+    }
+  }
+
+  const allNumbers = shuffle([...correctNumbers, ...distractors, ...alt]).slice(
+    0,
+    Math.max(totalBalls, correctNumbers.length + distractorCount + Math.min(2, alt.length))
+  );
 
   // Bom: mode termudah (pemula / sedikit bola) max 0–1 biar tidak "pasti benar"
   const bombIndexes: number[] = [];
