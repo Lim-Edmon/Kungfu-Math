@@ -285,8 +285,15 @@ function pickDynamicAnswerValue(
   if (pool.length) {
     return pool[Math.floor(Math.random() * pool.length)]!;
   }
-  // Last resort (arena penuh angka sama) — tetap return complement agar mainable
-  return options[0] ?? question.correctNumbers[0] ?? 1;
+  // Last resort: hanya angka jawaban sah (bukan random jauh)
+  const seeds = question.correctNumbers.filter(
+    (n) => n > 0 && canSpawnValue(liveValues, n)
+  );
+  if (seeds.length) {
+    return seeds[Math.floor(Math.random() * seeds.length)]!;
+  }
+  if (options.length) return options[0]!;
+  return question.correctNumbers[0] ?? 1;
 }
 
 function pickDecoyValue(
@@ -332,7 +339,7 @@ function maintainPassArena(
   selected: number[],
   speedScale: number
 ): FloatingNumber[] {
-  const TARGET = Math.max(2, question.candidates.length);
+  const TARGET = Math.max(2, Math.min(8, question.candidates.length));
   let live = liveOnScreen.filter((n) => !n.sliced);
 
   const liveVals = () =>
@@ -494,7 +501,7 @@ function maintainPassArena(
   ensureQuestionSolvable();
 
   // Hard cap ekstrem saja
-  const HARD_CAP = TARGET + 4;
+  const HARD_CAP = TARGET + 2;
   if (live.length > HARD_CAP) {
     // Jangan buang bola yang membuat pair hilang: prioritaskan yang bikin completable
     const vals = liveVals();
@@ -541,14 +548,34 @@ function createNumbersFromQuestion(
   const yMax = 90;
 
   if (arenaStyle === 'pass') {
-    // Jumlah = candidates.length. Max 2 bola angka sama sejak spawn awal.
-    // + / ×: decoy dipangkas ke rentang dekat target (hindari 2 digit aneh).
+    // Cap jumlah awal: generator kadang inflate candidates → jangan overload
+    const levelCap: Record<string, number> = {
+      pemula: 5,
+      dasar: 6,
+      menengah: 7,
+      mahir: 8,
+      master: 9,
+    };
+    // Ambil max wajar dari panjang candidates, tapi potong ke levelCap-ish via length
+    const raw = question.candidates;
+    const maxStart = Math.min(raw.length, Math.max(4, Math.min(8, raw.length)));
+    // Pastikan semua correctNumbers ikut
+    const must = [...question.correctNumbers];
+    const rest = raw.filter((v) => !must.includes(v));
+    const cappedVals = [
+      ...must,
+      ...rest.slice(0, Math.max(0, maxStart - must.length)),
+    ].slice(0, maxStart);
+
     const decoyCap = passDecoyMax(question);
     const valueCounts = new Map<number, number>();
     const filtered: { value: number; isBomb: boolean }[] = [];
-    for (let index = 0; index < question.candidates.length; index++) {
-      let value = question.candidates[index]!;
-      const isBomb = question.bombIndexes.includes(index);
+    for (let index = 0; index < cappedVals.length; index++) {
+      let value = cappedVals[index]!;
+      // bomb indexes mengacu candidates asli — map kasar by value presence
+      const isBomb =
+        question.bombIndexes.some((bi) => question.candidates[bi] === value) &&
+        !question.correctNumbers.includes(value);
       const isCorrect = question.correctNumbers.includes(value);
       if (
         !isBomb &&
@@ -556,8 +583,14 @@ function createNumbersFromQuestion(
         (question.operation === 'add' || question.operation === 'mul') &&
         value > decoyCap
       ) {
-        // Remap decoy besar → angka kecil dalam rentang
         value = 1 + Math.floor(Math.random() * decoyCap);
+      }
+      // Jawaban + / × harus masuk akal
+      if (isCorrect && question.operation === 'add' && value >= question.target) {
+        value = Math.max(1, question.target - 1);
+      }
+      if (isCorrect && question.operation === 'mul' && value > question.target) {
+        value = Math.max(1, question.correctNumbers.find((c) => c <= question.target) ?? 1);
       }
       const c = valueCounts.get(value) ?? 0;
       if (!isBomb && c >= PASS_MAX_SAME_VALUE) {
@@ -1702,27 +1735,29 @@ export default function Game({
           }
           // Yang keluar tepi vs yang masih di layar
           const scale = mode === 'tap' ? 0.7 : 1;
-          // Margin ketat: ~1 radius bola. Jawab yang sudah ~60% ke tepi
-          // (pusat di luar 8..92) dihitung exited agar pair baru bisa masuk.
+          // Margin luar: benar-benar di luar layar baru hard-exit.
+          // Soft-exit answer: hanya jika sudah lewat tepi KELUAR (arah gerak),
+          // BUKAN saat masih masuk dari luar — itu penyebab kedip/flash dulu.
           const onScreen = (n: FloatingNumber) =>
             n.sliced ||
-            (n.x > -8 && n.x < 108 && n.y > -8 && n.y < 108);
-          const inCore = (n: FloatingNumber) =>
-            n.x >= 8 && n.x <= 92 && n.y >= 8 && n.y <= 92;
+            (n.x > -12 && n.x < 112 && n.y > -12 && n.y < 112);
+          const isSoftExitingAnswer = (n: FloatingNumber) => {
+            if (n.sliced || n.isBomb || n.passRole !== 'answer') return false;
+            const vx = n.vx ?? 0;
+            const vy = n.vy ?? 0;
+            // ~60% ke tepi keluar (pusat melewati 8 / 92 sesuai arah)
+            if (vx > 0.5 && n.x > 92) return true;
+            if (vx < -0.5 && n.x < 8) return true;
+            if (vy > 0.5 && n.y > 92) return true;
+            if (vy < -0.5 && n.y < 8) return true;
+            return false;
+          };
           const exited = numbers.filter(
-            (n) =>
-              !n.sliced &&
-              (!onScreen(n) ||
-                (n.passRole === 'answer' && !n.isBomb && !inCore(n)))
+            (n) => !n.sliced && (!onScreen(n) || isSoftExitingAnswer(n))
           );
           const still = numbers.filter(
-            (n) =>
-              !n.sliced &&
-              onScreen(n) &&
-              !(n.passRole === 'answer' && !n.isBomb && !inCore(n))
+            (n) => !n.sliced && onScreen(n) && !isSoftExitingAnswer(n)
           );
-          // Bola answer yang “soft-exit” tetap digambar 1 frame via exited→maintain
-          // (tidak di-keep di still)
           const slicedKeep = still.filter((n) => n.sliced);
           const liveStill = still.filter((n) => !n.sliced);
           const liveNext = maintainPassArena(
