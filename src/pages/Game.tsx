@@ -181,6 +181,20 @@ function passMaxVal(question: MathQuestion): number {
   return Math.max(20, question.target, ...(question.candidates || []), 30);
 }
 
+/** Max bola dengan angka sama di arena Pass */
+const PASS_MAX_SAME_VALUE = 2;
+
+function countLiveValue(liveValues: number[], v: number): number {
+  let c = 0;
+  for (const x of liveValues) if (x === v) c++;
+  return c;
+}
+
+/** Boleh spawn angka v jika belum mencapai max 2 di arena */
+function canSpawnValue(liveValues: number[], v: number): boolean {
+  return countLiveValue(liveValues, v) < PASS_MAX_SAME_VALUE;
+}
+
 /** Satu angka yang melengkapi selected / berpasangan dengan sisa di arena */
 function pickDynamicAnswerValue(
   question: MathQuestion,
@@ -222,12 +236,22 @@ function pickDynamicAnswerValue(
   }
 
   options = [...new Set(options)].filter((n) => n > 0);
-  const preferred = options.filter((n) => !avoid.has(n));
-  const pool = preferred.length ? preferred : options;
+  // Utama: belum di-avoid, belum 2x di arena
+  let pool = options.filter((n) => !avoid.has(n) && canSpawnValue(liveValues, n));
+  if (!pool.length) {
+    pool = options.filter((n) => canSpawnValue(liveValues, n));
+  }
+  if (!pool.length) {
+    // Terpaksa: cari angka lain 1..maxVal yang masih slot < 2
+    for (let n = 1; n <= maxVal; n++) {
+      if (canSpawnValue(liveValues, n)) pool.push(n);
+    }
+  }
   if (pool.length) {
     return pool[Math.floor(Math.random() * pool.length)]!;
   }
-  return question.correctNumbers[0] ?? 1;
+  // Last resort (arena penuh angka sama) — tetap return complement agar mainable
+  return options[0] ?? question.correctNumbers[0] ?? 1;
 }
 
 function pickDecoyValue(
@@ -236,10 +260,9 @@ function pickDecoyValue(
   liveValues: number[]
 ): number {
   const maxVal = passMaxVal(question);
-  const used = new Set(liveValues);
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 40; i++) {
     const n = 1 + Math.floor(Math.random() * maxVal);
-    if (used.has(n)) continue;
+    if (!canSpawnValue(liveValues, n)) continue; // sudah 2 bola angka ini
     if (selected.length === 1) {
       const a = selected[0];
       if (question.operation === 'add' && a + n === question.target) continue;
@@ -247,9 +270,15 @@ function pickDecoyValue(
     }
     return n;
   }
-  const c =
-    question.candidates[Math.floor(Math.random() * question.candidates.length)];
-  return c ?? 1;
+  // Fallback: angka dari kandidat yang masih < 2 di arena
+  const shuffled = [...question.candidates].sort(() => Math.random() - 0.5);
+  for (const c of shuffled) {
+    if (canSpawnValue(liveValues, c)) return c;
+  }
+  for (let n = 1; n <= maxVal; n++) {
+    if (canSpawnValue(liveValues, n)) return n;
+  }
+  return question.candidates[0] ?? 1;
 }
 
 /**
@@ -294,15 +323,33 @@ function maintainPassArena(
       liveVals(),
       exitedVals
     );
-    live.push(spawnPassBall(v, false, speedScale, 'answer'));
-    let d = pickDecoyValue(question, selected, liveVals());
+    // Hanya spawn answer jika belum 2x angka sama
+    if (canSpawnValue(liveVals(), v)) {
+      live.push(spawnPassBall(v, false, speedScale, 'answer'));
+    } else {
+      const v2 = pickDynamicAnswerValue(
+        question,
+        selected,
+        liveVals(),
+        [...exitedVals, v]
+      );
+      live.push(spawnPassBall(v2, false, speedScale, 'answer'));
+    }
+    // Decoy dampingan: beda dari answer, max 2 per angka
+    const afterAnswer = liveVals();
+    let d = pickDecoyValue(question, selected, afterAnswer);
     let guard = 0;
-    while ((d === v || liveVals().includes(d)) && guard < 10) {
-      d = pickDecoyValue(question, selected, [...liveVals(), v]);
+    const answerVal = live[live.length - 1]?.value;
+    while (
+      guard < 12 &&
+      (d === answerVal || !canSpawnValue(afterAnswer, d))
+    ) {
+      d = pickDecoyValue(question, selected, [...afterAnswer, d]);
       guard++;
     }
-    if (d === v) d = v === 1 ? 2 : Math.max(1, v - 1);
-    live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+    if (canSpawnValue(liveVals(), d)) {
+      live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+    }
   } else if (decoyOrBombExited.length > 0) {
     // (2) Hanya decoy/bom keluar
     if (live.length >= TARGET) {
@@ -328,10 +375,13 @@ function maintainPassArena(
       liveVals(),
       exitedVals
     );
-    live.push(spawnPassBall(v, false, speedScale, 'answer'));
-    let d = pickDecoyValue(question, selected, liveVals());
-    if (d === v) d = v === 1 ? 2 : Math.max(1, v - 1);
-    live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+    if (canSpawnValue(liveVals(), v)) {
+      live.push(spawnPassBall(v, false, speedScale, 'answer'));
+    }
+    const d = pickDecoyValue(question, selected, liveVals());
+    if (canSpawnValue(liveVals(), d) && d !== v) {
+      live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+    }
   }
 
   // Jangan hard-trim overflow answer-pack — biar turun sendiri saat decoy keluar + tahan
@@ -376,10 +426,31 @@ function createNumbersFromQuestion(
   const yMax = 90;
 
   if (arenaStyle === 'pass') {
-    // Jumlah = candidates.length (rentang level). Tandai seed correct sebagai answer.
-    const answerBag: number[] = [...question.correctNumbers];
-    return question.candidates.map((value, index) => {
+    // Jumlah = candidates.length. Max 2 bola angka sama sejak spawn awal.
+    const valueCounts = new Map<number, number>();
+    const filtered: { value: number; isBomb: boolean }[] = [];
+    for (let index = 0; index < question.candidates.length; index++) {
+      const value = question.candidates[index]!;
       const isBomb = question.bombIndexes.includes(index);
+      const c = valueCounts.get(value) ?? 0;
+      if (!isBomb && c >= PASS_MAX_SAME_VALUE) {
+        // Ganti angka yang sudah 2x dengan angka lain
+        let alt = value;
+        for (let n = 1; n <= 40; n++) {
+          if ((valueCounts.get(n) ?? 0) < PASS_MAX_SAME_VALUE) {
+            alt = n;
+            break;
+          }
+        }
+        valueCounts.set(alt, (valueCounts.get(alt) ?? 0) + 1);
+        filtered.push({ value: alt, isBomb: false });
+      } else {
+        valueCounts.set(value, c + 1);
+        filtered.push({ value, isBomb });
+      }
+    }
+    const answerBag: number[] = [...question.correctNumbers];
+    return filtered.map(({ value, isBomb }) => {
       let role: 'answer' | 'decoy' | undefined = 'decoy';
       if (isBomb) {
         role = undefined;
