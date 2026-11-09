@@ -94,10 +94,11 @@ function spawnPassBall(
   passRole?: 'answer' | 'decoy'
 ): FloatingNumber {
   const side = randomPassSide();
+  // Sedikit lebih kencang & drift tidak melemahkan arah utama
   const base =
-    (11 + Math.random() * 18) * speedScale * arenaMoveSpeedScale();
+    (14 + Math.random() * 16) * speedScale * arenaMoveSpeedScale();
   const drift =
-    (Math.random() - 0.5) * (8 + Math.random() * 10) * speedScale * arenaMoveSpeedScale();
+    (Math.random() - 0.5) * (4 + Math.random() * 6) * speedScale * arenaMoveSpeedScale();
   const yEdge = 6 + Math.random() * 88;
   const xEdge = 6 + Math.random() * 88;
   const id = `n-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -1733,31 +1734,38 @@ export default function Game({
               numbers[j] = { ...b };
             }
           }
+          // Lantai kecepatan: hindari bola nyaris diam setelah tabrakan beruntun
+          {
+            const minSp = 7.5 * (mode === 'tap' ? 0.75 : 1);
+            for (let i = 0; i < numbers.length; i++) {
+              const n = numbers[i];
+              if (!n || n.sliced) continue;
+              let vx = n.vx ?? 0;
+              let vy = n.vy ?? 0;
+              const sp = Math.hypot(vx, vy);
+              if (sp < minSp) {
+                if (sp < 0.15) {
+                  const ang = Math.random() * Math.PI * 2;
+                  vx = Math.cos(ang) * minSp;
+                  vy = Math.sin(ang) * minSp;
+                } else {
+                  const f = minSp / sp;
+                  vx *= f;
+                  vy *= f;
+                }
+                numbers[i] = { ...n, vx, vy };
+              }
+            }
+          }
           // Yang keluar tepi vs yang masih di layar
           const scale = mode === 'tap' ? 0.7 : 1;
-          // Margin luar: benar-benar di luar layar baru hard-exit.
-          // Soft-exit answer: hanya jika sudah lewat tepi KELUAR (arah gerak),
-          // BUKAN saat masih masuk dari luar — itu penyebab kedip/flash dulu.
+          // Hanya hard-exit: bola benar-benar di luar arena.
+          // Soft-exit dihapus — penyebab blink hilang mendadak di tengah/tepi.
           const onScreen = (n: FloatingNumber) =>
             n.sliced ||
-            (n.x > -12 && n.x < 112 && n.y > -12 && n.y < 112);
-          const isSoftExitingAnswer = (n: FloatingNumber) => {
-            if (n.sliced || n.isBomb || n.passRole !== 'answer') return false;
-            const vx = n.vx ?? 0;
-            const vy = n.vy ?? 0;
-            // ~60% ke tepi keluar (pusat melewati 8 / 92 sesuai arah)
-            if (vx > 0.5 && n.x > 92) return true;
-            if (vx < -0.5 && n.x < 8) return true;
-            if (vy > 0.5 && n.y > 92) return true;
-            if (vy < -0.5 && n.y < 8) return true;
-            return false;
-          };
-          const exited = numbers.filter(
-            (n) => !n.sliced && (!onScreen(n) || isSoftExitingAnswer(n))
-          );
-          const still = numbers.filter(
-            (n) => !n.sliced && onScreen(n) && !isSoftExitingAnswer(n)
-          );
+            (n.x > -10 && n.x < 110 && n.y > -10 && n.y < 110);
+          const exited = numbers.filter((n) => !n.sliced && !onScreen(n));
+          const still = numbers.filter((n) => !n.sliced && onScreen(n));
           const slicedKeep = still.filter((n) => n.sliced);
           const liveStill = still.filter((n) => !n.sliced);
           const liveNext = maintainPassArena(
