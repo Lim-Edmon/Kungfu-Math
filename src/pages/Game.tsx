@@ -183,6 +183,25 @@ function passMaxVal(question: MathQuestion): number {
   return Math.max(20, question.target, ...(question.candidates || []), 30);
 }
 
+/**
+ * Rentang decoy / angka acak di Pass:
+ * + dan × → angka kecil (mendekati target), hindari banyak 2 digit aneh
+ * − dan ÷ → boleh lebih besar (pembilang / angka depan)
+ */
+function passDecoyMax(question: MathQuestion): number {
+  const t = Math.max(1, question.target);
+  if (question.operation === 'add') {
+    // jawaban pair selalu < target; decoy longgar sedikit di atas target
+    return Math.min(Math.max(t + 4, 12), 24);
+  }
+  if (question.operation === 'mul') {
+    // faktor ≤ target; decoy sampai target (+ sedikit)
+    return Math.min(Math.max(t + 2, 12), 30);
+  }
+  // sub / div: angka depan bisa besar
+  return Math.max(t + 8, 20, Math.min(40, t * 2));
+}
+
 /** Max bola dengan angka sama di arena Pass */
 const PASS_MAX_SAME_VALUE = 2;
 
@@ -246,6 +265,12 @@ function pickDynamicAnswerValue(
   }
 
   options = [...new Set(options)].filter((n) => n > 0);
+  // + / ×: buang angka yang jauh di atas target (aneh di arena)
+  if (question.operation === 'add') {
+    options = options.filter((n) => n < question.target);
+  } else if (question.operation === 'mul') {
+    options = options.filter((n) => n > 0 && n <= question.target);
+  }
   // Utama: belum di-avoid, belum 2x di arena
   let pool = options.filter((n) => !avoid.has(n) && canSpawnValue(liveValues, n));
   if (!pool.length) {
@@ -269,7 +294,7 @@ function pickDecoyValue(
   selected: number[],
   liveValues: number[]
 ): number {
-  const maxVal = passMaxVal(question);
+  const maxVal = passDecoyMax(question);
   for (let i = 0; i < 40; i++) {
     const n = 1 + Math.floor(Math.random() * maxVal);
     if (!canSpawnValue(liveValues, n)) continue; // sudah 2 bola angka ini
@@ -377,42 +402,70 @@ function maintainPassArena(
     let guard = 0;
     while (
       !isPassCompletable(question, effectiveSelected, liveVals()) &&
-      guard < 6
+      guard < 8
     ) {
       guard++;
+      // A) Coba inject complement / correctNumbers
       spawnAnswerPack();
-      // Jika masih belum (mis. correctNumbers bentrok max-same), paksa 2 seed jawaban
-      if (
-        !isPassCompletable(question, effectiveSelected, liveVals()) &&
-        question.correctNumbers.length >= 1
-      ) {
-        for (const cn of question.correctNumbers) {
+      if (isPassCompletable(question, effectiveSelected, liveVals())) break;
+
+      // B) Paksa pair correctNumbers — ganti decoy yang ada bila perlu
+      const need = getNeededCount(question);
+      const seeds = [...question.correctNumbers];
+      if (seeds.length >= need) {
+        for (const cn of seeds) {
+          if (isPassCompletable(question, effectiveSelected, liveVals())) break;
           if (canSpawnValue(liveVals(), cn)) {
             live.push(spawnPassBall(cn, false, speedScale, 'answer'));
+          } else {
+            // Ganti 1 decoy → angka jawaban
+            const di = live.findIndex(
+              (n) => !n.isBomb && n.passRole !== 'answer' && n.value !== cn
+            );
+            if (di >= 0) {
+              live[di] = {
+                ...live[di],
+                value: cn,
+                passRole: 'answer',
+                id: `n-fix-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              };
+            }
           }
         }
-        // Pair partner jika needed=2 dan baru 1 yang masuk
+      }
+
+      // C) Partial valid: pastikan pelengkap ada
+      if (
+        effectiveSelected.length === 1 &&
+        !isPassCompletable(question, effectiveSelected, liveVals())
+      ) {
+        const a = effectiveSelected[0]!;
+        const { operation, target } = question;
+        let comp: number | null = null;
+        if (operation === 'add') comp = target - a;
+        else if (operation === 'mul' && a !== 0 && target % a === 0)
+          comp = target / a;
+        else if (operation === 'sub') comp = a - target;
+        else if (operation === 'div' && target !== 0) comp = a / target;
         if (
-          getNeededCount(question) === 2 &&
-          !isPassCompletable(question, effectiveSelected, liveVals())
+          comp != null &&
+          Number.isInteger(comp) &&
+          comp > 0
         ) {
-          const bases = liveVals();
-          for (const a of bases) {
-            const v = pickDynamicAnswerValue(
-              question,
-              effectiveSelected.length ? effectiveSelected : [],
-              [a],
-              exitedVals
+          const c = Math.round(comp);
+          if (canSpawnValue(liveVals(), c)) {
+            live.push(spawnPassBall(c, false, speedScale, 'answer'));
+          } else {
+            const di = live.findIndex(
+              (n) => !n.isBomb && n.passRole !== 'answer'
             );
-            // complements relative to question
-            if (
-              canSpawnValue(liveVals(), v) &&
-              isValidSelection(question, effectiveSelected.length === 1
-                ? [effectiveSelected[0], v]
-                : [a, v])
-            ) {
-              live.push(spawnPassBall(v, false, speedScale, 'answer'));
-              break;
+            if (di >= 0) {
+              live[di] = {
+                ...live[di],
+                value: c,
+                passRole: 'answer',
+                id: `n-fix-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              };
             }
           }
         }
@@ -489,16 +542,27 @@ function createNumbersFromQuestion(
 
   if (arenaStyle === 'pass') {
     // Jumlah = candidates.length. Max 2 bola angka sama sejak spawn awal.
+    // + / ×: decoy dipangkas ke rentang dekat target (hindari 2 digit aneh).
+    const decoyCap = passDecoyMax(question);
     const valueCounts = new Map<number, number>();
     const filtered: { value: number; isBomb: boolean }[] = [];
     for (let index = 0; index < question.candidates.length; index++) {
-      const value = question.candidates[index]!;
+      let value = question.candidates[index]!;
       const isBomb = question.bombIndexes.includes(index);
+      const isCorrect = question.correctNumbers.includes(value);
+      if (
+        !isBomb &&
+        !isCorrect &&
+        (question.operation === 'add' || question.operation === 'mul') &&
+        value > decoyCap
+      ) {
+        // Remap decoy besar → angka kecil dalam rentang
+        value = 1 + Math.floor(Math.random() * decoyCap);
+      }
       const c = valueCounts.get(value) ?? 0;
       if (!isBomb && c >= PASS_MAX_SAME_VALUE) {
-        // Ganti angka yang sudah 2x dengan angka lain
         let alt = value;
-        for (let n = 1; n <= 40; n++) {
+        for (let n = 1; n <= decoyCap; n++) {
           if ((valueCounts.get(n) ?? 0) < PASS_MAX_SAME_VALUE) {
             alt = n;
             break;
@@ -1638,11 +1702,27 @@ export default function Game({
           }
           // Yang keluar tepi vs yang masih di layar
           const scale = mode === 'tap' ? 0.7 : 1;
+          // Margin ketat: ~1 radius bola. Jawab yang sudah ~60% ke tepi
+          // (pusat di luar 8..92) dihitung exited agar pair baru bisa masuk.
           const onScreen = (n: FloatingNumber) =>
             n.sliced ||
-            (n.x > -18 && n.x < 118 && n.y > -18 && n.y < 118);
-          const exited = numbers.filter((n) => !n.sliced && !onScreen(n));
-          const still = numbers.filter((n) => onScreen(n));
+            (n.x > -8 && n.x < 108 && n.y > -8 && n.y < 108);
+          const inCore = (n: FloatingNumber) =>
+            n.x >= 8 && n.x <= 92 && n.y >= 8 && n.y <= 92;
+          const exited = numbers.filter(
+            (n) =>
+              !n.sliced &&
+              (!onScreen(n) ||
+                (n.passRole === 'answer' && !n.isBomb && !inCore(n)))
+          );
+          const still = numbers.filter(
+            (n) =>
+              !n.sliced &&
+              onScreen(n) &&
+              !(n.passRole === 'answer' && !n.isBomb && !inCore(n))
+          );
+          // Bola answer yang “soft-exit” tetap digambar 1 frame via exited→maintain
+          // (tidak di-keep di still)
           const slicedKeep = still.filter((n) => n.sliced);
           const liveStill = still.filter((n) => !n.sliced);
           const liveNext = maintainPassArena(
