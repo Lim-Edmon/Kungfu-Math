@@ -86,7 +86,11 @@ function randomPassSide(): PassSide {
   return sides[Math.floor(Math.random() * 4)]!;
 }
 
-/** Spawn 1 bola lewat — 4 sisi, titik/speed/arah acak (berantakan tapi adil) */
+/**
+ * Spawn 1 bola lewat.
+ * Hindari sudut ~0/90/180/270° (menyusur tepi → bola terpotong setengah).
+ * Titik masuk hindari zona sudut ekstrem.
+ */
 function spawnPassBall(
   value: number,
   isBomb: boolean,
@@ -94,13 +98,17 @@ function spawnPassBall(
   passRole?: 'answer' | 'decoy'
 ): FloatingNumber {
   const side = randomPassSide();
-  // Sedikit lebih kencang & drift tidak melemahkan arah utama
   const base =
     (14 + Math.random() * 16) * speedScale * arenaMoveSpeedScale();
-  const drift =
-    (Math.random() - 0.5) * (4 + Math.random() * 6) * speedScale * arenaMoveSpeedScale();
-  const yEdge = 6 + Math.random() * 88;
-  const xEdge = 6 + Math.random() * 88;
+  // Drift cukup besar supaya jalur diagonal (min ~30% dari base)
+  const minDrift = base * 0.32;
+  const maxDrift = base * 0.7;
+  let drift =
+    (Math.random() < 0.5 ? -1 : 1) *
+    (minDrift + Math.random() * (maxDrift - minDrift));
+  // Posisi masuk: hindari 0–12 dan 88–100 (dekat sudut)
+  const yEdge = 14 + Math.random() * 72;
+  const xEdge = 14 + Math.random() * 72;
   const id = `n-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const role: 'answer' | 'decoy' | undefined = isBomb
     ? undefined
@@ -112,40 +120,17 @@ function spawnPassBall(
     sliced: false as const,
     passRole: role,
   };
+  const main = base * (0.9 + Math.random() * 0.35);
   switch (side) {
     case 'left':
-      return {
-        ...baseBall,
-        x: -4 - Math.random() * 14,
-        y: yEdge,
-        vx: base * (0.85 + Math.random() * 0.45),
-        vy: drift,
-      };
+      return { ...baseBall, x: -4 - Math.random() * 10, y: yEdge, vx: main, vy: drift };
     case 'right':
-      return {
-        ...baseBall,
-        x: 104 + Math.random() * 14,
-        y: yEdge,
-        vx: -base * (0.85 + Math.random() * 0.45),
-        vy: drift,
-      };
+      return { ...baseBall, x: 104 + Math.random() * 10, y: yEdge, vx: -main, vy: drift };
     case 'top':
-      return {
-        ...baseBall,
-        x: xEdge,
-        y: -4 - Math.random() * 14,
-        vx: drift,
-        vy: base * (0.85 + Math.random() * 0.45),
-      };
+      return { ...baseBall, x: xEdge, y: -4 - Math.random() * 10, vx: drift, vy: main };
     case 'bottom':
     default:
-      return {
-        ...baseBall,
-        x: xEdge,
-        y: 104 + Math.random() * 14,
-        vx: drift,
-        vy: -base * (0.85 + Math.random() * 0.45),
-      };
+      return { ...baseBall, x: xEdge, y: 104 + Math.random() * 10, vx: drift, vy: -main };
   }
 }
 
@@ -366,46 +351,61 @@ function maintainPassArena(
   );
 
   /** Paksa 1 angka jawaban ke arena ( + decoy), berbasis soal / partial valid / sisa bola */
-  const spawnAnswerPack = () => {
+  /** Set angka yang baru di-spawn di tick ini — cegah 2× angka sama serentak */
+  const spawnedThisTick = new Set<number>();
+
+  const pushBall = (value: number, role: 'answer' | 'decoy') => {
+    if (!canSpawnValue(liveVals(), value)) return false;
+    // Jangan rilis angka yang sama 2× dalam 1 tick maintain
+    if (spawnedThisTick.has(value)) return false;
+    // Juga hormati max 2 di arena
+    live.push(spawnPassBall(value, false, speedScale, role));
+    spawnedThisTick.add(value);
+    return true;
+  };
+
+  /**
+   * Saat butuh jawaban: cukup 1 bola answer (pelengkap).
+   * Decoy hanya jika di bawah TARGET — jangan selalu 2 bola (tendensi ketara).
+   */
+  const spawnMissingAnswer = () => {
     const v = pickDynamicAnswerValue(
       question,
       effectiveSelected,
       liveVals(),
-      exitedVals
+      [...exitedVals, ...spawnedThisTick]
     );
-    if (canSpawnValue(liveVals(), v)) {
-      live.push(spawnPassBall(v, false, speedScale, 'answer'));
-    } else {
+    if (!pushBall(v, 'answer')) {
       const v2 = pickDynamicAnswerValue(
         question,
         effectiveSelected,
         liveVals(),
-        [...exitedVals, v]
+        [...exitedVals, v, ...spawnedThisTick]
       );
-      live.push(spawnPassBall(v2, false, speedScale, 'answer'));
+      pushBall(v2, 'answer');
     }
-    const after = liveVals();
-    const answerVal = live[live.length - 1]?.value;
-    let d = pickDecoyValue(question, effectiveSelected, after);
-    let guard = 0;
-    while (
-      guard < 12 &&
-      (d === answerVal || !canSpawnValue(after, d))
-    ) {
-      d = pickDecoyValue(question, effectiveSelected, [...after, d]);
-      guard++;
-    }
-    if (canSpawnValue(liveVals(), d) && d !== answerVal) {
-      live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+    // Decoy opsional hanya jika masih di bawah max
+    if (live.length < TARGET) {
+      let d = pickDecoyValue(question, effectiveSelected, [
+        ...liveVals(),
+        ...spawnedThisTick,
+      ]);
+      let g = 0;
+      while (
+        g < 10 &&
+        (spawnedThisTick.has(d) || !canSpawnValue(liveVals(), d))
+      ) {
+        d = pickDecoyValue(question, effectiveSelected, [
+          ...liveVals(),
+          d,
+          ...spawnedThisTick,
+        ]);
+        g++;
+      }
+      pushBall(d, 'decoy');
     }
   };
 
-  /**
-   * Pastikan ada jalur jawaban di arena untuk SOAL.
-   * - Tanpa partial valid: harus ada pair di antara bola live.
-   * - Dengan partial valid: harus ada pelengkap di live.
-   * Jika belum: inject answer pack; kalau masih gagal, inject 2 angka correctNumbers.
-   */
   const ensureQuestionSolvable = () => {
     let guard = 0;
     while (
@@ -414,7 +414,7 @@ function maintainPassArena(
     ) {
       guard++;
       // A) Coba inject complement / correctNumbers
-      spawnAnswerPack();
+      spawnMissingAnswer();
       if (isPassCompletable(question, effectiveSelected, liveVals())) break;
 
       // B) Paksa pair correctNumbers — ganti decoy yang ada bila perlu
@@ -481,18 +481,37 @@ function maintainPassArena(
     }
   };
 
-  // (1) Answer keluar → answer pack (boleh overflow)
+  // (1) Answer keluar → isi pelengkap HANYA jika pair di arena putus
+  //     (jika setengah pair masih ada + angka lain masih bisa, jangan spam 2 bola)
   if (answerExited.length > 0) {
-    spawnAnswerPack();
+    if (!isPassCompletable(question, effectiveSelected, liveVals())) {
+      spawnMissingAnswer();
+    }
   } else if (decoyOrBombExited.length > 0) {
     // (2) Hanya decoy/bom: isi random jika di bawah max; jika >= max → tahan (tapi tetap ensure solvable di bawah)
     if (live.length < TARGET) {
       const remaining = TARGET - live.length;
       const spawnCount = 1 + Math.floor(Math.random() * remaining);
       for (let i = 0; i < spawnCount; i++) {
-        const d = pickDecoyValue(question, effectiveSelected, liveVals());
-        if (canSpawnValue(liveVals(), d)) {
+        let d = pickDecoyValue(question, effectiveSelected, [
+          ...liveVals(),
+          ...spawnedThisTick,
+        ]);
+        let g = 0;
+        while (
+          g < 8 &&
+          (spawnedThisTick.has(d) || !canSpawnValue(liveVals(), d))
+        ) {
+          d = pickDecoyValue(question, effectiveSelected, [
+            ...liveVals(),
+            d,
+            ...spawnedThisTick,
+          ]);
+          g++;
+        }
+        if (canSpawnValue(liveVals(), d) && !spawnedThisTick.has(d)) {
           live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+          spawnedThisTick.add(d);
         }
       }
     }
