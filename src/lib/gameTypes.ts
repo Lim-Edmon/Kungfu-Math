@@ -15,6 +15,12 @@ export interface FloatingNumber {
   /** Kecepatan mode ketangkasan (% arena per detik) */
   vx?: number;
   vy?: number;
+  /**
+   * Mode Pass: peran bola saat di arena.
+   * 'answer' = bagian jalur jawaban aktif (boleh berganti saat di-respawn).
+   * 'decoy' = pengalih perhatian.
+   */
+  passRole?: 'answer' | 'decoy';
 }
 
 export interface GameState {
@@ -64,7 +70,8 @@ export const LEVEL_SCORE_MULT: Record<string, number> = {
 };
 
 export const AGILITY_SCORE_MULT = 1.1;
-export const PASS_SCORE_MULT = 1.12;
+/** Pass lebih sulit (pair bisa berganti) — +0.1 vs bounce */
+export const PASS_SCORE_MULT = 1.2;
 export const STATIC_SCORE_MULT = 1.0;
 
 /** Tap (tangan kosong) sedikit lebih tinggi dari slice */
@@ -90,7 +97,10 @@ export function opsScoreMultiplier(
 
 export function computeSolvePoints(opts: {
   combo: number;
+  /** true = bola gerak (bounce/pass) — combo bonus lebih tinggi */
   agility: boolean;
+  /** static | agility (bounce) | pass — pengali arena */
+  arenaStyle?: 'static' | 'agility' | 'pass' | null;
   tempoId?: string | null;
   levelId?: string | null;
   forceOps?: Array<'add' | 'sub' | 'mul' | 'div'> | null;
@@ -105,7 +115,13 @@ export function computeSolvePoints(opts: {
     (opts.combo > 1 ? (opts.combo - 1) * comboBonus : 0);
   const tempoMul = TEMPO_SCORE_MULT[opts.tempoId || ''] ?? 1.0;
   const levelMul = LEVEL_SCORE_MULT[opts.levelId || ''] ?? 1.0;
-  const arenaMul = opts.agility ? AGILITY_SCORE_MULT : STATIC_SCORE_MULT;
+  const style = opts.arenaStyle ?? (opts.agility ? 'agility' : 'static');
+  const arenaMul =
+    style === 'pass'
+      ? PASS_SCORE_MULT
+      : style === 'agility'
+        ? AGILITY_SCORE_MULT
+        : STATIC_SCORE_MULT;
   const opsMul = opsScoreMultiplier(opts.forceOps);
   const speedMul = opts.fastSolve ? SPEED_SCORE_MULT : 1.0;
   const inputMul =

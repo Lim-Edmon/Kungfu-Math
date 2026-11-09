@@ -90,61 +90,58 @@ function randomPassSide(): PassSide {
 function spawnPassBall(
   value: number,
   isBomb: boolean,
-  speedScale = 1
+  speedScale = 1,
+  passRole?: 'answer' | 'decoy'
 ): FloatingNumber {
   const side = randomPassSide();
   const base =
     (11 + Math.random() * 18) * speedScale * arenaMoveSpeedScale();
-  // drift lebih besar = lintasan diagonal, tidak selalu lurus
   const drift =
     (Math.random() - 0.5) * (8 + Math.random() * 10) * speedScale * arenaMoveSpeedScale();
-  // titik keluar tersebar di tepi (bukan selalu tengah)
   const yEdge = 6 + Math.random() * 88;
   const xEdge = 6 + Math.random() * 88;
   const id = `n-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const role: 'answer' | 'decoy' | undefined = isBomb
+    ? undefined
+    : passRole ?? 'decoy';
+  const baseBall = {
+    id,
+    value,
+    isBomb,
+    sliced: false as const,
+    passRole: role,
+  };
   switch (side) {
     case 'left':
       return {
-        id,
-        value,
+        ...baseBall,
         x: -4 - Math.random() * 14,
         y: yEdge,
-        isBomb,
-        sliced: false,
         vx: base * (0.85 + Math.random() * 0.45),
         vy: drift,
       };
     case 'right':
       return {
-        id,
-        value,
+        ...baseBall,
         x: 104 + Math.random() * 14,
         y: yEdge,
-        isBomb,
-        sliced: false,
         vx: -base * (0.85 + Math.random() * 0.45),
         vy: drift,
       };
     case 'top':
       return {
-        id,
-        value,
+        ...baseBall,
         x: xEdge,
         y: -4 - Math.random() * 14,
-        isBomb,
-        sliced: false,
         vx: drift,
         vy: base * (0.85 + Math.random() * 0.45),
       };
     case 'bottom':
     default:
       return {
-        id,
-        value,
+        ...baseBall,
         x: xEdge,
         y: 104 + Math.random() * 14,
-        isBomb,
-        sliced: false,
         vx: drift,
         vy: -base * (0.85 + Math.random() * 0.45),
       };
@@ -152,8 +149,7 @@ function spawnPassBall(
 }
 
 /**
- * Apakah masih bisa menyelesaikan soal dengan angka di arena + yang sudah dipilih?
- * (bukan cuma 1 pasangan seed — terima pasangan mana pun yang valid)
+ * Apakah sisa angka di arena + selected masih bisa menyelesaikan soal.
  */
 function isPassCompletable(
   question: MathQuestion,
@@ -162,24 +158,18 @@ function isPassCompletable(
 ): boolean {
   const needed = getNeededCount(question);
   if (selected.length >= needed) return true;
-
   if (needed === 1) {
     return liveValues.some((v) => isValidSelection(question, [v]));
   }
-
-  // 2 angka
   if (selected.length === 1) {
     const a = selected[0];
     return liveValues.some((v) => isValidSelection(question, [a, v]));
   }
-
-  // selected.length === 0: ada pasangan valid di liveValues
   for (let i = 0; i < liveValues.length; i++) {
     for (let j = 0; j < liveValues.length; j++) {
       if (i === j) {
-        // a+a atau a×a boleh jika dua bola sama ada
-        const count = liveValues.filter((x) => x === liveValues[i]).length;
-        if (count < 2) continue;
+        const c = liveValues.filter((x) => x === liveValues[i]).length;
+        if (c < 2) continue;
       }
       if (isValidSelection(question, [liveValues[i], liveValues[j]])) return true;
     }
@@ -187,126 +177,181 @@ function isPassCompletable(
   return false;
 }
 
-/** Nilai yang membantu melengkapi jawaban (bukan hanya seed correctNumbers) */
-function complementaryValues(
+function passMaxVal(question: MathQuestion): number {
+  return Math.max(20, question.target, ...(question.candidates || []), 30);
+}
+
+/** Satu angka yang melengkapi selected / berpasangan dengan sisa di arena */
+function pickDynamicAnswerValue(
   question: MathQuestion,
   selected: number[],
-  maxVal: number
-): number[] {
-  const needed = getNeededCount(question);
-  const out: number[] = [];
+  liveValues: number[],
+  avoidValues: number[] = []
+): number {
   const { operation, target } = question;
+  const maxVal = passMaxVal(question);
+  const avoid = new Set(avoidValues);
+  const needed = getNeededCount(question);
 
-  if (needed === 1) {
-    // satu blank: seed correct
-    return [...question.correctNumbers];
-  }
-
-  if (selected.length === 1) {
-    const a = selected[0];
+  const complementsFor = (a: number): number[] => {
+    const out: number[] = [];
     if (operation === 'add') out.push(target - a);
     else if (operation === 'mul' && a !== 0 && target % a === 0) out.push(target / a);
-    else if (operation === 'sub') {
-      out.push(a - target); // a - b = target → b = a - target
-      out.push(a + target); // kalau klik terbalik jarang, tapi decoy ok
-    } else if (operation === 'div') {
-      if (a !== 0 && target !== 0) out.push(a / target); // a/b=target → b=a/target
-      out.push(a * target);
-    }
+    else if (operation === 'sub') out.push(a - target);
+    else if (operation === 'div' && target !== 0) out.push(a / target);
+    return out
+      .filter((n) => Number.isFinite(n) && n > 0 && Number.isInteger(n) && n <= maxVal)
+      .map((n) => Math.round(n));
+  };
+
+  let options: number[] = [];
+
+  if (needed === 1) {
+    options = [...question.correctNumbers];
+  } else if (selected.length === 1) {
+    options = complementsFor(selected[0]);
   } else {
-    // belum pilih: taruh seed + beberapa pasangan alt
-    out.push(...question.correctNumbers);
-    if (operation === 'add') {
-      for (let a = 1; a < target && out.length < 6; a++) {
-        const b = target - a;
-        if (b >= 1 && b <= maxVal) {
-          out.push(a, b);
-        }
-      }
-    } else if (operation === 'mul') {
-      for (let a = 2; a <= maxVal && out.length < 6; a++) {
-        if (target % a === 0) {
-          const b = target / a;
-          if (b >= 1 && b <= maxVal) out.push(a, b);
-        }
-      }
-    } else {
-      out.push(...question.correctNumbers);
+    const bases = liveValues.filter((v) => v > 0);
+    for (const a of bases) {
+      options.push(...complementsFor(a));
+    }
+    if (!options.length) {
+      options = [...question.correctNumbers];
+      for (const a of question.candidates) options.push(...complementsFor(a));
     }
   }
 
-  return [
-    ...new Set(
-      out
-        .filter((n) => Number.isFinite(n) && n > 0 && Number.isInteger(n))
-        .map((n) => Math.round(n))
-    ),
-  ];
+  options = [...new Set(options)].filter((n) => n > 0);
+  const preferred = options.filter((n) => !avoid.has(n));
+  const pool = preferred.length ? preferred : options;
+  if (pool.length) {
+    return pool[Math.floor(Math.random() * pool.length)]!;
+  }
+  return question.correctNumbers[0] ?? 1;
+}
+
+function pickDecoyValue(
+  question: MathQuestion,
+  selected: number[],
+  liveValues: number[]
+): number {
+  const maxVal = passMaxVal(question);
+  const used = new Set(liveValues);
+  for (let i = 0; i < 24; i++) {
+    const n = 1 + Math.floor(Math.random() * maxVal);
+    if (used.has(n)) continue;
+    if (selected.length === 1) {
+      const a = selected[0];
+      if (question.operation === 'add' && a + n === question.target) continue;
+      if (question.operation === 'mul' && a !== 0 && a * n === question.target) continue;
+    }
+    return n;
+  }
+  const c =
+    question.candidates[Math.floor(Math.random() * question.candidates.length)];
+  return c ?? 1;
 }
 
 /**
- * Jaga arena Pass: minimal banyak bola + selalu ada jalur jawaban.
- * Tidak boleh sisa 1 bola jawaban sendirian.
+ * Pass maintain:
+ * 1) Answer keluar (atau tak completable) → SELALU 1 answer + 1 decoy
+ *    (boleh sementara > max level; nanti normalisasi saat hanya decoy keluar).
+ * 2) Hanya decoy/bom keluar → jika live < max, rilis random 1..sisa_slot decoy;
+ *    jika live >= max → tahan (tidak rilis).
+ * 3) Max = candidates.length (rentang difficulty) — soft cap untuk refill decoy,
+ *    bukan hard block untuk answer-pack.
  */
-function ensurePassPopulation(
+function maintainPassArena(
   question: MathQuestion,
-  numbers: FloatingNumber[],
+  liveOnScreen: FloatingNumber[],
+  exited: FloatingNumber[],
   selected: number[],
   speedScale: number
 ): FloatingNumber[] {
-  let live = numbers.filter((n) => !n.sliced);
-  const sliced = numbers.filter((n) => n.sliced);
-  const MIN_LIVE = Math.max(5, Math.min(8, question.candidates.length));
+  const TARGET = Math.max(2, question.candidates.length);
+  let live = liveOnScreen.filter((n) => !n.sliced);
 
-  const liveVals = () => live.filter((n) => !n.isBomb).map((n) => n.value);
-  const maxVal = Math.max(20, ...question.candidates, question.target, 30);
+  const liveVals = () =>
+    live.filter((n) => !n.isBomb).map((n) => n.value);
+  const exitedVals = exited.map((e) => e.value);
 
-  // 1) Pastikan completable
-  let guard = 0;
-  while (!isPassCompletable(question, selected, liveVals()) && guard < 12) {
-    guard++;
-    const comps = complementaryValues(question, selected, maxVal);
-    const pick =
-      comps[Math.floor(Math.random() * Math.max(1, comps.length))] ??
-      question.correctNumbers[0] ??
-      1;
-    live.push(spawnPassBall(pick, false, speedScale));
+  const answerExited = exited.filter(
+    (e) => !e.isBomb && e.passRole === 'answer'
+  );
+  const decoyOrBombExited = exited.filter(
+    (e) => e.isBomb || e.passRole !== 'answer'
+  );
+
+  const completableNow = isPassCompletable(question, selected, liveVals());
+  const needAnswerPack =
+    answerExited.length > 0 || !completableNow;
+
+  // (1) Answer pack — WAJIB 2 bola, boleh overflow max
+  if (needAnswerPack) {
+    const v = pickDynamicAnswerValue(
+      question,
+      selected,
+      liveVals(),
+      exitedVals
+    );
+    live.push(spawnPassBall(v, false, speedScale, 'answer'));
+    let d = pickDecoyValue(question, selected, liveVals());
+    let guard = 0;
+    while ((d === v || liveVals().includes(d)) && guard < 10) {
+      d = pickDecoyValue(question, selected, [...liveVals(), v]);
+      guard++;
+    }
+    if (d === v) d = v === 1 ? 2 : Math.max(1, v - 1);
+    live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+  } else if (decoyOrBombExited.length > 0) {
+    // (2) Hanya decoy/bom keluar
+    if (live.length >= TARGET) {
+      // (3) sudah max (atau overflow dari answer-pack) → tahan, biar normalisasi
+      return live;
+    }
+    const remaining = TARGET - live.length;
+    if (remaining > 0) {
+      const spawnCount = 1 + Math.floor(Math.random() * remaining);
+      for (let i = 0; i < spawnCount; i++) {
+        const d = pickDecoyValue(question, selected, liveVals());
+        live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+      }
+    }
+  }
+  // exited kosong → tidak rilis apa-apa
+
+  // Safety: harus completable; jika tidak dan belum ada answer-pack di frame ini
+  if (!isPassCompletable(question, selected, liveVals())) {
+    const v = pickDynamicAnswerValue(
+      question,
+      selected,
+      liveVals(),
+      exitedVals
+    );
+    live.push(spawnPassBall(v, false, speedScale, 'answer'));
+    let d = pickDecoyValue(question, selected, liveVals());
+    if (d === v) d = v === 1 ? 2 : Math.max(1, v - 1);
+    live.push(spawnPassBall(d, false, speedScale, 'decoy'));
   }
 
-  // 2) Isi sampai MIN_LIVE — campuran kandidat soal + pelengkap
-  guard = 0;
-  while (live.length < MIN_LIVE && guard < 16) {
-    guard++;
-    const pool = [
-      ...question.candidates,
-      ...complementaryValues(question, selected, maxVal),
-    ];
-    const decoys = pool.filter((v) => {
-      // jangan spam bom di sini
-      return true;
-    });
-    const v =
-      decoys[Math.floor(Math.random() * decoys.length)] ??
-      question.candidates[Math.floor(Math.random() * question.candidates.length)] ??
-      1;
-    // ~12% bom dari kandidat non-correct (kalau ada slot bom di soal)
-    const bombish =
-      Math.random() < 0.1 &&
-      !question.correctNumbers.includes(v) &&
-      selected.length === 0;
-    live.push(spawnPassBall(v, bombish, speedScale));
+  // Jangan hard-trim overflow answer-pack — biar turun sendiri saat decoy keluar + tahan
+  // Hanya potong ekstrem (bug) biar tidak 20+ bola
+  const HARD_CAP = TARGET + 4;
+  if (live.length > HARD_CAP) {
+    const keep: FloatingNumber[] = [];
+    const answers = live.filter((n) => n.passRole === 'answer' && !n.isBomb);
+    const bombs = live.filter((n) => n.isBomb);
+    const decoys = live.filter((n) => !n.isBomb && n.passRole !== 'answer');
+    for (const n of answers) keep.push(n);
+    for (const n of bombs) keep.push(n);
+    for (const n of decoys) {
+      if (keep.length < HARD_CAP) keep.push(n);
+    }
+    live = keep.slice(0, HARD_CAP);
   }
 
-  // 3) Cap biar tidak penuh sesak
-  if (live.length > 16) {
-    live = live.slice(-16);
-  }
-
-  return [...sliced, ...live];
+  return live;
 }
-
-
-
 
 /** Skala kecepatan arena gerak: desktop lebih pelan (terasa setara HP). */
 function arenaMoveSpeedScale(extra = 1): number {
@@ -331,10 +376,21 @@ function createNumbersFromQuestion(
   const yMax = 90;
 
   if (arenaStyle === 'pass') {
-    // Spawn dari 4 sisi acak
+    // Jumlah = candidates.length (rentang level). Tandai seed correct sebagai answer.
+    const answerBag: number[] = [...question.correctNumbers];
     return question.candidates.map((value, index) => {
       const isBomb = question.bombIndexes.includes(index);
-      return spawnPassBall(value, isBomb, speedScale);
+      let role: 'answer' | 'decoy' | undefined = 'decoy';
+      if (isBomb) {
+        role = undefined;
+      } else {
+        const ai = answerBag.indexOf(value);
+        if (ai >= 0) {
+          role = 'answer';
+          answerBag.splice(ai, 1);
+        }
+      }
+      return spawnPassBall(value, isBomb, speedScale, role);
     });
   }
 
@@ -1200,6 +1256,7 @@ export default function Game({
           const points = computeSolvePoints({
             combo: newCombo,
             agility: isMoving,
+            arenaStyle,
             tempoId: tempoIdRef.current,
             levelId: levelIdRef.current,
             forceOps: forceOpsRef.current,
@@ -1402,20 +1459,23 @@ export default function Game({
               numbers[j] = { ...b };
             }
           }
-          // Buang yang lewat tepi (4 sisi). Sliced tetap (untuk restore salah).
-          numbers = numbers.filter(
-            (n) =>
-              n.sliced ||
-              (n.x > -18 && n.x < 118 && n.y > -18 && n.y < 118)
-          );
-          // Isi ulang: selalu ada jalur jawaban + min ~5–8 bola (bukan 1 bola sendirian)
+          // Yang keluar tepi vs yang masih di layar
           const scale = mode === 'tap' ? 0.7 : 1;
-          numbers = ensurePassPopulation(
+          const onScreen = (n: FloatingNumber) =>
+            n.sliced ||
+            (n.x > -18 && n.x < 118 && n.y > -18 && n.y < 118);
+          const exited = numbers.filter((n) => !n.sliced && !onScreen(n));
+          const still = numbers.filter((n) => onScreen(n));
+          const slicedKeep = still.filter((n) => n.sliced);
+          const liveStill = still.filter((n) => !n.sliced);
+          const liveNext = maintainPassArena(
             prev.question,
-            numbers,
+            liveStill,
+            exited,
             prev.selectedValues || [],
             scale
           );
+          numbers = [...slicedKeep, ...liveNext];
           return { ...prev, numbers };
         }
 
