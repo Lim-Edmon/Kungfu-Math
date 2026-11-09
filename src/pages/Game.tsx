@@ -165,6 +165,25 @@ function isPassCompletable(
   return false;
 }
 
+/**
+ * Pair resmi = hanya bola passRole === 'answer'.
+ * Decoy boleh kebetulan valid saat dipilih, tapi TIDAK dihitung pair resmi
+ * (supaya refill answer tidak menumpuk banyak pair di arena).
+ */
+function getAnswerRoleValues(live: FloatingNumber[]): number[] {
+  return live
+    .filter((n) => !n.sliced && !n.isBomb && n.passRole === 'answer')
+    .map((n) => n.value);
+}
+
+function isPreparedPairOk(
+  question: MathQuestion,
+  selected: number[],
+  live: FloatingNumber[]
+): boolean {
+  return isPassCompletable(question, selected, getAnswerRoleValues(live));
+}
+
 function passMaxVal(question: MathQuestion): number {
   return Math.max(20, question.target, ...(question.candidates || []), 30);
 }
@@ -207,7 +226,9 @@ function pickDynamicAnswerValue(
   question: MathQuestion,
   selected: number[],
   liveValues: number[],
-  avoidValues: number[] = []
+  avoidValues: number[] = [],
+  /** Basis pair resmi — jika ada, prioritaskan pelengkap ini */
+  answerRoleValues: number[] = []
 ): number {
   const { operation, target } = question;
   const maxVal = passMaxVal(question);
@@ -229,49 +250,38 @@ function pickDynamicAnswerValue(
 
   if (needed === 1) {
     options = [...question.correctNumbers];
-  } else if (selected.length === 1) {
-    if (isPossiblePartialPick(question, selected[0])) {
-      options = complementsFor(selected[0]);
-    } else {
-      // Selected invalid — treat as no selection for spawning
-      options = [];
-      for (const a of liveValues.filter((v) => v > 0)) {
-        options.push(...complementsFor(a));
-      }
-    }
-  } else {
-    const bases = liveValues.filter((v) => v > 0);
-    for (const a of bases) {
+  } else if (selected.length === 1 && isPossiblePartialPick(question, selected[0])) {
+    options = complementsFor(selected[0]);
+  } else if (answerRoleValues.length > 0) {
+    // Prioritas: lengkapi pair resmi yang sudah di arena
+    for (const a of answerRoleValues) {
       options.push(...complementsFor(a));
     }
     if (!options.length) {
       options = [...question.correctNumbers];
-      for (const a of question.candidates) options.push(...complementsFor(a));
+    }
+  } else {
+    // Tidak ada answer-role → pakai seed soal, BUKAN decoy live (cegah pair alternatif resmi)
+    options = [...question.correctNumbers];
+    for (const a of question.correctNumbers) {
+      options.push(...complementsFor(a));
     }
   }
 
   options = [...new Set(options)].filter((n) => n > 0);
-  // + / ×: buang angka yang jauh di atas target (aneh di arena)
   if (question.operation === 'add') {
     options = options.filter((n) => n < question.target);
   } else if (question.operation === 'mul') {
     options = options.filter((n) => n > 0 && n <= question.target);
   }
-  // Utama: belum di-avoid, belum 2x di arena
+
   let pool = options.filter((n) => !avoid.has(n) && canSpawnValue(liveValues, n));
   if (!pool.length) {
     pool = options.filter((n) => canSpawnValue(liveValues, n));
   }
-  if (!pool.length) {
-    // Terpaksa: cari angka lain 1..maxVal yang masih slot < 2
-    for (let n = 1; n <= maxVal; n++) {
-      if (canSpawnValue(liveValues, n)) pool.push(n);
-    }
-  }
   if (pool.length) {
     return pool[Math.floor(Math.random() * pool.length)]!;
   }
-  // Last resort: hanya angka jawaban sah (bukan random jauh)
   const seeds = question.correctNumbers.filter(
     (n) => n > 0 && canSpawnValue(liveValues, n)
   );
@@ -369,22 +379,25 @@ function maintainPassArena(
    * Decoy hanya jika di bawah TARGET — jangan selalu 2 bola (tendensi ketara).
    */
   const spawnMissingAnswer = () => {
+    const roleVals = getAnswerRoleValues(live);
     const v = pickDynamicAnswerValue(
       question,
       effectiveSelected,
       liveVals(),
-      [...exitedVals, ...spawnedThisTick]
+      [...exitedVals, ...spawnedThisTick],
+      roleVals
     );
     if (!pushBall(v, 'answer')) {
       const v2 = pickDynamicAnswerValue(
         question,
         effectiveSelected,
         liveVals(),
-        [...exitedVals, v, ...spawnedThisTick]
+        [...exitedVals, v, ...spawnedThisTick],
+        roleVals
       );
       pushBall(v2, 'answer');
     }
-    // Decoy opsional hanya jika masih di bawah max
+    // Decoy opsional hanya jika di bawah max — selalu passRole decoy
     if (live.length < TARGET) {
       let d = pickDecoyValue(question, effectiveSelected, [
         ...liveVals(),
@@ -409,24 +422,26 @@ function maintainPassArena(
   const ensureQuestionSolvable = () => {
     let guard = 0;
     while (
-      !isPassCompletable(question, effectiveSelected, liveVals()) &&
+      !isPreparedPairOk(question, effectiveSelected, live) &&
       guard < 8
     ) {
       guard++;
-      // A) Coba inject complement / correctNumbers
+      // A) Coba inject 1 angka pair resmi (bukan pair alternatif dari decoy)
       spawnMissingAnswer();
-      if (isPassCompletable(question, effectiveSelected, liveVals())) break;
+      if (isPreparedPairOk(question, effectiveSelected, live)) break;
 
       // B) Paksa pair correctNumbers — ganti decoy yang ada bila perlu
       const need = getNeededCount(question);
       const seeds = [...question.correctNumbers];
       if (seeds.length >= need) {
         for (const cn of seeds) {
-          if (isPassCompletable(question, effectiveSelected, liveVals())) break;
-          if (canSpawnValue(liveVals(), cn)) {
-            live.push(spawnPassBall(cn, false, speedScale, 'answer'));
+          if (isPreparedPairOk(question, effectiveSelected, live)) break;
+          if (canSpawnValue(liveVals(), cn) && !spawnedThisTick.has(cn)) {
+            if (pushBall(cn, 'answer')) {
+              /* ok */
+            }
           } else {
-            // Ganti 1 decoy → angka jawaban
+            // Ganti 1 decoy → angka jawaban resmi
             const di = live.findIndex(
               (n) => !n.isBomb && n.passRole !== 'answer' && n.value !== cn
             );
@@ -437,15 +452,16 @@ function maintainPassArena(
                 passRole: 'answer',
                 id: `n-fix-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
               };
+              spawnedThisTick.add(cn);
             }
           }
         }
       }
 
-      // C) Partial valid: pastikan pelengkap ada
+      // C) Partial valid: pastikan pelengkap resmi ada
       if (
         effectiveSelected.length === 1 &&
-        !isPassCompletable(question, effectiveSelected, liveVals())
+        !isPreparedPairOk(question, effectiveSelected, live)
       ) {
         const a = effectiveSelected[0]!;
         const { operation, target } = question;
@@ -483,8 +499,9 @@ function maintainPassArena(
 
   // (1) Answer keluar → isi pelengkap HANYA jika pair di arena putus
   //     (jika setengah pair masih ada + angka lain masih bisa, jangan spam 2 bola)
+  // Answer keluar → refill pair RESMI saja (bukan karena decoy alternatif ikut hilang)
   if (answerExited.length > 0) {
-    if (!isPassCompletable(question, effectiveSelected, liveVals())) {
+    if (!isPreparedPairOk(question, effectiveSelected, live)) {
       spawnMissingAnswer();
     }
   } else if (decoyOrBombExited.length > 0) {
