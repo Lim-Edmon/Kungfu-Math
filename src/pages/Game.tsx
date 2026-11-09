@@ -163,6 +163,8 @@ function isPassCompletable(
   }
   if (selected.length === 1) {
     const a = selected[0];
+    // Selected mustahil dilengkapi (mis. 29 + ? = 11) → tidak completable
+    if (!isPossiblePartialPick(question, a)) return false;
     return liveValues.some((v) => isValidSelection(question, [a, v]));
   }
   for (let i = 0; i < liveValues.length; i++) {
@@ -223,7 +225,15 @@ function pickDynamicAnswerValue(
   if (needed === 1) {
     options = [...question.correctNumbers];
   } else if (selected.length === 1) {
-    options = complementsFor(selected[0]);
+    if (isPossiblePartialPick(question, selected[0])) {
+      options = complementsFor(selected[0]);
+    } else {
+      // Selected invalid — treat as no selection for spawning
+      options = [];
+      for (const a of liveValues.filter((v) => v > 0)) {
+        options.push(...complementsFor(a));
+      }
+    }
   } else {
     const bases = liveValues.filter((v) => v > 0);
     for (const a of bases) {
@@ -282,13 +292,13 @@ function pickDecoyValue(
 }
 
 /**
- * Pass maintain:
- * 1) Answer keluar (atau tak completable) → SELALU 1 answer + 1 decoy
- *    (boleh sementara > max level; nanti normalisasi saat hanya decoy keluar).
- * 2) Hanya decoy/bom keluar → jika live < max, rilis random 1..sisa_slot decoy;
- *    jika live >= max → tahan (tidak rilis).
- * 3) Max = candidates.length (rentang difficulty) — soft cap untuk refill decoy,
- *    bukan hard block untuk answer-pack.
+ * Pass maintain — aturan utama:
+ * Arena HARUS selalu punya ≥1 pair jawaban valid untuk SOAL (bukan karena partial tidak sengaja).
+ *
+ * 1) Answer keluar → 1 answer baru (pair dari sisa / soal) + 1 decoy (boleh overflow max).
+ * 2) Hanya decoy keluar → jika live < max, random decoy; jika >= max, tahan.
+ * 3) Setelah itu: pastikan completable untuk soal (+ partial HANYA jika partial valid).
+ *    Partial invalid diabaikan saat cek/spawn pair.
  */
 function maintainPassArena(
   question: MathQuestion,
@@ -304,6 +314,17 @@ function maintainPassArena(
     live.filter((n) => !n.isBomb).map((n) => n.value);
   const exitedVals = exited.map((e) => e.value);
 
+  /** Partial hanya dihitung jika masih mungkin diselesaikan; kalau tidak → seolah belum pilih */
+  const effectiveSelected = ((): number[] => {
+    if (selected.length === 1) {
+      return isPossiblePartialPick(question, selected[0])
+        ? [selected[0]]
+        : [];
+    }
+    if (selected.length >= 2) return selected.slice(0, 2);
+    return [];
+  })();
+
   const answerExited = exited.filter(
     (e) => !e.isBomb && e.passRole === 'answer'
   );
@@ -311,93 +332,134 @@ function maintainPassArena(
     (e) => e.isBomb || e.passRole !== 'answer'
   );
 
-  const completableNow = isPassCompletable(question, selected, liveVals());
-  const needAnswerPack =
-    answerExited.length > 0 || !completableNow;
-
-  // (1) Answer pack — WAJIB 2 bola, boleh overflow max
-  if (needAnswerPack) {
+  /** Paksa 1 angka jawaban ke arena ( + decoy), berbasis soal / partial valid / sisa bola */
+  const spawnAnswerPack = () => {
     const v = pickDynamicAnswerValue(
       question,
-      selected,
+      effectiveSelected,
       liveVals(),
       exitedVals
     );
-    // Hanya spawn answer jika belum 2x angka sama
     if (canSpawnValue(liveVals(), v)) {
       live.push(spawnPassBall(v, false, speedScale, 'answer'));
     } else {
       const v2 = pickDynamicAnswerValue(
         question,
-        selected,
+        effectiveSelected,
         liveVals(),
         [...exitedVals, v]
       );
       live.push(spawnPassBall(v2, false, speedScale, 'answer'));
     }
-    // Decoy dampingan: beda dari answer, max 2 per angka
-    const afterAnswer = liveVals();
-    let d = pickDecoyValue(question, selected, afterAnswer);
-    let guard = 0;
+    const after = liveVals();
     const answerVal = live[live.length - 1]?.value;
+    let d = pickDecoyValue(question, effectiveSelected, after);
+    let guard = 0;
     while (
       guard < 12 &&
-      (d === answerVal || !canSpawnValue(afterAnswer, d))
+      (d === answerVal || !canSpawnValue(after, d))
     ) {
-      d = pickDecoyValue(question, selected, [...afterAnswer, d]);
+      d = pickDecoyValue(question, effectiveSelected, [...after, d]);
       guard++;
     }
-    if (canSpawnValue(liveVals(), d)) {
+    if (canSpawnValue(liveVals(), d) && d !== answerVal) {
       live.push(spawnPassBall(d, false, speedScale, 'decoy'));
     }
-  } else if (decoyOrBombExited.length > 0) {
-    // (2) Hanya decoy/bom keluar
-    if (live.length >= TARGET) {
-      // (3) sudah max (atau overflow dari answer-pack) → tahan, biar normalisasi
-      return live;
+  };
+
+  /**
+   * Pastikan ada jalur jawaban di arena untuk SOAL.
+   * - Tanpa partial valid: harus ada pair di antara bola live.
+   * - Dengan partial valid: harus ada pelengkap di live.
+   * Jika belum: inject answer pack; kalau masih gagal, inject 2 angka correctNumbers.
+   */
+  const ensureQuestionSolvable = () => {
+    let guard = 0;
+    while (
+      !isPassCompletable(question, effectiveSelected, liveVals()) &&
+      guard < 6
+    ) {
+      guard++;
+      spawnAnswerPack();
+      // Jika masih belum (mis. correctNumbers bentrok max-same), paksa 2 seed jawaban
+      if (
+        !isPassCompletable(question, effectiveSelected, liveVals()) &&
+        question.correctNumbers.length >= 1
+      ) {
+        for (const cn of question.correctNumbers) {
+          if (canSpawnValue(liveVals(), cn)) {
+            live.push(spawnPassBall(cn, false, speedScale, 'answer'));
+          }
+        }
+        // Pair partner jika needed=2 dan baru 1 yang masuk
+        if (
+          getNeededCount(question) === 2 &&
+          !isPassCompletable(question, effectiveSelected, liveVals())
+        ) {
+          const bases = liveVals();
+          for (const a of bases) {
+            const v = pickDynamicAnswerValue(
+              question,
+              effectiveSelected.length ? effectiveSelected : [],
+              [a],
+              exitedVals
+            );
+            // complements relative to question
+            if (
+              canSpawnValue(liveVals(), v) &&
+              isValidSelection(question, effectiveSelected.length === 1
+                ? [effectiveSelected[0], v]
+                : [a, v])
+            ) {
+              live.push(spawnPassBall(v, false, speedScale, 'answer'));
+              break;
+            }
+          }
+        }
+      }
     }
-    const remaining = TARGET - live.length;
-    if (remaining > 0) {
+  };
+
+  // (1) Answer keluar → answer pack (boleh overflow)
+  if (answerExited.length > 0) {
+    spawnAnswerPack();
+  } else if (decoyOrBombExited.length > 0) {
+    // (2) Hanya decoy/bom: isi random jika di bawah max; jika >= max → tahan (tapi tetap ensure solvable di bawah)
+    if (live.length < TARGET) {
+      const remaining = TARGET - live.length;
       const spawnCount = 1 + Math.floor(Math.random() * remaining);
       for (let i = 0; i < spawnCount; i++) {
-        const d = pickDecoyValue(question, selected, liveVals());
-        live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+        const d = pickDecoyValue(question, effectiveSelected, liveVals());
+        if (canSpawnValue(liveVals(), d)) {
+          live.push(spawnPassBall(d, false, speedScale, 'decoy'));
+        }
       }
     }
   }
-  // exited kosong → tidak rilis apa-apa
 
-  // Safety: harus completable; jika tidak dan belum ada answer-pack di frame ini
-  if (!isPassCompletable(question, selected, liveVals())) {
-    const v = pickDynamicAnswerValue(
-      question,
-      selected,
-      liveVals(),
-      exitedVals
-    );
-    if (canSpawnValue(liveVals(), v)) {
-      live.push(spawnPassBall(v, false, speedScale, 'answer'));
-    }
-    const d = pickDecoyValue(question, selected, liveVals());
-    if (canSpawnValue(liveVals(), d) && d !== v) {
-      live.push(spawnPassBall(d, false, speedScale, 'decoy'));
-    }
-  }
+  // WAJIB: pair jawaban soal selalu ada di arena (abaikan partial invalid)
+  ensureQuestionSolvable();
 
-  // Jangan hard-trim overflow answer-pack — biar turun sendiri saat decoy keluar + tahan
-  // Hanya potong ekstrem (bug) biar tidak 20+ bola
+  // Hard cap ekstrem saja
   const HARD_CAP = TARGET + 4;
   if (live.length > HARD_CAP) {
+    // Jangan buang bola yang membuat pair hilang: prioritaskan yang bikin completable
+    const vals = liveVals();
     const keep: FloatingNumber[] = [];
-    const answers = live.filter((n) => n.passRole === 'answer' && !n.isBomb);
-    const bombs = live.filter((n) => n.isBomb);
-    const decoys = live.filter((n) => !n.isBomb && n.passRole !== 'answer');
-    for (const n of answers) keep.push(n);
-    for (const n of bombs) keep.push(n);
-    for (const n of decoys) {
-      if (keep.length < HARD_CAP) keep.push(n);
+    const rest = [...live];
+    // Ambil minimal set yang completable
+    if (isPassCompletable(question, effectiveSelected, vals)) {
+      // prioritaskan answer role + yang jadi bagian pair
+      const answers = rest.filter((n) => n.passRole === 'answer' && !n.isBomb);
+      const others = rest.filter((n) => !(n.passRole === 'answer' && !n.isBomb));
+      for (const n of answers) keep.push(n);
+      for (const n of others) {
+        if (keep.length < HARD_CAP) keep.push(n);
+      }
+      live = keep.slice(0, HARD_CAP);
+      // jika trim merusak pair, ensure lagi
+      ensureQuestionSolvable();
     }
-    live = keep.slice(0, HARD_CAP);
   }
 
   return live;
@@ -620,6 +682,46 @@ function getNeededCount(question: MathQuestion): number {
  * + dan × : urutan bebas (10+5 = 5+10).
  * − dan ÷ : urutan KLIK berlaku (70÷10 ≠ 10÷70).
  */
+/**
+ * Apakah angka ini bisa jadi pilihan ke-1 yang masih mungkin diselesaikan
+ * dengan bilangan bulat positif? (cegah 29 + ? = 11 → macet)
+ */
+function isPossiblePartialPick(
+  question: MathQuestion,
+  value: number
+): boolean {
+  if (!Number.isFinite(value) || value <= 0 || !Number.isInteger(value)) {
+    return false;
+  }
+  const needed = getNeededCount(question);
+  if (needed <= 1) {
+    // Satu slot: harus langsung valid
+    return isValidSelection(question, [value]);
+  }
+  const { operation, target } = question;
+  if (operation === 'add') {
+    // value + b = target → b = target - value > 0
+    return value < target;
+  }
+  if (operation === 'mul') {
+    // value * b = target → b bilangan bulat positif
+    return value > 0 && target % value === 0;
+  }
+  if (operation === 'sub') {
+    // value − b = target → b = value - target > 0
+    return value > target;
+  }
+  if (operation === 'div') {
+    // value ÷ b = target → b = value / target bilangan bulat positif
+    return (
+      target > 0 &&
+      value >= target &&
+      value % target === 0
+    );
+  }
+  return true;
+}
+
 function isValidSelection(
   question: MathQuestion,
   selectedValues: number[]
@@ -1303,16 +1405,20 @@ export default function Game({
         );
         const needed = getNeededCount(prev.question);
 
-        // Belum cukup angka → tunggu klik berikutnya
+        // Belum cukup angka → partial, HANYA jika masih mungkin diselesaikan
+        // (cegah 29 + ? = 11 → tidak ada pasangan positif, arena “macet”)
         if (newSelectedValues.length < needed) {
-          if (mode === 'slice') sfx.slash();
-          else sfx.tap();
-          return {
-            ...prev,
-            numbers: updatedNumbers,
-            selectedIds: newSelectedIds,
-            selectedValues: newSelectedValues,
-          };
+          if (isPossiblePartialPick(prev.question, num.value)) {
+            if (mode === 'slice') sfx.slash();
+            else sfx.tap();
+            return {
+              ...prev,
+              numbers: updatedNumbers,
+              selectedIds: newSelectedIds,
+              selectedValues: newSelectedValues,
+            };
+          }
+          // Angka pertama mustahil dilengkapi → anggap salah (nyawa −1, soal tetap)
         }
 
         const selectedValues = newSelectedValues;
