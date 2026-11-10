@@ -3184,6 +3184,9 @@ a.btn-link-trakteer:hover,
   padding: 10px 8px;
   font-size: 0.88rem;
   line-height: 1.2;
+  min-height: 2.75rem;
+  height: 2.75rem;
+  box-sizing: border-box;
 }
 /* Settings support: Trakteer soft blue, Ko-fi soft green — rounded like other buttons */
 .settings-support-actions .btn-trakteer.settings-support-btn,

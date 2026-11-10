@@ -65,7 +65,7 @@ const CHAR_IDS = new Set([
   'yo-rin',
 ]);
 const MODES = new Set<InputMode>(['slice', 'tap']);
-const ARENAS = new Set<ArenaStyle>(['static', 'agility']);
+const ARENAS = new Set<ArenaStyle>(['static', 'agility', 'pass']);
 const DISPLAYS = new Set<DisplayMode>(['siang', 'malam', 'nyaman']);
 const LANGS = new Set(['id', 'en']);
 
@@ -767,7 +767,9 @@ export function formatRecordDate(iso: string | undefined): string {
 }
 
 export function arenaLabel(arena: ArenaStyle | undefined): string {
-  return arena === 'agility' ? t('modeAgility') : t('modeStatic');
+  if (arena === 'agility') return t('modeAgility');
+  if (arena === 'pass') return t('modePass');
+  return t('modeStatic');
 }
 
 export function inputModeLabel(mode: InputMode | undefined): string {

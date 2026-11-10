@@ -249,6 +249,7 @@ function App() {
   const [lastMaxCombo, setLastMaxCombo] = useState(0);
   const [lastSprintMs, setLastSprintMs] = useState<number | null>(null);
   const [lastSprintLen, setLastSprintLen] = useState<number | null>(null);
+  const [lastSprintBestMs, setLastSprintBestMs] = useState<number | null>(null);
   const [forceOps, setForceOps] = useState<
     Array<'add' | 'sub' | 'mul' | 'div'> | undefined
   >(undefined);
@@ -482,19 +483,29 @@ function App() {
           : runMeta.sprintLength === 10
             ? 10
             : 5;
-      const key = `${selectedLevel}|${len}|${selectedArena}`;
+      // key: level|len|arena|mode — rekor per setup (kesulitan + arena + slice/tap)
+      const key = `${selectedLevel}|${len}|${selectedArena}|${selectedMode}`;
       const prevBest = prog0.sprintBestMs?.[key];
-      if (prevBest == null || runMeta.sprintMs < prevBest) {
+      const isBest =
+        prevBest == null || runMeta.sprintMs < prevBest;
+      if (isBest) {
         updateProgress({
-          sprintBestMs: { ...(prog0.sprintBestMs || {}), [key]: runMeta.sprintMs },
+          sprintBestMs: {
+            ...(prog0.sprintBestMs || {}),
+            [key]: runMeta.sprintMs,
+          },
         });
         setIsNewRecord(true);
       }
       setLastSprintMs(runMeta.sprintMs);
       setLastSprintLen(len);
+      setLastSprintBestMs(
+        isBest ? runMeta.sprintMs : (prevBest as number)
+      );
     } else {
       setLastSprintMs(null);
       setLastSprintLen(null);
+      setLastSprintBestMs(null);
     }
 
     // Offline session: latihan murni, tidak ubah progress / rekor / badge
@@ -1068,31 +1079,49 @@ function App() {
                     {t('offlineResultHint')}
                   </p>
                 )}
-                <p className="result-score-line">
-                  <strong>{t('score')} {lastScore}</strong>
-                  <span> · {lastGrade}</span>
-                </p>
-                {lastSprintMs != null && lastSprintLen != null && (
-                  <p className="result-sprint-line">
-                    <strong>
-                      {t('sprintTimeLabel')}:{' '}
-                      {(lastSprintMs / 1000).toFixed(1)}s
-                    </strong>
-                    <span>
-                      {' '}
-                      · {lastSprintLen} {t('sprintQuestions')}
-                    </span>
-                    {isNewRecord && practiceSessionKind === 'sprint' && (
-                      <span> · {t('sprintNewRecord')}</span>
+                {lastSprintMs != null && lastSprintLen != null ? (
+                  <>
+                    <p className="result-score-line result-sprint-line">
+                      <strong>
+                        {t('sprintTimeLabel')}:{' '}
+                        {(lastSprintMs / 1000).toFixed(1)}s
+                      </strong>
+                      <span>
+                        {' '}
+                        · {lastSprintLen} {t('sprintQuestions')}
+                      </span>
+                      {isNewRecord && (
+                        <span> · {t('sprintNewRecord')}</span>
+                      )}
+                    </p>
+                    {lastSprintBestMs != null && (
+                      <p className="result-high">
+                        {t('sprintBest')}: {(lastSprintBestMs / 1000).toFixed(1)}s
+                        {isNewRecord
+                          ? getLang() === 'en'
+                            ? ' · new!'
+                            : ' · baru!'
+                          : ''}
+                      </p>
                     )}
-                  </p>
+                    <p className="result-combo-note">{t('resultSprintHint')}</p>
+                    <p className="result-combo-note">
+                      {t('runMaxCombo')}: ×{lastMaxCombo}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="result-score-line">
+                      <strong>
+                        {t('score')} {lastScore}
+                      </strong>
+                      <span> · {lastGrade}</span>
+                    </p>
+                    <p className="result-combo-note">
+                      {t('runMaxCombo')}: ×{lastMaxCombo}
+                    </p>
+                  </>
                 )}
-                {lastSprintMs != null && (
-                  <p className="result-combo-note">{t('resultSprintHint')}</p>
-                )}
-                <p className="result-combo-note">
-                  {t('runMaxCombo')}: ×{lastMaxCombo}
-                </p>
                 {playKind === 'petualangan' && city && (
                   <p className="result-high">
                     {passedCity
@@ -1137,7 +1166,9 @@ function App() {
                   </p>
                 )}
 
-                {playKind !== 'petualangan' && !offlineSession && (
+                {playKind !== 'petualangan' &&
+                  !offlineSession &&
+                  lastSprintMs == null && (
                   <p className="result-high">
                     {t('highScore')}: {lastHighScore}
                     {isNewRecord

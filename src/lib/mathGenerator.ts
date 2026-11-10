@@ -379,13 +379,16 @@ export function generateQuestion(
     });
   }
 
-  // Bom: mode termudah (pemula / sedikit bola) max 0–1 biar tidak "pasti benar"
+  // Bom: selalu sisakan ≥3 bola angka (bukan bom) biar jawaban tidak "ketahuan"
+  const MIN_NUMBER_BALLS = 3;
   const bombIndexes: number[] = [];
   const possibleBombIndexes = allNumbers
     .map((_, i) => i)
     .filter((i) => !correctNumbers.includes(allNumbers[i]));
-  const maxBombs =
+  const maxBombsByFloor = Math.max(0, allNumbers.length - MIN_NUMBER_BALLS);
+  const maxBombsDesired =
     level === 'pemula' || totalBalls <= 5 ? 1 : 2;
+  const maxBombs = Math.min(maxBombsDesired, maxBombsByFloor);
   const bombCount = Math.min(randomInt(0, maxBombs), possibleBombIndexes.length);
   const shuffledBombs = shuffle(possibleBombIndexes);
   for (let i = 0; i < bombCount; i++) {
