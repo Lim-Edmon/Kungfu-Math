@@ -1250,6 +1250,10 @@
   background: var(--color-card);
   color: var(--color-text);
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .settings-lang-actions {
@@ -3094,8 +3098,12 @@ a.btn-link-trakteer:hover,
   line-height: 1;
 }
 .settings-section-body {
-  margin-top: 0.45rem;
-  padding-top: 0.15rem;
+  margin-top: 0.28rem;
+  padding-top: 0.08rem;
+}
+.settings-section-body .settings-note {
+  margin-top: 0.15rem;
+  margin-bottom: 0.35rem;
 }
 .settings-section.is-collapsed {
   padding-top: 6px;
@@ -3147,6 +3155,86 @@ a.btn-link-trakteer:hover,
   width: 50% !important;
   max-width: 50%;
 }
+
+/* Settings: tombol teks center + support 50-50 + import rapi */
+.settings-section-body .btn-primary,
+.settings-section-body .btn-secondary,
+.settings-section-body .btn-ghost,
+.settings-section-body a.btn-primary,
+.settings-section-body a.btn-secondary,
+.settings-support-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+.settings-support-actions {
+  display: flex !important;
+  flex-wrap: nowrap;
+  gap: 8px;
+  width: 100%;
+  margin: 6px 0 2px;
+}
+.settings-support-actions .settings-support-btn {
+  flex: 1 1 50%;
+  max-width: 50%;
+  min-width: 0;
+  width: auto !important;
+  padding: 10px 8px;
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+.settings-import-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.settings-import-body .export-code,
+.settings-import-body textarea.export-code {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-secondary, #f6f4ef);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+  min-height: 4.5rem;
+}
+.settings-import-body .btn-primary {
+  width: 100%;
+  margin: 0;
+}
+.export-code {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid var(--color-border);
+  background: var(--color-bg-secondary, #f6f4ef);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  resize: vertical;
+}
+
+/* Bahasa: fill saat aktif (mirip tab Progress) */
+.settings-lang-actions .settings-toggle.active {
+  border-color: var(--color-primary, #c41e3a);
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 14%, white);
+  color: var(--color-primary, #c41e3a);
+  font-weight: 700;
+}
+[data-theme='malam'] .settings-lang-actions .settings-toggle.active {
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 28%, #1a1a1a);
+}
+
 /* Trakteer full lebar section — override max-width 42% */
 a.btn-trakteer.btn-trakteer-full,
 .btn-trakteer.btn-trakteer-full {
@@ -5141,4 +5229,11 @@ html[data-theme='malam'] .onboard-banner {
   opacity: 0.95;
   font-weight: 600;
   font-size: 0.88rem;
+}
+
+.dojo-region.is-complete .dojo-region-head {
+  /* region semua kota lolos */
+}
+.dojo-region.is-progress .dojo-region-head {
+  /* region sedang berjalan */
 }

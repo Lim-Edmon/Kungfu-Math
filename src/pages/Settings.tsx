@@ -422,7 +422,7 @@ export default function Settings({
           </span>
         </button>
         {openSections.import && (
-          <div className="settings-section-body">
+          <div className="settings-section-body settings-import-body">
             <p className="settings-note">{t('settingsImportNote')}</p>
             <textarea
               className="export-code"
@@ -430,6 +430,7 @@ export default function Settings({
               onChange={(e) => setImportCode(e.target.value)}
               rows={3}
               placeholder="KM1...."
+              aria-label={t('settingsImport')}
             />
             <button
               type="button"

@@ -62,6 +62,7 @@ function formatRecordMeta(
 
 export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
   const [badgesOpen, setBadgesOpen] = useState(false);
+  const [comboOpen, setComboOpen] = useState(false);
   const [sprintOpen, setSprintOpen] = useState(false);
   let progress: PlayerProgress;
   try {
@@ -236,19 +237,33 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
       </section>
 
       <section className="dojo-stats-card" aria-label="Combo records">
-        <h3 className="dojo-section-title">{t('recordsTitle')}</h3>
-        <ul className="dojo-record-list">
-          <li>
-            {t('maxComboPractice')}: <strong>×{progress.maxComboPractice || 0}</strong>
-          </li>
-          <li>
-            {t('maxComboAdventure')}: <strong>×{progress.maxComboAdventure || 0}</strong>
-          </li>
-          <li>
-            {t('perfectCityStreakLabel')}:{' '}
-            <strong>{progress.perfectCityStreak || 0}</strong>
-          </li>
-        </ul>
+        <button
+          type="button"
+          className="dojo-collapse-btn"
+          onClick={() => setComboOpen((v) => !v)}
+          aria-expanded={comboOpen}
+        >
+          <h3 className="dojo-section-title dojo-collapse-row">
+            <span>{t('recordsTitle')}</span>
+            <span className="dojo-collapse-hint">
+              {comboOpen ? '▴' : '▾'}
+            </span>
+          </h3>
+        </button>
+        {comboOpen && (
+          <ul className="dojo-record-list">
+            <li>
+              {t('maxComboPractice')}: <strong>×{progress.maxComboPractice || 0}</strong>
+            </li>
+            <li>
+              {t('maxComboAdventure')}: <strong>×{progress.maxComboAdventure || 0}</strong>
+            </li>
+            <li>
+              {t('perfectCityStreakLabel')}:{' '}
+              <strong>{progress.perfectCityStreak || 0}</strong>
+            </li>
+          </ul>
+        )}
       </section>
 
       <section className="dojo-stats-card" aria-label="Sprint records">
@@ -401,6 +416,22 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
               const openCount = cities.filter(
                 (c) => c.id === 'jakarta' || unlockedList.includes(c.id)
               ).length;
+              const clearedCount = cities.filter((c) => {
+                const rec = progress.adventureScoreRecords?.[c.id];
+                const hs =
+                  rec?.score ?? progress.adventureHighScores?.[c.id] ?? 0;
+                return hs >= c.targetScore;
+              }).length;
+              const regionAllClear =
+                regionUnlocked &&
+                cities.length > 0 &&
+                clearedCount >= cities.length;
+              // 🔒 terkunci · 📌 sedang jalan · ✅ semua kota lolos
+              const regionIcon = !regionUnlocked
+                ? '🔒'
+                : regionAllClear
+                  ? '✅'
+                  : '📌';
               // Region terkunci: hanya nama region, tidak bocorkan daftar kota
               if (!regionUnlocked) {
                 return (
@@ -409,7 +440,9 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
                       className="dojo-region-head dojo-region-locked-only"
                       aria-disabled="true"
                     >
-                      <span>🔒 {label}</span>
+                      <span>
+                        {regionIcon} {label}
+                      </span>
                       <span className="dojo-region-meta">{t('locked')}</span>
                     </div>
                   </div>
@@ -418,7 +451,7 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
               return (
                 <div
                   key={reg.id}
-                  className="dojo-region"
+                  className={`dojo-region ${regionAllClear ? 'is-complete' : 'is-progress'}`}
                 >
                   <button
                     type="button"
@@ -432,10 +465,11 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
                     }
                   >
                     <span>
-                      {open ? '▾' : '▸'} {label}
+                      {regionIcon} {open ? '▾' : '▸'} {label}
                     </span>
                     <span className="dojo-region-meta">
                       {openCount}/{cities.length}
+                      {regionAllClear ? ' · ✅' : ''}
                     </span>
                   </button>
                   {open && (
