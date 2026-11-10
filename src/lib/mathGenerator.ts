@@ -34,16 +34,84 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function makeDistractors(correct: number[], count: number, maxVal: number): number[] {
+/**
+ * Delta decoy di sekitar angka jawaban:
+ * 1–20 → ±5 | 21–40 → ±8 | ≥41 → ±10
+ */
+export function decoyDeltaFor(n: number): number {
+  if (n <= 20) return 5;
+  if (n <= 40) return 8;
+  return 10;
+}
+
+/**
+ * Pool angka decoy yang “masuk akal”:
+ * - di seputar tiap angka jawaban (delta bertingkat)
+ * - + / ×: juga dibatasi 1 … target (hindari 2 digit aneh di soal kecil)
+ */
+export function buildDecoyPool(
+  correctNumbers: number[],
+  operation: OperationType,
+  target: number,
+  hardMax?: number
+): number[] {
+  const set = new Set<number>();
+  const bases = correctNumbers.length ? correctNumbers : [Math.max(1, target)];
+  for (const c of bases) {
+    const d = decoyDeltaFor(c);
+    const lo = Math.max(1, c - d);
+    const hi = c + d;
+    for (let n = lo; n <= hi; n++) set.add(n);
+  }
+  let pool = [...set].filter((n) => n >= 1);
+  if (operation === 'add' || operation === 'mul') {
+    const cap = Math.max(2, target);
+    pool = pool.filter((n) => n <= cap);
+  } else if (hardMax != null) {
+    pool = pool.filter((n) => n <= hardMax);
+  }
+  // Jangan kosong total
+  if (!pool.length) {
+    const cap =
+      operation === 'add' || operation === 'mul'
+        ? Math.max(2, target)
+        : hardMax ?? Math.max(20, target);
+    for (let n = 1; n <= Math.min(cap, 12); n++) pool.push(n);
+  }
+  return pool;
+}
+
+function makeDistractors(
+  correct: number[],
+  count: number,
+  maxVal: number,
+  operation: OperationType = 'add',
+  target: number = maxVal
+): number[] {
   const result: number[] = [];
   const used = new Set(correct);
-
+  const pool = buildDecoyPool(correct, operation, target, maxVal).filter(
+    (n) => !used.has(n) && n >= 1 && n <= maxVal
+  );
+  // Acak dari pool seputar jawaban
+  const shuffled = shuffle(pool.length ? pool : [1, 2, 3, 4, 5]);
+  for (const n of shuffled) {
+    if (result.length >= count) break;
+    if (!used.has(n)) {
+      used.add(n);
+      result.push(n);
+    }
+  }
+  // Jika pool kurang, isi offset kecil di sekitar jawaban (masih hormati maxVal + aturan +/×)
   let guard = 0;
   while (result.length < count && guard < 80) {
     guard++;
-    const base = correct[randomInt(0, correct.length - 1)];
-    const offset = randomInt(-6, 6) || 1;
-    const n = Math.max(1, Math.min(maxVal, base + offset));
+    const base = correct[randomInt(0, Math.max(0, correct.length - 1))] ?? target;
+    const d = decoyDeltaFor(base);
+    const n = Math.max(1, Math.min(maxVal, base + randomInt(-d, d) || 1));
+    if (operation === 'add' || operation === 'mul') {
+      if (n > target) continue;
+    }
     if (!used.has(n)) {
       used.add(n);
       result.push(n);
@@ -258,7 +326,7 @@ export function generateQuestion(
   const [bMin, bMax] = ballRange[level] ?? [4, 6];
   const totalBalls = randomInt(bMin, bMax);
   const distractorCount = Math.max(1, totalBalls - correctNumbers.length);
-  const distractors = makeDistractors(correctNumbers, distractorCount, maxVal);
+  const distractors = makeDistractors(correctNumbers, distractorCount, maxVal, operation, target);
   const used = new Set<number>([...correctNumbers, ...distractors]);
 
   // Pasangan alternatif (add/mul 2 angka) agar bukan cuma 1 jalur jawaban
@@ -297,10 +365,19 @@ export function generateQuestion(
     }
   }
 
-  const allNumbers = shuffle([...correctNumbers, ...distractors, ...alt]).slice(
+  let allNumbers = shuffle([...correctNumbers, ...distractors, ...alt]).slice(
     0,
     Math.max(totalBalls, correctNumbers.length + distractorCount + Math.min(2, alt.length))
   );
+  // + / ×: decoy tidak boleh jauh di atas target (hindari 2 digit aneh di soal kecil)
+  if (operation === 'add' || operation === 'mul') {
+    const cap = Math.max(2, target);
+    allNumbers = allNumbers.map((n) => {
+      if (correctNumbers.includes(n)) return n;
+      if (n >= 1 && n <= cap) return n;
+      return randomInt(1, cap);
+    });
+  }
 
   // Bom: mode termudah (pemula / sedikit bola) max 0–1 biar tidak "pasti benar"
   const bombIndexes: number[] = [];

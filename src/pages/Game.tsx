@@ -5,7 +5,7 @@ import type { CharacterId, InputMode } from '../lib/types';
 import type { DifficultyLevel } from '../lib/levels';
 import { getLevelById } from '../lib/levels';
 import { getCharacterById } from '../lib/characters';
-import { generateQuestion } from '../lib/mathGenerator';
+import { generateQuestion, buildDecoyPool } from '../lib/mathGenerator';
 import type { MathQuestion, OperationType } from '../lib/mathGenerator';
 import type { FloatingNumber, GameState } from '../lib/gameTypes';
 import {
@@ -196,14 +196,14 @@ function passMaxVal(question: MathQuestion): number {
 function passDecoyMax(question: MathQuestion): number {
   const t = Math.max(1, question.target);
   if (question.operation === 'add') {
-    // jawaban pair selalu < target; decoy longgar sedikit di atas target
-    return Math.min(Math.max(t + 4, 12), 24);
+    // Hanya 1 … target (tanpa 2 digit aneh bila target kecil, mis. a+b=9)
+    return Math.max(2, t);
   }
   if (question.operation === 'mul') {
-    // faktor ≤ target; decoy sampai target (+ sedikit)
-    return Math.min(Math.max(t + 2, 12), 30);
+    // Faktor sah ≤ target
+    return Math.max(2, t);
   }
-  // sub / div: angka depan bisa besar
+  // sub / div: angka depan boleh lebih besar
   return Math.max(t + 8, 20, Math.min(40, t * 2));
 }
 
@@ -231,7 +231,9 @@ function pickDynamicAnswerValue(
   answerRoleValues: number[] = []
 ): number {
   const { operation, target } = question;
-  const maxVal = passMaxVal(question);
+  const maxVal = (question.operation === 'add' || question.operation === 'mul')
+    ? passDecoyMax(question)
+    : passMaxVal(question);
   const avoid = new Set(avoidValues);
   const needed = getNeededCount(question);
 
@@ -298,25 +300,42 @@ function pickDecoyValue(
   liveValues: number[]
 ): number {
   const maxVal = passDecoyMax(question);
-  for (let i = 0; i < 40; i++) {
-    const n = 1 + Math.floor(Math.random() * maxVal);
-    if (!canSpawnValue(liveValues, n)) continue; // sudah 2 bola angka ini
-    if (selected.length === 1) {
-      const a = selected[0];
-      if (question.operation === 'add' && a + n === question.target) continue;
-      if (question.operation === 'mul' && a !== 0 && a * n === question.target) continue;
+  // Pool seputar angka jawaban (± bertingkat), + / × tetap ≤ target
+  const pool = buildDecoyPool(
+    question.correctNumbers,
+    question.operation,
+    question.target,
+    maxVal
+  ).filter((n) => n >= 1 && n <= maxVal);
+
+  const tryPick = (candidates: number[]): number | null => {
+    const shuffled = [...candidates].sort(() => Math.random() - 0.5);
+    for (const n of shuffled) {
+      if (!canSpawnValue(liveValues, n)) continue;
+      if (selected.length === 1) {
+        const a = selected[0];
+        if (question.operation === 'add' && a + n === question.target) continue;
+        if (question.operation === 'mul' && a !== 0 && a * n === question.target)
+          continue;
+      }
+      return n;
     }
-    return n;
-  }
-  // Fallback: angka dari kandidat yang masih < 2 di arena
-  const shuffled = [...question.candidates].sort(() => Math.random() - 0.5);
-  for (const c of shuffled) {
-    if (canSpawnValue(liveValues, c)) return c;
-  }
+    return null;
+  };
+
+  const fromPool = tryPick(pool);
+  if (fromPool != null) return fromPool;
+
+  // Fallback sempit: kandidat soal yang masih dalam pool/maxVal
+  const fromCand = tryPick(
+    question.candidates.filter((c) => c >= 1 && c <= maxVal)
+  );
+  if (fromCand != null) return fromCand;
+
   for (let n = 1; n <= maxVal; n++) {
     if (canSpawnValue(liveValues, n)) return n;
   }
-  return question.candidates[0] ?? 1;
+  return Math.min(maxVal, question.correctNumbers[0] ?? 1);
 }
 
 /**
@@ -614,13 +633,23 @@ function createNumbersFromQuestion(
         question.bombIndexes.some((bi) => question.candidates[bi] === value) &&
         !question.correctNumbers.includes(value);
       const isCorrect = question.correctNumbers.includes(value);
-      if (
-        !isBomb &&
-        !isCorrect &&
-        (question.operation === 'add' || question.operation === 'mul') &&
-        value > decoyCap
-      ) {
-        value = 1 + Math.floor(Math.random() * decoyCap);
+      // Non-jawaban: harus di pool seputar jawaban ( + / × juga ≤ target )
+      if (!isBomb && !isCorrect) {
+        const pool = buildDecoyPool(
+          question.correctNumbers,
+          question.operation,
+          question.target,
+          decoyCap
+        );
+        if (!pool.includes(value)) {
+          value = pool[Math.floor(Math.random() * pool.length)] ?? value;
+        }
+        if (
+          (question.operation === 'add' || question.operation === 'mul') &&
+          (value < 1 || value > decoyCap)
+        ) {
+          value = 1 + Math.floor(Math.random() * decoyCap);
+        }
       }
       // Jawaban + / × harus masuk akal
       if (isCorrect && question.operation === 'add' && value >= question.target) {
