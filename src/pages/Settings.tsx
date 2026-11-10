@@ -310,7 +310,7 @@ export default function Settings({
             <p className="settings-note">{t('settingsSupportNote')}</p>
             <div className="export-actions settings-support-actions">
               <a
-                className="btn-primary settings-support-btn"
+                className="btn-trakteer settings-support-btn"
                 href={TRAKTEER_URL}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -318,7 +318,7 @@ export default function Settings({
                 {t('btnTrakteer')}
               </a>
               <a
-                className="btn-secondary settings-support-btn"
+                className="btn-kofi settings-support-btn"
                 href={KOFI_URL}
                 target="_blank"
                 rel="noopener noreferrer"

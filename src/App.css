@@ -3185,6 +3185,38 @@ a.btn-link-trakteer:hover,
   font-size: 0.88rem;
   line-height: 1.2;
 }
+/* Settings support: Trakteer soft blue, Ko-fi soft green — rounded like other buttons */
+.settings-support-actions .btn-trakteer.settings-support-btn,
+.settings-support-actions a.btn-trakteer {
+  border-radius: var(--radius, 12px) !important;
+  background: #d4e9f7 !important;
+  color: #1e5f8a !important;
+  border: 2px solid #9ec9e6 !important;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: none;
+}
+.settings-support-actions .btn-trakteer.settings-support-btn:hover,
+.settings-support-actions a.btn-trakteer:hover {
+  background: #c3dff2 !important;
+  border-color: #7eb6d9 !important;
+}
+.settings-support-actions .btn-kofi.settings-support-btn,
+.settings-support-actions a.btn-kofi {
+  border-radius: var(--radius, 12px) !important;
+  background: #d8f0dc !important;
+  color: #1e6b3a !important;
+  border: 2px solid #9fd4a8 !important;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: none;
+}
+.settings-support-actions .btn-kofi.settings-support-btn:hover,
+.settings-support-actions a.btn-kofi:hover {
+  background: #c5e8cb !important;
+  border-color: #7fc48c !important;
+}
+
 .settings-import-body {
   display: flex;
   flex-direction: column;
