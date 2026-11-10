@@ -484,18 +484,36 @@ function App() {
           : runMeta.sprintLength === 10
             ? 10
             : 5;
-      // key: level|len|arena|mode — rekor per setup (kesulitan + arena + slice/tap)
-      const key = `${selectedLevel}|${len}|${selectedArena}|${selectedMode}`;
-      const prevBest = prog0.sprintBestMs?.[key];
-      const isBest =
-        prevBest == null || runMeta.sprintMs < prevBest;
+      // Hanya 1 rekor per kategori sprint (5 / 10 / 20 soal)
+      const key = String(len);
+      const prevMap = { ...(prog0.sprintBestMs || {}) };
+      // Ambil best lama untuk panjang ini (termasuk key format lama level|len|…)
+      let prevBest: number | undefined = prevMap[key];
+      for (const [k, v] of Object.entries(prevMap)) {
+        if (typeof v !== 'number' || v <= 0) continue;
+        const parts = k.split('|');
+        const lenPart = parts.length >= 2 ? parts[1] : parts[0];
+        if (lenPart === key && (prevBest == null || v < prevBest)) prevBest = v;
+      }
+      const isBest = prevBest == null || runMeta.sprintMs < prevBest;
       if (isBest) {
-        updateProgress({
-          sprintBestMs: {
-            ...(prog0.sprintBestMs || {}),
-            [key]: runMeta.sprintMs,
-          },
-        });
+        const cleaned: Record<string, number> = {};
+        for (const [k, v] of Object.entries(prevMap)) {
+          if (typeof v !== 'number' || v <= 0) continue;
+          const parts = k.split('|');
+          const lenPart = parts.length >= 2 ? parts[1] : parts[0];
+          // buang key lama/sisa untuk panjang yang sama; simpan panjang lain
+          if (lenPart === key) continue;
+          // normalisasi key panjang lain jadi "5"/"10"/"20"
+          const n = Number(lenPart);
+          if (n === 5 || n === 10 || n === 20) {
+            if (cleaned[String(n)] == null || v < cleaned[String(n)]) {
+              cleaned[String(n)] = v;
+            }
+          }
+        }
+        cleaned[key] = runMeta.sprintMs;
+        updateProgress({ sprintBestMs: cleaned });
         sprintIsNewRecord = true;
       }
       setLastSprintMs(runMeta.sprintMs);

@@ -284,61 +284,33 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
           <ul className="dojo-record-list">
             {(() => {
               const best = progress.sprintBestMs || {};
-              type Row = {
-                key: string;
-                len: string;
-                ms: number;
-                meta: string;
-              };
-              const rows: Row[] = [];
+              // Satu rekor per kategori (5 / 10 / 20) — ambil waktu terbaik
+              const byLen: Record<string, number> = {};
               Object.entries(best).forEach(([key, ms]) => {
                 if (typeof ms !== 'number' || ms <= 0) return;
-                // key: level|len|arena|mode  (lama: level|len|arena)
                 const parts = key.split('|');
-                const levelId = parts[0] || '';
-                const len = parts[1] || parts[0] || '?';
-                const arena = (parts[2] || 'static') as
-                  | 'static'
-                  | 'agility'
-                  | 'pass';
-                const mode = (parts[3] || 'slice') as 'slice' | 'tap';
-                const lv = getLevelById(
-                  levelId as import('../lib/levels').DifficultyLevel
-                );
-                const levelName =
-                  getLang() === 'en' ? lv.labelEn : lv.labelId;
-                const meta = [
-                  levelName,
-                  arenaLabel(arena),
-                  inputModeLabel(mode),
-                ]
-                  .filter(Boolean)
-                  .join(' · ');
-                rows.push({ key, len, ms, meta });
+                const lenPart = parts.length >= 2 ? parts[1] : parts[0];
+                const n = Number(lenPart);
+                if (n !== 5 && n !== 10 && n !== 20) return;
+                const k = String(n);
+                if (byLen[k] == null || ms < byLen[k]) byLen[k] = ms;
               });
-              rows.sort((a, b) => {
-                const n = Number(a.len) - Number(b.len);
-                if (n !== 0) return n;
-                return a.ms - b.ms;
-              });
-              if (rows.length === 0) {
+              const lens = Object.keys(byLen).sort(
+                (a, b) => Number(a) - Number(b)
+              );
+              if (lens.length === 0) {
                 return (
                   <li className="settings-note">{t('sprintBestEmpty')}</li>
                 );
               }
-              return rows.map((row) => {
-                const sec = (row.ms / 1000).toFixed(1);
+              return lens.map((len) => {
+                const sec = (byLen[len] / 1000).toFixed(1);
                 return (
-                  <li key={row.key} className="dojo-sprint-row">
+                  <li key={len} className="dojo-sprint-row">
                     <span className="dojo-sprint-left">
-                      {t('sprintBestN').replace('{n}', row.len)}:{' '}
+                      {t('sprintBestN').replace('{n}', len)}:{' '}
                       <strong>{sec}s</strong>
                     </span>
-                    {row.meta ? (
-                      <span className="dojo-sprint-meta" title={row.meta}>
-                        ({row.meta})
-                      </span>
-                    ) : null}
                   </li>
                 );
               });
