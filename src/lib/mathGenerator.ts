@@ -365,10 +365,28 @@ export function generateQuestion(
     }
   }
 
-  let allNumbers = shuffle([...correctNumbers, ...distractors, ...alt]).slice(
-    0,
-    Math.max(totalBalls, correctNumbers.length + distractorCount + Math.min(2, alt.length))
+  // Urut: jawaban dulu, lalu decoy/alt — total ketat = totalBalls (sesuai level)
+  const pool = [
+    ...correctNumbers,
+    ...shuffle([...distractors, ...alt]).filter((n) => !correctNumbers.includes(n)),
+  ];
+  // Jaga semua correctNumbers, isi sisa sampai totalBalls
+  const rest = pool.filter((n, i) => i >= correctNumbers.length || !correctNumbers.includes(n));
+  // rebuild unik: correct + shuffled fillers
+  const fillers = shuffle(
+    [...distractors, ...alt].filter((n) => !correctNumbers.includes(n))
   );
+  const uniqueFill: number[] = [];
+  for (const n of fillers) {
+    if (uniqueFill.includes(n)) continue;
+    uniqueFill.push(n);
+    if (uniqueFill.length >= Math.max(0, totalBalls - correctNumbers.length)) break;
+  }
+  let allNumbers = shuffle([...correctNumbers, ...uniqueFill]).slice(0, totalBalls);
+  // Pastikan minimal semua correct muat
+  if (allNumbers.length < correctNumbers.length) {
+    allNumbers = [...correctNumbers];
+  }
   // + / ×: decoy tidak boleh jauh di atas target (hindari 2 digit aneh di soal kecil)
   if (operation === 'add' || operation === 'mul') {
     const cap = Math.max(2, target);

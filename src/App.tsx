@@ -470,6 +470,7 @@ function App() {
     const maxCombo = runMeta?.maxCombo ?? 0;
     setLastMaxCombo(maxCombo);
     // Sprint rekor waktu (latihan, online)
+    let sprintIsNewRecord = false;
     if (
       !offlineSession &&
       playKind === 'latihan' &&
@@ -495,7 +496,7 @@ function App() {
             [key]: runMeta.sprintMs,
           },
         });
-        setIsNewRecord(true);
+        sprintIsNewRecord = true;
       }
       setLastSprintMs(runMeta.sprintMs);
       setLastSprintLen(len);
@@ -543,7 +544,8 @@ function App() {
     setLastScore(score);
     setLastGrade(grade);
     setLastHighScore(highScore);
-    setIsNewRecord(neu);
+    // Sprint: rekor waktu; non-sprint: rekor skor — jangan timpa sprint
+    setIsNewRecord(sprintIsNewRecord || neu);
     setPassedCity(false);
     setNextCityId(null);
     setFunFact(null);
@@ -671,6 +673,7 @@ function App() {
     if (newly.length) setNewBadges(newly);
 
     const willCelebrate =
+      sprintIsNewRecord ||
       neu ||
       passed ||
       grade === 'S' ||

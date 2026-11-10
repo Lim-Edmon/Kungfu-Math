@@ -329,12 +329,13 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
               return rows.map((row) => {
                 const sec = (row.ms / 1000).toFixed(1);
                 return (
-                  <li key={row.key}>
-                    {t('sprintBestN').replace('{n}', row.len)}:{' '}
-                    <strong>{sec}s</strong>
+                  <li key={row.key} className="dojo-sprint-row">
+                    <span className="dojo-sprint-left">
+                      {t('sprintBestN').replace('{n}', row.len)}:{' '}
+                      <strong>{sec}s</strong>
+                    </span>
                     {row.meta ? (
-                      <span className="dojo-score-meta">
-                        {' '}
+                      <span className="dojo-sprint-meta" title={row.meta}>
                         ({row.meta})
                       </span>
                     ) : null}
