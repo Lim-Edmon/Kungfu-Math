@@ -3068,6 +3068,40 @@ a.btn-link-trakteer:hover,
 .settings-section + .settings-section {
   margin-top: 0;
 }
+/* Settings section collapsible */
+.settings-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.15rem 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+.settings-section-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.settings-chevron {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  opacity: 0.7;
+  line-height: 1;
+}
+.settings-section-body {
+  margin-top: 0.45rem;
+  padding-top: 0.15rem;
+}
+.settings-section.is-collapsed {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
 
 /* Region collapsible di Progres petualangan */
 .dojo-region {

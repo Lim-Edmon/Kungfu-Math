@@ -35,6 +35,22 @@ export default function Settings({
   const [copied, setCopied] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [clearConfirm, setClearConfirm] = useState(false);
+  /** Section terbuka: privacy, sound, language, support default open */
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    privacy: true,
+    sound: true,
+    language: true,
+    support: true,
+    tutorial: false,
+    progress: false,
+    import: false,
+    invite: false,
+    clear: false,
+  });
+
+  const toggleSection = (id: string) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const handleClearAll = () => {
     if (!clearConfirm) {
@@ -193,179 +209,316 @@ export default function Settings({
       <header className="settings-header">
         <h1>{t('settingsTitle')}</h1>
       </header>
-      {/* 1. Privasi */}
-      <section className="settings-section">
-        <h2>{t('settingsPrivacy')}</h2>
-        <p className="settings-note">{t('settingsPrivacyNote')}</p>
-      </section>
 
-      {/* 2. Tutorial */}
-      <section className="settings-section">
-        <h2>{t('settingsTutorial')}</h2>
-        <p className="settings-note">{t('settingsTutorialNote')}</p>
+      {/* 1. Privasi — default terbuka */}
+      <section className={`settings-section ${openSections.privacy ? 'is-open' : 'is-collapsed'}`}>
         <button
           type="button"
-          className="btn-secondary"
-          onClick={() => onShowTutorial?.()}
+          className="settings-section-head"
+          onClick={() => toggleSection('privacy')}
+          aria-expanded={openSections.privacy}
         >
-          {t('btnShowTutorial')}
+          <h2>{t('settingsPrivacy')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.privacy ? '▾' : '▸'}
+          </span>
         </button>
+        {openSections.privacy && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('settingsPrivacyNote')}</p>
+          </div>
+        )}
       </section>
 
-      {/* 3. Suara */}
-      <section className="settings-section">
-        <h2>{t('settingsSound')}</h2>
+      {/* 2. Suara — default terbuka */}
+      <section className={`settings-section ${openSections.sound ? 'is-open' : 'is-collapsed'}`}>
         <button
           type="button"
-          className={`settings-toggle settings-toggle-half ${soundMuted ? '' : 'active'}`}
-          onClick={handleMuteToggle}
+          className="settings-section-head"
+          onClick={() => toggleSection('sound')}
+          aria-expanded={openSections.sound}
         >
-          {soundMuted ? t('soundOff') : t('soundOn')}
+          <h2>{t('settingsSound')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.sound ? '▾' : '▸'}
+          </span>
         </button>
-        <p className="settings-note">{t('soundNote')}</p>
+        {openSections.sound && (
+          <div className="settings-section-body">
+            <button
+              type="button"
+              className={`settings-toggle settings-toggle-half ${soundMuted ? '' : 'active'}`}
+              onClick={handleMuteToggle}
+            >
+              {soundMuted ? t('soundOff') : t('soundOn')}
+            </button>
+            <p className="settings-note">{t('soundNote')}</p>
+          </div>
+        )}
       </section>
 
-      {/* 3. Bahasa */}
-      <section className="settings-section">
-        <h2>{t('settingsLanguage')}</h2>
-        <div className="export-actions settings-lang-actions">
-          <button
-            type="button"
-            className={`settings-toggle ${lang === 'id' ? 'active' : ''}`}
-            onClick={() => handleLang('id')}
-          >
-            {t('langId')}
-          </button>
-          <button
-            type="button"
-            className={`settings-toggle ${lang === 'en' ? 'active' : ''}`}
-            onClick={() => handleLang('en')}
-          >
-            {t('langEn')}
-          </button>
-        </div>
-      </section>
-
-      {/* 4. Pindah progres — hanya online (offline tidak menyimpan rekor) */}
-      {!offline && (
-      <section className="settings-section">
-        <h2>{t('settingsProgress')}</h2>
-        <p className="settings-note">{t('settingsProgressNote')}</p>
-        <button type="button" className="btn-primary" onClick={handleExport}>
-          {t('btnExport')}
+      {/* 3. Bahasa — default terbuka */}
+      <section className={`settings-section ${openSections.language ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('language')}
+          aria-expanded={openSections.language}
+        >
+          <h2>{t('settingsLanguage')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.language ? '▾' : '▸'}
+          </span>
         </button>
-        {exportCode && (
-          <div className="export-box">
-            <textarea
-              className="code-area"
-              readOnly
-              value={exportCode}
-              rows={4}
-              onFocus={(e) => e.target.select()}
-            />
-            <div className="export-actions">
-              <button type="button" className="btn-secondary" onClick={handleCopy}>
-                {copied ? t('btnCopied') : t('btnCopy')}
+        {openSections.language && (
+          <div className="settings-section-body">
+            <div className="export-actions settings-lang-actions">
+              <button
+                type="button"
+                className={`settings-toggle ${lang === 'id' ? 'active' : ''}`}
+                onClick={() => handleLang('id')}
+              >
+                {t('langId')}
               </button>
-              <button type="button" className="btn-primary" onClick={handleWhatsApp}>
-                {t('btnWhatsApp')}
+              <button
+                type="button"
+                className={`settings-toggle ${lang === 'en' ? 'active' : ''}`}
+                onClick={() => handleLang('en')}
+              >
+                {t('langEn')}
               </button>
             </div>
           </div>
         )}
       </section>
-      )}
 
-      {/* 5. Masukan kode */}
-      {!offline && (
-      <section className="settings-section">
-        <h2>{t('settingsImport')}</h2>
-        <p className="settings-note">{t('settingsImportNote')}</p>
-        <textarea
-          className="code-area"
-          placeholder="KM1.eyJ..."
-          value={importCode}
-          onChange={(e) => setImportCode(e.target.value)}
-          rows={4}
-        />
-        <button type="button" className="btn-primary" onClick={handleImport}>
-          {t('btnImport')}
+      {/* 4. Saran & Dukung — default terbuka */}
+      <section className={`settings-section ${openSections.support ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('support')}
+          aria-expanded={openSections.support}
+        >
+          <h2>{t('settingsSupport')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.support ? '▾' : '▸'}
+          </span>
         </button>
-      </section>
-      )}
-
-      {/* 6. Saran & dukungan */}
-      <section className="settings-section">
-        <h2>{t('settingsSupport')}</h2>
-        <p className="settings-note">{t('settingsSupportNote')}</p>
-        <div className="support-links">
-          <a
-            href={TRAKTEER_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-trakteer btn-trakteer-full"
-          >
-            {t('btnTrakteer')}
-          </a>
-          <a
-            href={KOFI_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-kofi btn-trakteer-full"
-          >
-            {t('btnKofi')}
-          </a>
-        </div>
-      </section>
-
-      {/* 7. Ajak keluarga */}
-      <section className="settings-section">
-        <h2>{t('settingsInvite')}</h2>
-        <p className="settings-note">{t('settingsInviteNote')}</p>
-        <div className="export-actions settings-share-actions">
-          <button
-            type="button"
-            className={`btn-primary ${offline ? 'is-offline-locked' : ''}`}
-            disabled={offline}
-            onClick={handleShareInvite}
-          >
-            {t('btnShare')}
-          </button>
-          <button type="button" className="btn-secondary" onClick={handleCopyInvite}>
-            {inviteCopied ? t('btnCopied') : t('btnCopyInvite')}
-          </button>
-        </div>
-      </section>
-
-      {/* 8. Hapus data */}
-      <section className="settings-section">
-        <h2>{t('clearDataTitle')}</h2>
-        <p className="settings-note">{t('clearDataNote')}</p>
-        {!clearConfirm && (
-          <button type="button" className="btn-ghost" onClick={handleClearAll}>
-            {t('clearDataBtn')}
-          </button>
+        {openSections.support && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('settingsSupportNote')}</p>
+            <div className="export-actions settings-support-actions">
+              <a
+                className="btn-primary settings-support-btn"
+                href={TRAKTEER_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('btnTrakteer')}
+              </a>
+              <a
+                className="btn-secondary settings-support-btn"
+                href={KOFI_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('btnKofi')}
+              </a>
+            </div>
+          </div>
         )}
-        {clearConfirm && (
-          <div className="export-actions" style={{ marginTop: 8 }}>
+      </section>
+
+      {/* 5. Cara main — default collaps */}
+      <section className={`settings-section ${openSections.tutorial ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('tutorial')}
+          aria-expanded={openSections.tutorial}
+        >
+          <h2>{t('settingsTutorial')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.tutorial ? '▾' : '▸'}
+          </span>
+        </button>
+        {openSections.tutorial && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('settingsTutorialNote')}</p>
+            {onShowTutorial && (
+              <button type="button" className="btn-secondary" onClick={onShowTutorial}>
+                {t('btnShowTutorial')}
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* 6. Pindah progress — default collaps */}
+      <section className={`settings-section ${openSections.progress ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('progress')}
+          aria-expanded={openSections.progress}
+        >
+          <h2>{t('settingsProgress')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.progress ? '▾' : '▸'}
+          </span>
+        </button>
+        {openSections.progress && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('settingsProgressNote')}</p>
+            <div className="export-actions">
+              <button
+                type="button"
+                className={`btn-primary ${offline ? 'is-offline-locked' : ''}`}
+                disabled={offline}
+                onClick={handleExport}
+              >
+                {t('btnExport')}
+              </button>
+              {exportCode && (
+                <>
+                  <button type="button" className="btn-secondary" onClick={handleCopy}>
+                    {copied ? t('btnCopied') : t('btnCopy')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={handleWhatsApp}
+                  >
+                    {t('btnWhatsApp')}
+                  </button>
+                </>
+              )}
+            </div>
+            {exportCode && (
+              <textarea
+                className="export-code"
+                readOnly
+                value={exportCode}
+                rows={4}
+                onFocus={(e) => e.target.select()}
+              />
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* 7. Masukkan kode — default collaps */}
+      <section className={`settings-section ${openSections.import ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('import')}
+          aria-expanded={openSections.import}
+        >
+          <h2>{t('settingsImport')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.import ? '▾' : '▸'}
+          </span>
+        </button>
+        {openSections.import && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('settingsImportNote')}</p>
+            <textarea
+              className="export-code"
+              value={importCode}
+              onChange={(e) => setImportCode(e.target.value)}
+              rows={3}
+              placeholder="KM1...."
+            />
             <button
               type="button"
-              className="btn-primary"
-              onClick={handleClearAll}
-              style={{ background: '#c62828', borderColor: '#c62828' }}
+              className={`btn-primary ${offline ? 'is-offline-locked' : ''}`}
+              disabled={offline}
+              onClick={handleImport}
             >
-              {t('clearDataConfirm')}
+              {t('btnImport')}
             </button>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={() => {
-                setClearConfirm(false);
-                setMessage('');
-              }}
-            >
-              {t('btnCancel')}
-            </button>
+          </div>
+        )}
+      </section>
+
+      {/* 8. Ajak coba — default collaps */}
+      <section className={`settings-section ${openSections.invite ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('invite')}
+          aria-expanded={openSections.invite}
+        >
+          <h2>{t('settingsInvite')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.invite ? '▾' : '▸'}
+          </span>
+        </button>
+        {openSections.invite && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('settingsInviteNote')}</p>
+            <div className="export-actions settings-share-actions">
+              <button
+                type="button"
+                className={`btn-primary ${offline ? 'is-offline-locked' : ''}`}
+                disabled={offline}
+                onClick={handleShareInvite}
+              >
+                {t('btnShare')}
+              </button>
+              <button type="button" className="btn-secondary" onClick={handleCopyInvite}>
+                {inviteCopied ? t('btnCopied') : t('btnCopyInvite')}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 9. Hapus data — default collaps */}
+      <section className={`settings-section ${openSections.clear ? 'is-open' : 'is-collapsed'}`}>
+        <button
+          type="button"
+          className="settings-section-head"
+          onClick={() => toggleSection('clear')}
+          aria-expanded={openSections.clear}
+        >
+          <h2>{t('clearDataTitle')}</h2>
+          <span className="settings-chevron" aria-hidden>
+            {openSections.clear ? '▾' : '▸'}
+          </span>
+        </button>
+        {openSections.clear && (
+          <div className="settings-section-body">
+            <p className="settings-note">{t('clearDataNote')}</p>
+            {!clearConfirm && (
+              <button type="button" className="btn-ghost" onClick={handleClearAll}>
+                {t('clearDataBtn')}
+              </button>
+            )}
+            {clearConfirm && (
+              <div className="export-actions" style={{ marginTop: 8 }}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={handleClearAll}
+                  style={{ background: '#c62828', borderColor: '#c62828' }}
+                >
+                  {t('clearDataConfirm')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    setClearConfirm(false);
+                    setMessage('');
+                  }}
+                >
+                  {t('btnCancel')}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </section>
