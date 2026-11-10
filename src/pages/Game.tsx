@@ -2241,9 +2241,17 @@ export default function Game({
           )}
 
           {state.status === 'paused' && bgPaused && (
-            <div className="countdown-overlay pause-overlay" onClick={resumeFromBgPause} role="button" tabIndex={0}>
-              <div className="countdown-label is-ready">{t('pausedTitle')}</div>
-              <p className="pause-hint">{t('pausedHint')}</p>
+            <div
+              className="countdown-overlay pause-overlay"
+              onClick={resumeFromBgPause}
+              role="button"
+              tabIndex={0}
+              aria-label={t('pausedTitle')}
+            >
+              <div className="pause-box">
+                <div className="pause-title">{t('pausedTitle')}</div>
+                <p className="pause-hint">{t('pausedHint')}</p>
+              </div>
             </div>
           )}
 

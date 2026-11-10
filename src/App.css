@@ -3795,13 +3795,39 @@ h1.home-title {
 
 .pause-overlay {
   cursor: pointer;
+  background: rgba(0, 0, 0, 0.45);
+}
+.pause-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 1.15rem 1.6rem;
+  min-width: min(78vw, 16rem);
+  max-width: 20rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-card, #fff) 92%, transparent);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  border: 1px solid color-mix(in srgb, var(--color-text, #222) 12%, transparent);
+  text-align: center;
+}
+.pause-title {
+  font-size: clamp(1.35rem, 5vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--color-text, #1a1a1a);
+  line-height: 1.15;
 }
 .pause-hint {
-  margin-top: 0.75rem;
-  font-size: 0.95rem;
-  opacity: 0.9;
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.82;
   max-width: 16rem;
   text-align: center;
+  line-height: 1.35;
+  color: var(--color-text, #333);
+  font-weight: 500;
 }
 
 .result-fail-hint {
