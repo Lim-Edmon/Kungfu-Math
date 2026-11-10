@@ -3172,25 +3172,33 @@ a.btn-link-trakteer:hover,
 .settings-support-actions {
   display: flex !important;
   flex-wrap: nowrap;
-  align-items: flex-start;
+  align-items: stretch; /* sama tinggi & rata atas-bawah */
   gap: 8px;
   width: 100%;
   margin: 6px 0 2px;
 }
-.settings-support-actions .settings-support-btn {
-  flex: 1 1 0;
-  max-width: none;
-  min-width: 0;
-  width: 50% !important;
-  padding: 10px 8px;
-  font-size: 0.82rem;
-  line-height: 1.15;
-  min-height: 2.75rem;
-  height: 2.75rem;
-  box-sizing: border-box;
+.settings-support-actions .settings-support-btn,
+.settings-support-actions a.settings-support-btn {
+  flex: 1 1 0 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  width: auto !important;
+  margin: 0 !important; /* override .btn-trakteer { margin-top: 0.5rem } */
+  padding: 0 10px !important;
+  font-size: 0.82rem !important;
+  line-height: 1.2 !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  box-sizing: border-box !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  vertical-align: top;
 }
 /* Settings support: Trakteer soft blue, Ko-fi soft green — rounded like other buttons */
 .settings-support-actions .btn-trakteer.settings-support-btn,
@@ -3199,9 +3207,8 @@ a.btn-link-trakteer:hover,
   background: #d4e9f7 !important;
   color: #1e5f8a !important;
   border: 2px solid #9ec9e6 !important;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: none;
+  font-weight: 600 !important;
+  box-shadow: none !important;
 }
 .settings-support-actions .btn-trakteer.settings-support-btn:hover,
 .settings-support-actions a.btn-trakteer:hover {
@@ -3214,9 +3221,8 @@ a.btn-link-trakteer:hover,
   background: #d8f0dc !important;
   color: #1e6b3a !important;
   border: 2px solid #9fd4a8 !important;
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: none;
+  font-weight: 600 !important;
+  box-shadow: none !important;
 }
 .settings-support-actions .btn-kofi.settings-support-btn:hover,
 .settings-support-actions a.btn-kofi:hover {
