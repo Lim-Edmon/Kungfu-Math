@@ -284,7 +284,8 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
           <ul className="dojo-record-list">
             {(() => {
               const best = progress.sprintBestMs || {};
-              // Satu rekor per kategori (5 / 10 / 20) — ambil waktu terbaik
+              const metaAll = progress.sprintBestMeta || {};
+              // Satu rekor per kategori (5 / 10 / 20) — waktu terbaik + mode
               const byLen: Record<string, number> = {};
               Object.entries(best).forEach(([key, ms]) => {
                 if (typeof ms !== 'number' || ms <= 0) return;
@@ -305,12 +306,37 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
               }
               return lens.map((len) => {
                 const sec = (byLen[len] / 1000).toFixed(1);
+                const raw = metaAll[len] || '';
+                const mp = raw.split('|');
+                let metaLabel = '';
+                if (mp.length >= 3) {
+                  const levelId = mp[0];
+                  const arena = mp[1] as 'static' | 'agility' | 'pass';
+                  const mode = mp[2] as 'slice' | 'tap';
+                  const lv = getLevelById(
+                    levelId as import('../lib/levels').DifficultyLevel
+                  );
+                  const levelName =
+                    getLang() === 'en' ? lv.labelEn : lv.labelId;
+                  metaLabel = [
+                    levelName,
+                    arenaLabel(arena),
+                    inputModeLabel(mode),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ');
+                }
                 return (
                   <li key={len} className="dojo-sprint-row">
                     <span className="dojo-sprint-left">
                       {t('sprintBestN').replace('{n}', len)}:{' '}
                       <strong>{sec}s</strong>
                     </span>
+                    {metaLabel ? (
+                      <span className="dojo-sprint-meta" title={metaLabel}>
+                        ({metaLabel})
+                      </span>
+                    ) : null}
                   </li>
                 );
               });

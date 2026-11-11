@@ -51,12 +51,12 @@ const STRINGS = {
     btnCopyInvite: 'Salin undangan',
     settingsPrivacy: 'Privasi',
     settingsPrivacyNote:
-      'Tidak mengumpulkan data pribadi. Progress hanya di HP ini (localStorage). Tidak ada login. Analytics kunjungan tanpa cookie (hanya hitungan halaman).',
+      'Tidak mengumpulkan data pribadi. Progress hanya di HP ini (localStorage). Tidak ada login.',
     settingsSupport: 'Saran & Dukung',
     settingsSupportNote:
-      'Suka mainnya atau punya saran? Boleh dukung lewat Trakteer (Indonesia) atau Ko-fi (internasional) supaya project terus berkembang. Boleh tulis pesan/saran di sana.',
-    btnTrakteer: '☕ Trakteer (Indonesia)',
-    btnKofi: '🌍 Ko-fi (International)',
+      'Suka mainnya atau punya saran? Boleh dukung pengembang lewat Trakteer atau Ko-fi supaya project terus berkembang. Boleh tulis pesan/saran di sana.',
+    btnTrakteer: '☕ Trakteer',
+    btnKofi: '🌍 Ko-fi',
     msgExportReady: 'Kode siap — salin atau kirim WhatsApp ke HP lain',
     msgCopied: 'Kode disalin! Tempel di Pengaturan HP lain.',
     msgCopyFail: 'Gagal menyalin otomatis. Pilih teks di bawah lalu salin manual.',
@@ -380,12 +380,12 @@ const STRINGS = {
     btnCopyInvite: 'Copy invitation',
     settingsPrivacy: 'Privacy',
     settingsPrivacyNote:
-      'No personal data collected. Progress stays on this device only (localStorage). No login. Page-view analytics are cookieless.',
+      'No personal data collected. Progress stays on this device only (localStorage). No login.',
     settingsSupport: 'Feedback & Support',
     settingsSupportNote:
-      'Enjoying it or have ideas? Support via Trakteer (Indonesia) or Ko-fi (international) so the project can keep improving. You can leave a note there.',
-    btnTrakteer: '☕ Trakteer (Indonesia)',
-    btnKofi: '🌍 Ko-fi (International)',
+      'Enjoying it or have ideas? Support the developer via Trakteer or Ko-fi so the project can keep improving. You can leave a note there.',
+    btnTrakteer: '☕ Trakteer',
+    btnKofi: '🌍 Ko-fi',
     msgExportReady: 'Code ready — copy or send via WhatsApp to another phone',
     msgCopied: 'Code copied! Paste it in Settings on the other phone.',
     msgCopyFail: 'Could not copy automatically. Select the text below and copy manually.',

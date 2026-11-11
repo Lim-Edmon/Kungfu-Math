@@ -19,7 +19,12 @@ export type BadgeId =
   | 'perfect_run'
   | 'perfect_cities_3'
   | 'region_id'
-  | 'region_sea';
+  | 'region_sea'
+  | 'continent_oceania'
+  | 'continent_asia'
+  | 'continent_africa'
+  | 'continent_europe'
+  | 'continent_america';
 
 export interface BadgeDef {
   id: BadgeId;
@@ -163,9 +168,54 @@ export const BADGE_DEFS: BadgeDef[] = [
     id: 'region_sea',
     emoji: '🌴',
     titleId: 'Jelajah Asia Tenggara',
-    titleEn: 'SEA explorer',
+    titleEn: 'SEA Explorer',
     descId: 'Selesaikan jalur Asia Tenggara (sampai Hanoi)',
     descEn: 'Clear Southeast Asia path (through Hanoi)',
+    group: 'petualangan',
+  },
+  {
+    id: 'continent_oceania',
+    emoji: '🦘',
+    titleId: 'Jelajah Australia',
+    titleEn: 'Australia Explorer',
+    descId: 'Selesaikan wilayah Australia & Oseania',
+    descEn: 'Clear Australia & Oceania',
+    group: 'petualangan',
+  },
+  {
+    id: 'continent_asia',
+    emoji: '🏯',
+    titleId: 'Jelajah Asia',
+    titleEn: 'Asia Explorer',
+    descId: 'Selesaikan jalur Asia (sampai Kairo)',
+    descEn: 'Clear the Asia path (through Cairo)',
+    group: 'petualangan',
+  },
+  {
+    id: 'continent_africa',
+    emoji: '🦁',
+    titleId: 'Jelajah Afrika',
+    titleEn: 'Africa Explorer',
+    descId: 'Selesaikan wilayah Afrika',
+    descEn: 'Clear Africa',
+    group: 'petualangan',
+  },
+  {
+    id: 'continent_europe',
+    emoji: '🏰',
+    titleId: 'Jelajah Eropa',
+    titleEn: 'Europe Explorer',
+    descId: 'Selesaikan jalur Eropa (sampai Vatikan)',
+    descEn: 'Clear Europe (through Vatican)',
+    group: 'petualangan',
+  },
+  {
+    id: 'continent_america',
+    emoji: '🗽',
+    titleId: 'Jelajah Amerika',
+    titleEn: 'Americas Explorer',
+    descId: 'Selesaikan jalur Amerika (sampai New York)',
+    descEn: 'Clear the Americas path (through New York)',
     group: 'petualangan',
   },
 ];
@@ -248,6 +298,12 @@ export function evaluateNewBadges(input: BadgeEvalInput): BadgeId[] {
   tryAdd('perfect_cities_3', input.perfectCityStreak >= 3);
   tryAdd('region_id', input.clearedCityIds.includes('bali'));
   tryAdd('region_sea', input.clearedCityIds.includes('hanoi'));
+  // Per benua (setelah Nusantara)
+  tryAdd('continent_oceania', input.clearedCityIds.includes('port-moresby'));
+  tryAdd('continent_asia', input.clearedCityIds.includes('cairo'));
+  tryAdd('continent_africa', input.clearedCityIds.includes('antananarivo'));
+  tryAdd('continent_europe', input.clearedCityIds.includes('vatican'));
+  tryAdd('continent_america', input.clearedCityIds.includes('new-york'));
 
   return unlocked;
 }

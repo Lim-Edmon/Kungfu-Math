@@ -113,8 +113,10 @@ export interface PlayerProgress {
   storyFirsts: string[];
   /** Latihan: acak operasi atau fokus operasi tertentu */
   practiceOpsMode: 'random' | 'focus';
-  /** Best sprint time ms keyed by `${levelId}|${len}|${arena}` */
+  /** Best sprint time ms keyed by length "5"|"10"|"20" */
   sprintBestMs: Record<string, number>;
+  /** Mode saat rekor sprint: level|arena|inputMode per key panjang */
+  sprintBestMeta: Record<string, string>;
   /** Operasi yang difokuskan (jika focus) */
   focusOps: Array<'add' | 'sub' | 'mul' | 'div'>;
   /** Streak harian (hari berturut main) */
@@ -158,6 +160,7 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   storyFirsts: [],
   practiceOpsMode: 'random',
   sprintBestMs: {},
+  sprintBestMeta: {},
   focusOps: ['add'],
   dailyStreak: 0,
   lastPlayDate: '',

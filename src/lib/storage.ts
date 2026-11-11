@@ -106,6 +106,7 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     highScores: { ...DEFAULT_PROGRESS.highScores },
     highScoreRecords: {},
     sprintBestMs: {},
+    sprintBestMeta: {},
     adventureHighScores: {},
     adventureScoreRecords: {},
   };
@@ -201,6 +202,13 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
       if (typeof v === 'number' && Number.isFinite(v) && v > 0) sm[k] = Math.min(3_600_000, Math.floor(v));
     }
     next.sprintBestMs = sm;
+  }
+  if (p.sprintBestMeta && typeof p.sprintBestMeta === 'object') {
+    const meta: Record<string, string> = { ...(next.sprintBestMeta || {}) };
+    for (const [k, v] of Object.entries(p.sprintBestMeta as Record<string, unknown>)) {
+      if (typeof v === 'string' && v.length > 0 && v.length < 80) meta[k] = v;
+    }
+    next.sprintBestMeta = meta;
   }
 
   if (typeof p.perfectCityStreak === 'number' && Number.isFinite(p.perfectCityStreak)) {

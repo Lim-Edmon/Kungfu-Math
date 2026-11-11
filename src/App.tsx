@@ -513,7 +513,15 @@ function App() {
           }
         }
         cleaned[key] = runMeta.sprintMs;
-        updateProgress({ sprintBestMs: cleaned });
+        const metaMap = { ...(prog0.sprintBestMeta || {}) };
+        // bersihkan meta key lama untuk panjang ini
+        for (const mk of Object.keys(metaMap)) {
+          const parts = mk.split('|');
+          const lenPart = parts.length >= 2 ? parts[1] : parts[0];
+          if (lenPart === key || mk === key) delete metaMap[mk];
+        }
+        metaMap[key] = `${selectedLevel}|${selectedArena}|${selectedMode}`;
+        updateProgress({ sprintBestMs: cleaned, sprintBestMeta: metaMap });
         sprintIsNewRecord = true;
       }
       setLastSprintMs(runMeta.sprintMs);
