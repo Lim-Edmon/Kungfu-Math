@@ -225,6 +225,9 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
       .filter((id) => id !== 'region_sea')
       .slice(0, 40);
   }
+  if (typeof (p as { secretDiscoverShown?: unknown }).secretDiscoverShown === 'boolean') {
+    next.secretDiscoverShown = (p as { secretDiscoverShown: boolean }).secretDiscoverShown;
+  }
 
   // Sinkron dengan ADVENTURE_CITIES — jangan hardcode (supaya kota baru tidak terhapus saat load/import)
   const VALID_CITIES = new Set(ADVENTURE_CITIES.map((c) => c.id));

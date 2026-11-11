@@ -5307,15 +5307,45 @@ html[data-theme='malam'] .onboard-banner {
   max-width: 55%;
 }
 
-/* Animasi serangan full-body di HUD (frame dari MP4) */
-.hud-avatar.hud-avatar-full.is-attack-anim {
-  object-fit: contain;
-  background: transparent;
-  transform: none !important;
-  animation: none !important;
-  width: 88px;
-  height: 110px;
+/* Foto HUD tetap diam — animasi serangan hanya di arena (GIF transparan) */
+.hud-avatar.hud-avatar-full.pose-attack,
+.hud-avatar.hud-avatar-full.pose-miss {
+  /* ringan saja; efek utama = GIF di arena */
+  transform: none;
 }
-.hud-avatar.hud-avatar-full.pose-attack:not(.is-attack-anim) {
-  /* fallback CSS pose untuk char tanpa frame anim */
+
+/* GIF serangan di arena (bawah-kiri), bg transparan, tidak ganti foto HUD */
+.arena-attack-fx {
+  position: absolute;
+  left: 2%;
+  bottom: 4%;
+  width: min(48vw, 200px);
+  height: auto;
+  max-height: 48%;
+  object-fit: contain;
+  object-position: left bottom;
+  pointer-events: none;
+  z-index: 6;
+  background: transparent;
+  image-rendering: auto;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.28));
+  animation: arena-attack-pop 0.18s ease-out;
+}
+@keyframes arena-attack-pop {
+  from {
+    opacity: 0.4;
+    transform: scale(0.92) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@media (min-width: 768px) {
+  .arena-attack-fx {
+    width: 220px;
+    left: 3%;
+    bottom: 6%;
+    max-height: 50%;
+  }
 }

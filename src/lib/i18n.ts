@@ -14,6 +14,9 @@ const STRINGS = {
     secretTeaserTitle: 'Jalur Misteri',
     secretTeaserBody:
       'Catatan awal: nanti ada jalur misteri di peta. Belum bisa dimainkan — dibuka setelah perjalanan sampai New York.',
+    secretDiscoverTitle: 'Eeh… apa itu?',
+    secretDiscoverBody:
+      'Sepertinya kita melihat area baru di peta — wilayah misterius di ujung dunia. Menarik untuk dieksplorasi, pendekar. Jalur Misteri kini terbuka: Kutub Utara dan Kutub Selatan menanti!',
     secretUnlockedTitle: 'Jalur Misteri Terbuka!',
     secretUnlockedBody:
       'Kutub Utara & Kutub Selatan siap dijelajah. Cari pin misteri di peta.',
@@ -343,6 +346,9 @@ const STRINGS = {
     secretTeaserTitle: 'Mystery Path',
     secretTeaserBody:
       'Early note: a mystery path will appear on the map later. Not playable yet — unlocks after the journey reaches New York.',
+    secretDiscoverTitle: 'Huh… what is that?',
+    secretDiscoverBody:
+      'It looks like a new area has appeared on the map — a mysterious region at the edge of the world. Worth exploring, warrior. The Mystery Path is now open: North Pole and South Pole await!',
     secretUnlockedTitle: 'Mystery Path Unlocked!',
     secretUnlockedBody:
       'North Pole & South Pole are ready. Find the mystery pins on the map.',

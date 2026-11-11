@@ -131,6 +131,8 @@ export interface PlayerProgress {
   perfectCityStreak: number;
   /** Id lencana yang sudah didapat */
   badges: string[];
+  /** Sudah pernah tampil popup discovery Jalur Misteri (setelah New York) */
+  secretDiscoverShown: boolean;
 }
 
 export const DEFAULT_PROGRESS: PlayerProgress = {
@@ -168,4 +170,5 @@ export const DEFAULT_PROGRESS: PlayerProgress = {
   maxComboAdventure: 0,
   perfectCityStreak: 0,
   badges: [],
+  secretDiscoverShown: false,
 };

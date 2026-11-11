@@ -456,6 +456,10 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
           </p>
           <div className="dojo-region-list" ref={regionListRef}>
             {ADVENTURE_REGIONS.map((reg) => {
+              // Jalur Misteri: sembunyikan total sampai terbuka (bukan sekadar "terkunci")
+              if (reg.id === 'secret-polar' && !regionsWithUnlock.has(reg.id)) {
+                return null;
+              }
               const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
               if (!cities.length) return null;
               const regionUnlocked = regionsWithUnlock.has(reg.id);

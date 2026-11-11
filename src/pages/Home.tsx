@@ -16,7 +16,6 @@ import {
   getCountryNameId,
   getCountryNameEn,
   resolveFocusCityId,
-  shouldShowSecretTeaser,
   isSecretPathUnlocked,
 } from '../lib/adventure';
 import type { DifficultyLevel } from '../lib/levels';
@@ -541,7 +540,15 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
             <div className="city-region-stack">
               {(() => {
                 // Mapdebug: semua kota "terbuka"; pola max 3 baris sama seperti main
-                const regionsWithCities = ADVENTURE_REGIONS.map((reg) => {
+                const regionsWithCities = ADVENTURE_REGIONS
+                      .filter((reg) => {
+                        if (reg.id !== 'secret-polar') return true;
+                        // Hanya tampil setelah jalur misteri terbuka
+                        return isSecretPathUnlocked(
+                          loadProgress().adventureUnlocked || ['jakarta']
+                        );
+                      })
+                      .map((reg) => {
                   const cities = ADVENTURE_CITIES.filter((c) => c.regionId === reg.id);
                   return { reg, cities };
                 }).filter((x) => x.cities.length > 0);
@@ -993,33 +1000,7 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                 </div>
 
                 <h3 className="subsection-title">{t('pickCity')}</h3>
-                {(() => {
-                  const prog = loadProgress();
-                  const unlocked = prog.adventureUnlocked || ['jakarta'];
-                  const showTeaser = shouldShowSecretTeaser(
-                    unlocked,
-                    prog.adventureHighScores
-                  );
-                  const secretOpen = isSecretPathUnlocked(unlocked);
-                  if (!showTeaser) return null;
-                  return (
-                    <div
-                      className={`secret-teaser ${secretOpen ? 'is-unlocked' : ''}`}
-                      role="status"
-                    >
-                      <strong>
-                        {secretOpen
-                          ? t('secretUnlockedTitle')
-                          : t('secretTeaserTitle')}
-                      </strong>
-                      <p>
-                        {secretOpen
-                          ? t('secretUnlockedBody')
-                          : t('secretTeaserBody')}
-                      </p>
-                    </div>
-                  );
-                })()}
+                {/* Jalur Misteri: disembunyikan total sampai terbuka (popup discovery di App) */}
                 {(() => {
                   const prog = loadProgress();
                   const unlocked = prog.adventureUnlocked || ['jakarta'];
@@ -1058,7 +1039,15 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
                       fullAccess ||
                       id === 'jakarta' ||
                       unlockedList.includes(id);
-                    const regionsWithCities = ADVENTURE_REGIONS.map((reg) => {
+                    const regionsWithCities = ADVENTURE_REGIONS
+                      .filter((reg) => {
+                        if (reg.id !== 'secret-polar') return true;
+                        // Hanya tampil setelah jalur misteri terbuka
+                        return isSecretPathUnlocked(
+                          loadProgress().adventureUnlocked || ['jakarta']
+                        );
+                      })
+                      .map((reg) => {
                       const cities = ADVENTURE_CITIES.filter(
                         (c) => c.regionId === reg.id
                       );

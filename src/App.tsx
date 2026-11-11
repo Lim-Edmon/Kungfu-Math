@@ -246,6 +246,7 @@ function App() {
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
+  const [secretDiscoverOpen, setSecretDiscoverOpen] = useState(false);
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [newBadges, setNewBadges] = useState<string[]>([]);
   const [lastMaxCombo, setLastMaxCombo] = useState(0);
@@ -599,7 +600,13 @@ function App() {
       // Setelah skor tersimpan: buka Jalur Misteri jika New York sudah lolos
       {
         const hsNow = loadProgress().adventureHighScores || {};
+        const beforeSecret = unlocked.includes('north-pole');
         unlocked = withSecretCitiesIfEligible(unlocked, hsNow);
+        const afterSecret = unlocked.includes('north-pole');
+        const progNow = loadProgress();
+        if (!beforeSecret && afterSecret && !progNow.secretDiscoverShown) {
+          setSecretDiscoverOpen(true);
+        }
       }
       if (score >= city.targetScore) {
         passed = true;
@@ -1466,6 +1473,36 @@ function App() {
               onClick={() => setOfflineNavPopup(false)}
             >
               {t('offlinePopupOk')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {secretDiscoverOpen && (
+        <div
+          className="offline-need-net-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="secret-discover-title"
+          onClick={() => {
+            setSecretDiscoverOpen(false);
+            updateProgress({ secretDiscoverShown: true });
+          }}
+        >
+          <div className="offline-need-net-box" onClick={(e) => e.stopPropagation()}>
+            <p className="offline-need-net-title" id="secret-discover-title">
+              {t('secretDiscoverTitle')}
+            </p>
+            <p className="offline-need-net-body">{t('secretDiscoverBody')}</p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setSecretDiscoverOpen(false);
+                updateProgress({ secretDiscoverShown: true });
+              }}
+            >
+              {t('secretUnlockedTitle')}
             </button>
           </div>
         </div>
