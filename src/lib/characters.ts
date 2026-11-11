@@ -126,3 +126,21 @@ export function characterRoleLabel(char: Character, lang: 'id' | 'en'): string {
   }
   return lang === 'en' ? row.en : row.id;
 }
+
+/** Frame animasi serangan (opsional). Ada = mainkan di HUD saat slice/tap benar. */
+export function getAttackAnimFrames(characterId: string): string[] | null {
+  if (characterId === 'yu-jin') {
+    return Array.from({ length: 12 }, (_, i) =>
+      `/characters/anim/yu-jin/f${String(i + 1).padStart(2, '0')}.png`
+    );
+  }
+  if (characterId === 'yo-rin') {
+    return Array.from({ length: 12 }, (_, i) =>
+      `/characters/anim/yo-rin/f${String(i + 1).padStart(2, '0')}.png`
+    );
+  }
+  return null;
+}
+
+/** Durasi animasi serangan (ms). Benar berikutnya sebelum selesai → restart dari frame 0. */
+export const ATTACK_ANIM_MS = 900;

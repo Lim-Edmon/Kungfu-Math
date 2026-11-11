@@ -5306,3 +5306,16 @@ html[data-theme='malam'] .onboard-banner {
   min-width: 4rem;
   max-width: 55%;
 }
+
+/* Animasi serangan full-body di HUD (frame dari MP4) */
+.hud-avatar.hud-avatar-full.is-attack-anim {
+  object-fit: contain;
+  background: transparent;
+  transform: none !important;
+  animation: none !important;
+  width: 88px;
+  height: 110px;
+}
+.hud-avatar.hud-avatar-full.pose-attack:not(.is-attack-anim) {
+  /* fallback CSS pose untuk char tanpa frame anim */
+}

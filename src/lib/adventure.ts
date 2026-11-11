@@ -2670,7 +2670,7 @@ export const MVP_REGION_UNLOCK_MSG =
  * Lolos Cairo → popup ujung perjalanan; region berikutnya tetap terkunci.
  * Map debug / cheat tetap bisa melihat semua kota di data.
  */
-export const CONTENT_PATH_LAST_CITY_ID = 'london';
+export const CONTENT_PATH_LAST_CITY_ID = 'new-york';
 
 /** Ujung data penuh (USA) — dipakai nanti saat seluruh jalur dibuka */
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
@@ -2804,11 +2804,32 @@ export function getNextCityId(currentId: string): string | null {
   return ADVENTURE_CITIES[i + 1].id;
 }
 
-/** Kota berikutnya yang boleh dibuka di permainan normal */
-export function getNextPlayableCityId(currentId: string): string | null {
+/** Kota berikutnya yang boleh dibuka di permainan normal (opsional: unlocked untuk rantai rahasia) */
+export function getNextPlayableCityId(
+  currentId: string,
+  unlocked?: string[]
+): string | null {
+  // Rantai Jalur Misteri: North Pole → South Pole
+  if (isSecretCityId(currentId)) {
+    const list = SECRET_CITY_IDS as readonly string[];
+    const i = list.indexOf(currentId);
+    if (i >= 0 && i < list.length - 1) {
+      const nxt = list[i + 1];
+      if (!unlocked || unlocked.includes(nxt)) return nxt;
+    }
+    return null;
+  }
+  // Setelah New York: buka North Pole jika sudah eligible
+  if (currentId === MVP_PATH_LAST_CITY_ID || currentId === 'new-york') {
+    if (unlocked?.includes('north-pole')) return 'north-pole';
+    return null;
+  }
   if (currentId === CONTENT_PATH_LAST_CITY_ID) return null;
   const next = getNextCityId(currentId);
   if (!next) return null;
+  if (isSecretCityId(next)) {
+    return unlocked?.includes(next) ? next : null;
+  }
   const lastIdx = ADVENTURE_CITIES.findIndex((c) => c.id === CONTENT_PATH_LAST_CITY_ID);
   const nextIdx = ADVENTURE_CITIES.findIndex((c) => c.id === next);
   if (lastIdx >= 0 && nextIdx > lastIdx) return null;
@@ -2849,13 +2870,11 @@ export function withSecretCitiesIfEligible(
   highScores: Record<string, number> | undefined
 ): string[] {
   const base = unlocked?.length ? [...unlocked] : ['jakarta'];
-  // Kota rahasia: early note saja. Baru bisa unlock setelah ujung jalur penuh = New York.
-  // (CONTENT_PATH_LAST masih di kota publik; MVP_PATH_LAST = new-york.)
+  // Jalur Misteri terbuka setelah New York (ujung USA) lolos target.
   const ny = highScores?.['new-york'] ?? 0;
   const nyCity = ADVENTURE_CITIES.find((c) => c.id === 'new-york');
   const nyOk = nyCity ? ny >= nyCity.targetScore : false;
   if (!nyOk) return base.filter((id) => !isSecretCityId(id));
-  if (!isContentPathFullyCleared(highScores)) return base.filter((id) => !isSecretCityId(id));
   const set = new Set(base);
   for (const id of SECRET_CITY_IDS) set.add(id);
   return Array.from(set);

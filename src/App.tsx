@@ -52,6 +52,8 @@ import {
   getCountryNameEn,
   getNextCityId,
   getNextPlayableCityId,
+  withSecretCitiesIfEligible,
+  isSecretCityId,
   getAdventureDifficulty,
   pickCityFunFact,
   cityBgCandidates,
@@ -594,10 +596,13 @@ function App() {
       recordAdventureScore(cityId, score, meta);
       let unlocked = [...(prog.adventureUnlocked || ['jakarta'])];
       if (!unlocked.includes('jakarta')) unlocked = ['jakarta', ...unlocked];
+      // Setelah skor tersimpan: buka Jalur Misteri jika New York sudah lolos
+      {
+        const hsNow = loadProgress().adventureHighScores || {};
+        unlocked = withSecretCitiesIfEligible(unlocked, hsNow);
+      }
       if (score >= city.targetScore) {
         passed = true;
-        
-        // playdebug / ?debug=1 → jalur penuh; normal → berhenti di Oceania
         let playDbg = false;
         try {
           const q = new URLSearchParams(window.location.search);
@@ -610,7 +615,7 @@ function App() {
         }
         nextId = playDbg
           ? getNextCityId(cityId)
-          : getNextPlayableCityId(cityId);
+          : getNextPlayableCityId(cityId, unlocked);
         if (nextId && !unlocked.includes(nextId)) {
           unlocked = [...unlocked, nextId];
         }

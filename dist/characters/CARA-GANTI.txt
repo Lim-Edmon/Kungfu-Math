@@ -9,3 +9,8 @@ Close-up (banner saat main):
 
 Taruh file di folder ini: public/characters/
 Lalu hard refresh browser (Ctrl+Shift+R).
+
+Animasi serangan (opsional):
+  public/characters/anim/{id}/f01.png … f12.png
+  Saat ini: yu-jin, yo-rin (12 frame ≈ 0.9 dtk).
+  Benar berikutnya sebelum selesai → animasi restart dari awal.

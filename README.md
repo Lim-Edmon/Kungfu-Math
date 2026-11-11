@@ -173,3 +173,11 @@ Lihat **[docs/SCORING.md](docs/SCORING.md)** — pengali tempo / level / arena /
 
 Kode dan aset untuk proyek ini. Dilarang menyalin / reverse-engineer / mengekstrak untuk klon komersial tanpa izin.  
 Minat kolaborasi: saluran di [Trakteer lim.edmon](https://trakteer.id/lim.edmon).
+
+## Jalur Misteri (region rahasia)
+Terbuka setelah **New York** lolos target. Kota: Kutub Utara → Kutub Selatan.
+BG/musik opsional: `public/cities/bg/north-pole.*`, `south-pole.*`.
+
+## Animasi serangan HUD
+Yu Jin & Yo Rin: 12 frame di `public/characters/anim/{id}/f01.png`…`f12.png` (~0.9 dtk).
+Benar berikutnya sebelum selesai → animasi **restart** dari frame awal.
