@@ -220,7 +220,10 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
       .slice(0, 80);
   }
   if (Array.isArray(p.badges)) {
-    next.badges = p.badges.filter((x): x is string => typeof x === 'string').slice(0, 40);
+    next.badges = p.badges
+      .filter((x): x is string => typeof x === 'string')
+      .filter((id) => id !== 'region_sea')
+      .slice(0, 40);
   }
 
   // Sinkron dengan ADVENTURE_CITIES — jangan hardcode (supaya kota baru tidak terhapus saat load/import)
@@ -504,7 +507,7 @@ function readDevSnap(): DevSnap | null {
     if (!Array.isArray(o.adventureUnlocked) || !Array.isArray(o.badges)) return null;
     return {
       adventureUnlocked: o.adventureUnlocked.filter((x) => typeof x === 'string'),
-      badges: o.badges.filter((x) => typeof x === 'string'),
+      badges: o.badges.filter((x) => typeof x === 'string' && x !== 'region_sea'),
     };
   } catch {
     return null;

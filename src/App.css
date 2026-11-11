@@ -5297,10 +5297,12 @@ html[data-theme='malam'] .onboard-banner {
 .dojo-sprint-meta {
   flex: 1 1 auto;
   text-align: right;
-  font-size: 0.78rem;
-  color: var(--color-text-muted, #888);
+  font-size: 0.8rem;
+  color: var(--color-text, #444);
+  opacity: 0.85;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
+  min-width: 4rem;
+  max-width: 55%;
 }

@@ -287,6 +287,7 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
               const metaAll = progress.sprintBestMeta || {};
               // Satu rekor per kategori (5 / 10 / 20) — waktu terbaik + mode
               const byLen: Record<string, number> = {};
+              const byLenSrcKey: Record<string, string> = {};
               Object.entries(best).forEach(([key, ms]) => {
                 if (typeof ms !== 'number' || ms <= 0) return;
                 const parts = key.split('|');
@@ -294,7 +295,10 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
                 const n = Number(lenPart);
                 if (n !== 5 && n !== 10 && n !== 20) return;
                 const k = String(n);
-                if (byLen[k] == null || ms < byLen[k]) byLen[k] = ms;
+                if (byLen[k] == null || ms < byLen[k]) {
+                  byLen[k] = ms;
+                  byLenSrcKey[k] = key;
+                }
               });
               const lens = Object.keys(byLen).sort(
                 (a, b) => Number(a) - Number(b)
@@ -306,25 +310,40 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
               }
               return lens.map((len) => {
                 const sec = (byLen[len] / 1000).toFixed(1);
-                const raw = metaAll[len] || '';
+                // meta tersimpan, atau pulihkan dari key lama level|len|arena|mode
+                let raw = metaAll[len] || '';
+                if (!raw || raw.split('|').length < 3) {
+                  const src = byLenSrcKey[len] || '';
+                  const sp = src.split('|');
+                  if (sp.length >= 4) {
+                    raw = `${sp[0]}|${sp[2]}|${sp[3]}`;
+                  }
+                }
                 const mp = raw.split('|');
                 let metaLabel = '';
-                if (mp.length >= 3) {
+                if (mp.length >= 3 && mp[0]) {
                   const levelId = mp[0];
-                  const arena = mp[1] as 'static' | 'agility' | 'pass';
-                  const mode = mp[2] as 'slice' | 'tap';
-                  const lv = getLevelById(
-                    levelId as import('../lib/levels').DifficultyLevel
-                  );
-                  const levelName =
-                    getLang() === 'en' ? lv.labelEn : lv.labelId;
-                  metaLabel = [
-                    levelName,
-                    arenaLabel(arena),
-                    inputModeLabel(mode),
-                  ]
-                    .filter(Boolean)
-                    .join(' · ');
+                  const arena = (mp[1] || 'static') as
+                    | 'static'
+                    | 'agility'
+                    | 'pass';
+                  const mode = (mp[2] || 'slice') as 'slice' | 'tap';
+                  try {
+                    const lv = getLevelById(
+                      levelId as import('../lib/levels').DifficultyLevel
+                    );
+                    const levelName =
+                      getLang() === 'en' ? lv.labelEn : lv.labelId;
+                    metaLabel = [
+                      levelName,
+                      arenaLabel(arena),
+                      inputModeLabel(mode),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ');
+                  } catch {
+                    metaLabel = '';
+                  }
                 }
                 return (
                   <li key={len} className="dojo-sprint-row">
@@ -364,7 +383,7 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
         {badgesOpen && (
           <>
             <ul className="badge-grid">
-              {BADGE_DEFS.map((b) => {
+              {BADGE_DEFS.filter((b) => b.id !== 'region_sea').map((b) => {
                 const unlocked = (progress.badges || []).includes(b.id);
                 const title = getLang() === 'en' ? b.titleEn : b.titleId;
                 const desc = getLang() === 'en' ? b.descEn : b.descId;

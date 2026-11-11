@@ -676,7 +676,7 @@ function App() {
     }).map((c) => c.id);
     const citiesUnlocked = (loadProgress().adventureUnlocked || ['jakarta']).length;
     const newly = evaluateNewBadges({
-      already: progA.badges || [],
+      already: (progA.badges || []).filter((id) => id !== 'region_sea'),
       totalGames: progA.totalGamesPlayed || 0,
       dailyStreak: streakInfo.streak,
       maxComboPractice,
@@ -686,8 +686,12 @@ function App() {
       runPerfect: perfect,
       justClearedCityId: passed ? cityId : null,
       clearedCityIds,
+      sprintBestMs: progA.sprintBestMs || {},
     });
-    const badges = [...(progA.badges || []), ...newly];
+    const badges = [
+      ...(progA.badges || []).filter((id) => id !== 'region_sea'),
+      ...newly,
+    ];
     updateProgress({
       dailyStreak: streakInfo.streak,
       lastPlayDate: streakInfo.lastPlayDate,

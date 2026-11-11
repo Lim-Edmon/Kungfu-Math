@@ -19,7 +19,7 @@ export type BadgeId =
   | 'perfect_run'
   | 'perfect_cities_3'
   | 'region_id'
-  | 'region_sea'
+  | 'sprint_trio'
   | 'continent_oceania'
   | 'continent_asia'
   | 'continent_africa'
@@ -165,13 +165,13 @@ export const BADGE_DEFS: BadgeDef[] = [
     group: 'petualangan',
   },
   {
-    id: 'region_sea',
-    emoji: '🌴',
-    titleId: 'Jelajah Asia Tenggara',
-    titleEn: 'SEA Explorer',
-    descId: 'Selesaikan jalur Asia Tenggara (sampai Hanoi)',
-    descEn: 'Clear Southeast Asia path (through Hanoi)',
-    group: 'petualangan',
+    id: 'sprint_trio',
+    emoji: '⏱️',
+    titleId: 'Sprint Lengkap',
+    titleEn: 'Sprint Complete',
+    descId: 'Catat rekor di ketiga sprint (5, 10, dan 20 soal)',
+    descEn: 'Set a record on all three sprints (5, 10, and 20 questions)',
+    group: 'latihan',
   },
   {
     id: 'continent_oceania',
@@ -270,6 +270,8 @@ export interface BadgeEvalInput {
   justClearedCityId?: string | null;
   /** daftar kota dengan skor >= target */
   clearedCityIds: string[];
+  /** rekor sprint ms keyed by "5"|"10"|"20" */
+  sprintBestMs?: Record<string, number>;
 }
 
 export function evaluateNewBadges(input: BadgeEvalInput): BadgeId[] {
@@ -297,13 +299,27 @@ export function evaluateNewBadges(input: BadgeEvalInput): BadgeId[] {
   tryAdd('perfect_run', input.runPerfect);
   tryAdd('perfect_cities_3', input.perfectCityStreak >= 3);
   tryAdd('region_id', input.clearedCityIds.includes('bali'));
-  tryAdd('region_sea', input.clearedCityIds.includes('hanoi'));
-  // Per benua (setelah Nusantara)
+  // Per benua (setelah Nusantara) — tanpa lencana SEA terpisah
   tryAdd('continent_oceania', input.clearedCityIds.includes('port-moresby'));
   tryAdd('continent_asia', input.clearedCityIds.includes('cairo'));
   tryAdd('continent_africa', input.clearedCityIds.includes('antananarivo'));
   tryAdd('continent_europe', input.clearedCityIds.includes('vatican'));
   tryAdd('continent_america', input.clearedCityIds.includes('new-york'));
+  // Sprint: punya rekor di 5, 10, dan 20 soal
+  {
+    const sm = input.sprintBestMs || {};
+    const has = (n: number) => {
+      const k = String(n);
+      if (typeof sm[k] === 'number' && sm[k] > 0) return true;
+      return Object.entries(sm).some(([key, ms]) => {
+        if (typeof ms !== 'number' || ms <= 0) return false;
+        const parts = key.split('|');
+        const lenPart = parts.length >= 2 ? parts[1] : parts[0];
+        return Number(lenPart) === n;
+      });
+    };
+    tryAdd('sprint_trio', has(5) && has(10) && has(20));
+  }
 
   return unlocked;
 }
