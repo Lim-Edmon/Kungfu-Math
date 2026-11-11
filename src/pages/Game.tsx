@@ -4,7 +4,12 @@ import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react'
 import type { CharacterId, InputMode } from '../lib/types';
 import type { DifficultyLevel } from '../lib/levels';
 import { getLevelById } from '../lib/levels';
-import { getCharacterById, getAttackAnimFrames, ATTACK_ANIM_MS } from '../lib/characters';
+import {
+  getCharacterById,
+  getAttackAnimSrc,
+  getAttackIdleSrc,
+  ATTACK_ANIM_MS,
+} from '../lib/characters';
 import { generateQuestion, buildDecoyPool } from '../lib/mathGenerator';
 import type { MathQuestion, OperationType } from '../lib/mathGenerator';
 import type { FloatingNumber, GameState } from '../lib/gameTypes';
@@ -1008,13 +1013,13 @@ export default function Game({
   /** Layer efek benturan tap (kena / miss) */
   const impactLayerRef = useRef<HTMLDivElement | null>(null);
   const lastTrailTsRef = useRef(0);
-  /** Animasi avatar HUD: idle | attack | miss */
+  /** Pose CSS ringan (miss / char tanpa GIF) */
   const [avatarPose, setAvatarPose] = useState<'idle' | 'attack' | 'miss'>('idle');
   const avatarPoseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** Token naik tiap serangan → restart frame animasi meski pose masih attack */
-  const [attackAnimToken, setAttackAnimToken] = useState(0);
-  const [attackFrame, setAttackFrame] = useState(0);
-  const attackRafRef = useRef<number | null>(null);
+  /** GIF di kotak HUD: play hanya saat jawaban benar, lalu kembali diam */
+  const [attackFxKey, setAttackFxKey] = useState(0);
+  const [attackPlaying, setAttackPlaying] = useState(false);
+  const attackFxTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [soundMuted, setSoundMuted] = useState(
     () => loadProgress().soundMuted === true
   );
@@ -1428,48 +1433,26 @@ export default function Game({
 
   const pulseAvatar = useCallback((pose: 'attack' | 'miss') => {
     if (avatarPoseTimerRef.current) clearTimeout(avatarPoseTimerRef.current);
-    if (attackRafRef.current != null) {
-      cancelAnimationFrame(attackRafRef.current);
-      attackRafRef.current = null;
-    }
+    if (attackFxTimerRef.current) clearTimeout(attackFxTimerRef.current);
     setAvatarPose(pose);
-    if (pose === 'attack') {
-      setAttackAnimToken((n) => n + 1);
-      setAttackFrame(0);
+    if (pose === 'attack' && getAttackAnimSrc(characterId)) {
+      // Restart GIF dari awal di kotak HUD
+      setAttackPlaying(false);
+      requestAnimationFrame(() => {
+        setAttackFxKey((k) => k + 1);
+        setAttackPlaying(true);
+      });
+      attackFxTimerRef.current = setTimeout(() => {
+        setAttackPlaying(false);
+        attackFxTimerRef.current = null;
+      }, ATTACK_ANIM_MS);
     }
     const dur = pose === 'miss' ? 320 : ATTACK_ANIM_MS;
     avatarPoseTimerRef.current = setTimeout(() => {
       setAvatarPose('idle');
-      setAttackFrame(0);
       avatarPoseTimerRef.current = null;
     }, dur);
-  }, []);
-
-  // Mainkan frame animasi serangan (Yu Jin / Yo Rin). Benar berikutnya → token naik → restart.
-  useEffect(() => {
-    if (avatarPose !== 'attack') return;
-    const frames = getAttackAnimFrames(characterId);
-    if (!frames || frames.length === 0) return;
-    const start = performance.now();
-    const total = frames.length;
-    const tick = (now: number) => {
-      const t = (now - start) / ATTACK_ANIM_MS;
-      if (t >= 1) {
-        setAttackFrame(total - 1);
-        attackRafRef.current = null;
-        return;
-      }
-      setAttackFrame(Math.min(total - 1, Math.floor(t * total)));
-      attackRafRef.current = requestAnimationFrame(tick);
-    };
-    attackRafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (attackRafRef.current != null) {
-        cancelAnimationFrame(attackRafRef.current);
-        attackRafRef.current = null;
-      }
-    };
-  }, [avatarPose, attackAnimToken, characterId]);
+  }, [characterId]);
 
   /** Efek benturan anime-style di arena (tap kena / miss) */
   const spawnImpact = useCallback((clientX: number, clientY: number, kind: 'hit' | 'miss') => {
@@ -2141,35 +2124,46 @@ export default function Game({
         <div className="game-hud">
           <div className="hud-left">
             <div className="hud-identity">
-              {(() => {
-                const animFrames = getAttackAnimFrames(characterId);
-                const showAnim =
-                  avatarPose === 'attack' &&
-                  animFrames &&
-                  animFrames.length > 0;
-                const src = showAnim
-                  ? animFrames![Math.min(attackFrame, animFrames!.length - 1)]
-                  : character?.imageSrc || character?.imageCloseSrc;
-                if (src) {
-                  return (
+              {getAttackAnimSrc(characterId) ? (
+                <div
+                  className={`hud-avatar-wrap pose-${avatarPose} style-${attackStyle}`}
+                >
+                  {attackPlaying ? (
                     <img
-                      src={src}
+                      key={attackFxKey}
+                      src={getAttackAnimSrc(characterId)!}
                       alt=""
-                      className={`hud-avatar hud-avatar-full pose-${avatarPose} style-${attackStyle}${showAnim ? ' is-attack-anim' : ''}`}
-                      width={72}
-                      height={90}
+                      className="hud-avatar hud-avatar-anim"
                     />
-                  );
-                }
-                return (
-                  <span
-                    className={`hud-avatar-emoji pose-${avatarPose} style-${attackStyle}`}
-                    aria-hidden
-                  >
-                    {character?.emoji ?? '🥋'}
-                  </span>
-                );
-              })()}
+                  ) : (
+                    <img
+                      src={
+                        getAttackIdleSrc(characterId) ||
+                        character?.imageSrc ||
+                        character?.imageCloseSrc ||
+                        ''
+                      }
+                      alt=""
+                      className="hud-avatar hud-avatar-anim"
+                    />
+                  )}
+                </div>
+              ) : character?.imageSrc || character?.imageCloseSrc ? (
+                <img
+                  src={character.imageSrc || character.imageCloseSrc}
+                  alt=""
+                  className={`hud-avatar hud-avatar-full pose-${avatarPose} style-${attackStyle}`}
+                  width={72}
+                  height={90}
+                />
+              ) : (
+                <span
+                  className={`hud-avatar-emoji pose-${avatarPose} style-${attackStyle}`}
+                  aria-hidden
+                >
+                  {character?.emoji ?? '🥋'}
+                </span>
+              )}
               <div className="hud-identity-text">
                 <strong className="hud-name">{displayName}</strong>
                 <span className="hud-meta">

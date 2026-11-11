@@ -127,20 +127,23 @@ export function characterRoleLabel(char: Character, lang: 'id' | 'en'): string {
   return lang === 'en' ? row.en : row.id;
 }
 
-/** Frame animasi serangan (opsional). Ada = mainkan di HUD saat slice/tap benar. */
-export function getAttackAnimFrames(characterId: string): string[] | null {
-  if (characterId === 'yu-jin') {
-    return Array.from({ length: 12 }, (_, i) =>
-      `/characters/anim/yu-jin/f${String(i + 1).padStart(2, '0')}.png`
-    );
-  }
-  if (characterId === 'yo-rin') {
-    return Array.from({ length: 12 }, (_, i) =>
-      `/characters/anim/yo-rin/f${String(i + 1).padStart(2, '0')}.png`
-    );
-  }
+/**
+ * GIF animasi di kotak foto HUD (opsional).
+ * Ada → ganti foto statis: diam = frame pertama, play = saat jawaban benar.
+ * Tidak perlu background transparan (bg GIF memenuhi kotak).
+ */
+export function getAttackAnimSrc(characterId: string): string | null {
+  if (characterId === 'yu-jin') return '/characters/anim/yu-jin/attack.gif';
+  if (characterId === 'yo-rin') return '/characters/anim/yo-rin/attack.gif';
   return null;
 }
 
-/** Durasi animasi serangan (ms). Benar berikutnya sebelum selesai → restart dari frame 0. */
-export const ATTACK_ANIM_MS = 900;
+/** Frame diam (frame-0 GIF) — tampil saat idle / miss. */
+export function getAttackIdleSrc(characterId: string): string | null {
+  if (characterId === 'yu-jin') return '/characters/anim/yu-jin/idle.png';
+  if (characterId === 'yo-rin') return '/characters/anim/yo-rin/idle.png';
+  return null;
+}
+
+/** Durasi play GIF (ms). GIF ~2s; jawaban benar berikutnya → restart dari awal. */
+export const ATTACK_ANIM_MS = 2000;
