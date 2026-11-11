@@ -127,21 +127,26 @@ export function characterRoleLabel(char: Character, lang: 'id' | 'en'): string {
   return lang === 'en' ? row.en : row.id;
 }
 
+/** Char yang sudah punya GIF serangan di HUD */
+const ATTACK_ANIM_CHARS = ['yu-jin', 'yo-rin', 'hong-yi', 'an-ning'] as const;
+
 /**
  * GIF animasi di kotak foto HUD (opsional).
  * Ada → ganti foto statis: diam = frame pertama, play = saat jawaban benar.
  * Tidak perlu background transparan (bg GIF memenuhi kotak).
  */
 export function getAttackAnimSrc(characterId: string): string | null {
-  if (characterId === 'yu-jin') return '/characters/anim/yu-jin/attack.gif';
-  if (characterId === 'yo-rin') return '/characters/anim/yo-rin/attack.gif';
+  if ((ATTACK_ANIM_CHARS as readonly string[]).includes(characterId)) {
+    return `/characters/anim/${characterId}/attack.gif`;
+  }
   return null;
 }
 
 /** Frame diam (frame-0 GIF) — tampil saat idle / miss. */
 export function getAttackIdleSrc(characterId: string): string | null {
-  if (characterId === 'yu-jin') return '/characters/anim/yu-jin/idle.png';
-  if (characterId === 'yo-rin') return '/characters/anim/yo-rin/idle.png';
+  if ((ATTACK_ANIM_CHARS as readonly string[]).includes(characterId)) {
+    return `/characters/anim/${characterId}/idle.png`;
+  }
   return null;
 }
 
