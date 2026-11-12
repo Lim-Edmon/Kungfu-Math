@@ -17,6 +17,7 @@ import {
   getCountryNameId,
   getCountryNameEn,
   resolveFocusCityId,
+  isSecretPathUnlocked,
 } from '../lib/adventure';
 import type { ScoreRecord, PlayerProgress } from '../lib/types';
 import { DEFAULT_PROGRESS } from '../lib/types';
@@ -383,7 +384,14 @@ export default function Dojo({ offline = false }: { offline?: boolean } = {}) {
         {badgesOpen && (
           <>
             <ul className="badge-grid">
-              {BADGE_DEFS.filter((b) => b.id !== 'region_sea').map((b) => {
+              {BADGE_DEFS.filter((b) => {
+                if (b.id === 'region_sea') return false;
+                // Medali kutub: sembunyikan total sampai Jalur Misteri terbuka
+                if (b.id === 'polar_greatest_explorer') {
+                  return isSecretPathUnlocked(progress.adventureUnlocked);
+                }
+                return true;
+              }).map((b) => {
                 const unlocked = (progress.badges || []).includes(b.id);
                 const title = getLang() === 'en' ? b.titleEn : b.titleId;
                 const desc = getLang() === 'en' ? b.descEn : b.descId;

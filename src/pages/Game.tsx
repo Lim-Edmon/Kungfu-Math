@@ -21,7 +21,7 @@ import {
   COMBO_BONUS_AGILITY,
   computeSolvePoints,
 } from '../lib/gameTypes';
-import { cityBgCandidates } from '../lib/adventure';
+import { cityBgCandidates, isSecretCityId } from '../lib/adventure';
 import { t } from '../lib/i18n';
 import { sfx, playCityMusic, stopAllMusic } from '../lib/sound';
 import { loadProgress, updateProgress } from '../lib/storage';
@@ -2324,6 +2324,26 @@ export default function Game({
             className="tap-impact-layer"
             aria-hidden
           />
+          {/* Salju kutub: visual saja (pointer-events:none) — bola tetap slice/tap */}
+          {cityId && isSecretCityId(cityId) && (
+            <div className="polar-snow" aria-hidden>
+              {Array.from({ length: 28 }, (_, i) => (
+                <span
+                  key={i}
+                  className="polar-snowflake"
+                  style={{
+                    left: `${(i * 37) % 100}%`,
+                    animationDelay: `${(i % 10) * 0.35}s`,
+                    animationDuration: `${5 + (i % 6)}s`,
+                    fontSize: `${8 + (i % 5) * 2}px`,
+                    opacity: 0.35 + (i % 5) * 0.1,
+                  }}
+                >
+                  ❄
+                </span>
+              ))}
+            </div>
+          )}
           {state.combo >= 2 && state.status === 'playing' && !isSprint && (
             <div className="combo-float" key={`c-${state.combo}-${state.questionsSolved}`} aria-hidden>
               {t('comboInline').replace('{n}', String(state.combo))}
