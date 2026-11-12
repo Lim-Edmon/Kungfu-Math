@@ -2619,7 +2619,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'gl',
     regionId: 'secret-polar',
     theme: 'north-pole',
-    targetScore: 8000,
+    targetScore: 7500,
     blurbId: 'Jalur misteri es',
     landmarkId: 'Aurora & es kutub',
     funFacts: [
@@ -2642,7 +2642,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     countryId: 'aq',
     regionId: 'secret-polar',
     theme: 'south-pole',
-    targetScore: 8000,
+    targetScore: 7500,
     blurbId: 'Jalur misteri Antartika',
     landmarkId: 'Benua es Antartika',
     funFacts: [
