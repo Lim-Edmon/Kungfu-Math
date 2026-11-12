@@ -46,11 +46,12 @@ export const ADVENTURE_REGIONS: { id: string; labelId: string; labelEn: string }
   { id: 'east-asia', labelId: 'Asia Timur', labelEn: 'East Asia' },
   { id: 'south-central-asia', labelId: 'Asia Tengah & Selatan', labelEn: 'Central & South Asia' },
   { id: 'middle-east', labelId: 'Timur Tengah', labelEn: 'Middle East' },
+  /** Setelah Asia: Afrika dulu, baru Eropa */
+  { id: 'africa', labelId: 'Afrika', labelEn: 'Africa' },
   { id: 'east-europe', labelId: 'Eropa Timur', labelEn: 'Eastern Europe' },
   { id: 'north-europe', labelId: 'Skandinavia & Britania', labelEn: 'Nordic & Britain' },
   { id: 'central-west-europe', labelId: 'Eropa Tengah & Barat', labelEn: 'Central & Western Europe' },
   { id: 'south-europe', labelId: 'Eropa Selatan', labelEn: 'Southern Europe' },
-  { id: 'africa', labelId: 'Afrika', labelEn: 'Africa' },
   { id: 'south-america', labelId: 'Amerika Selatan', labelEn: 'South America' },
   { id: 'central-america', labelId: 'Amerika Tengah & Karibia', labelEn: 'Central America & Caribbean' },
   { id: 'canada-north', labelId: 'Kanada & Utara', labelEn: 'Canada & the North' },
@@ -263,7 +264,7 @@ export function getAdventureDifficulty(id: string): AdventureDifficulty {
 }
 
 export const ADVENTURE_CITIES: AdventureCity[] = [
-  {
+{
     id: 'jakarta',
     nameId: 'Jakarta',
     nameEn: 'Jakarta',
@@ -278,7 +279,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 79.28,
     mapY: 67.01,
   },
-  {
+{
     id: 'bandung',
     nameId: 'Bandung',
     nameEn: 'Bandung',
@@ -293,7 +294,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 79.5,
     mapY: 67.41,
   },
-  {
+{
     id: 'semarang',
     nameId: 'Semarang',
     nameEn: 'Semarang',
@@ -308,7 +309,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 80.3,
     mapY: 67.44,
   },
-  {
+{
     id: 'yogyakarta',
     nameId: 'Yogyakarta',
     nameEn: 'Yogyakarta',
@@ -323,7 +324,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 80.28,
     mapY: 67.91,
   },
-  {
+{
     id: 'solo',
     nameId: 'Solo',
     nameEn: 'Solo',
@@ -338,7 +339,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 80.41,
     mapY: 67.78,
   },
-  {
+{
     id: 'surabaya',
     nameId: 'Surabaya',
     nameEn: 'Surabaya',
@@ -353,7 +354,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 80.97,
     mapY: 67.6,
   },
-  {
+{
     id: 'medan',
     nameId: 'Medan',
     nameEn: 'Medan',
@@ -368,7 +369,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 76.94,
     mapY: 61.48,
   },
-  {
+{
     id: 'derawan',
     nameId: 'Derawan',
     nameEn: 'Derawan',
@@ -383,7 +384,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 82.54,
     mapY: 62.22,
   },
-  {
+{
     id: 'makassar',
     nameId: 'Makassar',
     nameEn: 'Makassar',
@@ -398,7 +399,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 82.92,
     mapY: 66.58,
   },
-  {
+{
     id: 'manado',
     nameId: 'Manado',
     nameEn: 'Manado',
@@ -413,7 +414,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 84.42,
     mapY: 62.66,
   },
-  {
+{
     id: 'raja-ampat',
     nameId: 'Raja Ampat',
     nameEn: 'Raja Ampat',
@@ -428,7 +429,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 85.99,
     mapY: 64.03,
   },
-  {
+{
     id: 'jayapura',
     nameId: 'Jayapura',
     nameEn: 'Jayapura',
@@ -443,7 +444,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 88.96,
     mapY: 64.94,
   },
-  {
+{
     id: 'flores',
     nameId: 'Flores',
     nameEn: 'Flores',
@@ -458,7 +459,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 83.35,
     mapY: 68.39,
   },
-  {
+{
     id: 'bali',
     nameId: 'Bali',
     nameEn: 'Bali',
@@ -473,7 +474,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 81.76,
     mapY: 68.27,
   },
-  {
+{
     id: 'dili',
     nameId: 'Dili',
     nameEn: 'Dili',
@@ -488,7 +489,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 84.68,
     mapY: 68.48,
   },
-  {
+{
     id: 'brunei',
     nameId: 'Brunei',
     nameEn: 'Brunei',
@@ -503,7 +504,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 81.53,
     mapY: 60.95,
   },
-  {
+{
     id: 'cebu',
     nameId: 'Cebu',
     nameEn: 'Cebu',
@@ -518,7 +519,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 84.15,
     mapY: 57.68,
   },
-  {
+{
     id: 'manila',
     nameId: 'Manila',
     nameEn: 'Manila',
@@ -533,7 +534,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 83.32,
     mapY: 55.26,
   },
-  {
+{
     id: 'penang',
     nameId: 'Penang',
     nameEn: 'Penang',
@@ -548,7 +549,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 77.47,
     mapY: 60.63,
   },
-  {
+{
     id: 'kuala-lumpur',
     nameId: 'Kuala Lumpur',
     nameEn: 'Kuala Lumpur',
@@ -563,7 +564,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 77.8,
     mapY: 61.73,
   },
-  {
+{
     id: 'singapore',
     nameId: 'Singapura',
     nameEn: 'Singapore',
@@ -578,7 +579,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 78.46,
     mapY: 62.8,
   },
-  {
+{
     id: 'phuket',
     nameId: 'Phuket',
     nameEn: 'Phuket',
@@ -593,7 +594,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 76.88,
     mapY: 59.16,
   },
-  {
+{
     id: 'ho-chi-minh',
     nameId: 'Ho Chi Minh',
     nameEn: 'Ho Chi Minh',
@@ -608,7 +609,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 79.25,
     mapY: 57.6,
   },
-  {
+{
     id: 'bangkok',
     nameId: 'Bangkok',
     nameEn: 'Bangkok',
@@ -623,7 +624,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 77.55,
     mapY: 55.88,
   },
-  {
+{
     id: 'siem-reap',
     nameId: 'Siem Reap',
     nameEn: 'Siem Reap',
@@ -638,7 +639,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 78.42,
     mapY: 55.96,
   },
-  {
+{
     id: 'phnom-penh',
     nameId: 'Phnom Penh',
     nameEn: 'Phnom Penh',
@@ -653,7 +654,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 78.76,
     mapY: 57.19,
   },
-  {
+{
     id: 'chiang-mai',
     nameId: 'Chiang Mai',
     nameEn: 'Chiang Mai',
@@ -668,7 +669,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 77.14,
     mapY: 52.89,
   },
-  {
+{
     id: 'luang-prabang',
     nameId: 'Luang Prabang',
     nameEn: 'Luang Prabang',
@@ -683,7 +684,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 77.97,
     mapY: 52.26,
   },
-  {
+{
     id: 'bagan',
     nameId: 'Bagan',
     nameEn: 'Bagan',
@@ -698,7 +699,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 75.92,
     mapY: 51.59,
   },
-  {
+{
     id: 'hanoi',
     nameId: 'Hanoi',
     nameEn: 'Hanoi',
@@ -713,7 +714,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 79.02,
     mapY: 51.57,
   },
-  {
+{
     id: 'darwin',
     nameId: 'Darwin',
     nameEn: 'Darwin',
@@ -728,7 +729,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 85.34,
     mapY: 70.36,
   },
-  {
+{
     id: 'cairns',
     nameId: 'Cairns',
     nameEn: 'Cairns',
@@ -743,7 +744,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 89.44,
     mapY: 72.84,
   },
-  {
+{
     id: 'brisbane',
     nameId: 'Brisbane',
     nameEn: 'Brisbane',
@@ -758,7 +759,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 92.23,
     mapY: 79.1,
   },
-  {
+{
     id: 'sydney',
     nameId: 'Sydney',
     nameEn: 'Sydney',
@@ -773,7 +774,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 92.17,
     mapY: 82.52,
   },
-  {
+{
     id: 'melbourne',
     nameId: 'Melbourne',
     nameEn: 'Melbourne',
@@ -788,7 +789,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 90.35,
     mapY: 84.97,
   },
-  {
+{
     id: 'auckland',
     nameId: 'Auckland',
     nameEn: 'Auckland',
@@ -803,7 +804,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 98.53,
     mapY: 85.31,
   },
-  {
+{
     id: 'queenstown',
     nameId: 'Queenstown',
     nameEn: 'Queenstown',
@@ -818,7 +819,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 96.85,
     mapY: 90.96,
   },
-  {
+{
     id: 'fiji',
     nameId: 'Fiji',
     nameEn: 'Fiji',
@@ -833,7 +834,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 100.0,
     mapY: 73.19,
   },
-  {
+{
     id: 'port-moresby',
     nameId: 'Port Moresby',
     nameEn: 'Port Moresby',
@@ -848,7 +849,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 90.51,
     mapY: 68.74,
   },
-  {
+{
     id: 'taipei',
     nameId: 'Taipei',
     nameEn: 'Taipei',
@@ -863,7 +864,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 83.77,
     mapY: 48.74,
   },
-  {
+{
     id: 'okinawa',
     nameId: 'Okinawa',
     nameEn: 'Okinawa',
@@ -878,7 +879,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 85.59,
     mapY: 47.93,
   },
-  {
+{
     id: 'osaka',
     nameId: 'Osaka',
     nameEn: 'Osaka',
@@ -893,7 +894,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 87.71,
     mapY: 43.19,
   },
-  {
+{
     id: 'kyoto',
     nameId: 'Kyoto',
     nameEn: 'Kyoto',
@@ -908,7 +909,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 87.87,
     mapY: 43.08,
   },
-  {
+{
     id: 'tokyo',
     nameId: 'Tokyo',
     nameEn: 'Tokyo',
@@ -923,7 +924,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 88.73,
     mapY: 42.61,
   },
-  {
+{
     id: 'jeju',
     nameId: 'Jeju',
     nameEn: 'Jeju',
@@ -938,7 +939,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 84.91,
     mapY: 44.09,
   },
-  {
+{
     id: 'busan',
     nameId: 'Busan',
     nameEn: 'Busan',
@@ -953,7 +954,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 85.64,
     mapY: 42.93,
   },
-  {
+{
     id: 'seoul',
     nameId: 'Seoul',
     nameEn: 'Seoul',
@@ -968,7 +969,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 85.02,
     mapY: 41.26,
   },
-  {
+{
     id: 'guangzhou',
     nameId: 'Guangzhou',
     nameEn: 'Guangzhou',
@@ -983,7 +984,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 81.33,
     mapY: 49.96,
   },
-  {
+{
     id: 'hongkong',
     nameId: 'Hong Kong',
     nameEn: 'Hong Kong',
@@ -998,7 +999,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 81.6,
     mapY: 50.46,
   },
-  {
+{
     id: 'shanghai',
     nameId: 'Shanghai',
     nameEn: 'Shanghai',
@@ -1013,7 +1014,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 83.72,
     mapY: 45.48,
   },
-  {
+{
     id: 'xian',
     nameId: "Xi'an",
     nameEn: "Xi'an",
@@ -1028,7 +1029,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 79.97,
     mapY: 43.53,
   },
-  {
+{
     id: 'beijing',
     nameId: 'Beijing',
     nameEn: 'Beijing',
@@ -1043,7 +1044,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 82.16,
     mapY: 40.08,
   },
-  {
+{
     id: 'mongolia',
     nameId: 'Mongolia',
     nameEn: 'Mongolia',
@@ -1058,7 +1059,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 79.25,
     mapY: 34.45,
   },
-  {
+{
     id: 'harbin',
     nameId: 'Harbin',
     nameEn: 'Harbin',
@@ -1073,7 +1074,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 84.94,
     mapY: 36.06,
   },
-  {
+{
     id: 'vladivostok',
     nameId: 'Vladivostok',
     nameEn: 'Vladivostok',
@@ -1088,7 +1089,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 86.54,
     mapY: 37.84,
   },
-  {
+{
     id: 'irkutsk',
     nameId: 'Irkutsk',
     nameEn: 'Irkutsk',
@@ -1103,7 +1104,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 78.47,
     mapY: 31.53,
   },
-  {
+{
     id: 'novosibirsk',
     nameId: 'Novosibirsk',
     nameEn: 'Novosibirsk',
@@ -1118,7 +1119,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 72.45,
     mapY: 29.71,
   },
-  {
+{
     id: 'tibet',
     nameId: 'Tibet',
     nameEn: 'Tibet',
@@ -1133,7 +1134,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 74.65,
     mapY: 45.74,
   },
-  {
+{
     id: 'kathmandu',
     nameId: 'Kathmandu',
     nameEn: 'Kathmandu',
@@ -1148,7 +1149,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 73.13,
     mapY: 47.5,
   },
-  {
+{
     id: 'varanasi',
     nameId: 'Varanasi',
     nameEn: 'Varanasi',
@@ -1163,7 +1164,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 72.39,
     mapY: 48.97,
   },
-  {
+{
     id: 'jaipur',
     nameId: 'Jaipur',
     nameEn: 'Jaipur',
@@ -1178,7 +1179,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 70.28,
     mapY: 48.04,
   },
-  {
+{
     id: 'agra',
     nameId: 'Agra',
     nameEn: 'Agra',
@@ -1193,7 +1194,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 70.93,
     mapY: 47.88,
   },
-  {
+{
     id: 'delhi',
     nameId: 'Delhi',
     nameEn: 'Delhi',
@@ -1208,7 +1209,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 70.7,
     mapY: 47.01,
   },
-  {
+{
     id: 'colombo',
     nameId: 'Colombo',
     nameEn: 'Colombo',
@@ -1223,7 +1224,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 71.76,
     mapY: 59.59,
   },
-  {
+{
     id: 'male',
     nameId: 'Malé',
     nameEn: 'Malé',
@@ -1238,7 +1239,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 70.0,
     mapY: 61.14,
   },
-  {
+{
     id: 'dhaka',
     nameId: 'Dhaka',
     nameEn: 'Dhaka',
@@ -1253,7 +1254,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 74.45,
     mapY: 49.37,
   },
-  {
+{
     id: 'lahore',
     nameId: 'Lahore',
     nameEn: 'Lahore',
@@ -1268,7 +1269,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 69.87,
     mapY: 43.31,
   },
-  {
+{
     id: 'samarkand',
     nameId: 'Samarkand',
     nameEn: 'Samarkand',
@@ -1283,7 +1284,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 67.94,
     mapY: 39.91,
   },
-  {
+{
     id: 'dubai',
     nameId: 'Dubai',
     nameEn: 'Dubai',
@@ -1298,7 +1299,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 64.74,
     mapY: 48.92,
   },
-  {
+{
     id: 'abu-dhabi',
     nameId: 'Abu Dhabi',
     nameEn: 'Abu Dhabi',
@@ -1313,7 +1314,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 64.49,
     mapY: 49.38,
   },
-  {
+{
     id: 'doha',
     nameId: 'Doha',
     nameEn: 'Doha',
@@ -1328,7 +1329,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 63.66,
     mapY: 48.86,
   },
-  {
+{
     id: 'riyadh',
     nameId: 'Riyadh',
     nameEn: 'Riyadh',
@@ -1343,7 +1344,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 62.24,
     mapY: 49.19,
   },
-  {
+{
     id: 'jeddah',
     nameId: 'Jeddah',
     nameEn: 'Jeddah',
@@ -1358,7 +1359,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 60.27,
     mapY: 50.72,
   },
-  {
+{
     id: 'petra',
     nameId: 'Petra',
     nameEn: 'Petra',
@@ -1373,7 +1374,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 59.16,
     mapY: 45.22,
   },
-  {
+{
     id: 'jerusalem',
     nameId: 'Jerusalem',
     nameEn: 'Jerusalem',
@@ -1388,7 +1389,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 59.07,
     mapY: 44.33,
   },
-  {
+{
     id: 'istanbul',
     nameId: 'Istanbul',
     nameEn: 'Istanbul',
@@ -1403,7 +1404,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 57.24,
     mapY: 39.07,
   },
-  {
+{
     id: 'cairo',
     nameId: 'Kairo',
     nameEn: 'Cairo',
@@ -1418,7 +1419,172 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 57.73,
     mapY: 45.31,
   },
-  {
+{
+    id: 'luxor',
+    nameId: 'Luxor',
+    nameEn: 'Luxor',
+    countryId: 'eg',
+    regionId: 'africa',
+    theme: 'luxor',
+    targetScore: 4900,
+    blurbId: 'Mesir kuno',
+    landmarkId: 'Lembah Para Raja',
+    funFacts: ["Luxor disebut ‘museum terbuka terbesar di dunia’ karena pura dan makamnya.", "Lembah Para Raja dekat Luxor adalah tempat banyak firaun dikuburkan.", "Kuil Karnak di Luxor punya lorong pilar yang raksasa."],
+    funFactsEn: ["Luxor is called the world’s greatest open-air museum for its temples and tombs.", "The Valley of the Kings near Luxor is where many pharaohs were buried.", "Karnak Temple in Luxor has a forest of giant columns."],
+    mapX: 58.11,
+    mapY: 47.94,
+  },
+{
+    id: 'addis-ababa',
+    nameId: 'Addis Ababa',
+    nameEn: 'Addis Ababa',
+    countryId: 'et',
+    regionId: 'africa',
+    theme: 'addis-ababa',
+    targetScore: 5200,
+    blurbId: 'Ibukota Etiopia',
+    landmarkId: 'Museum Nasional',
+    funFacts: ["Addis Ababa adalah ibu kota Etiopia di dataran tinggi yang sejuk.", "Etiopia punya kalender dan sistem tulisan sendiri yang masih dipakai di Addis Ababa.", "Banyak kantor Uni Afrika berada di Addis Ababa."],
+    funFactsEn: ["Addis Ababa is Ethiopia’s capital on a cool high plateau.", "Ethiopia has its own calendar and writing system still used in Addis Ababa.", "Many African Union offices are based in Addis Ababa."],
+    mapX: 60.19,
+    mapY: 58.17,
+  },
+{
+    id: 'nairobi',
+    nameId: 'Nairobi',
+    nameEn: 'Nairobi',
+    countryId: 'ke',
+    regionId: 'africa',
+    theme: 'nairobi',
+    targetScore: 4950,
+    blurbId: 'Ibukota Kenya',
+    landmarkId: 'Taman Nasional',
+    funFacts: ["Nairobi adalah ibu kota Kenya yang unik karena taman nasional ada di dalam kota.", "Di Taman Nasional Nairobi kamu bisa melihat jerapah dengan latar gedung pencakar langit.", "Nama Nairobi berasal dari bahasa Maasai yang berarti ‘air dingin’."],
+    funFactsEn: ["Nairobi is Kenya’s capital and has a national park inside the city.", "In Nairobi National Park you can see giraffes with skyscrapers behind them.", "Nairobi’s name comes from a Maasai phrase meaning ‘cool water’."],
+    mapX: 59.67,
+    mapY: 64.34,
+  },
+{
+    id: 'zanzibar',
+    nameId: 'Zanzibar',
+    nameEn: 'Zanzibar',
+    countryId: 'tz',
+    regionId: 'africa',
+    theme: 'zanzibar',
+    targetScore: 5000,
+    blurbId: 'Pulau rempah',
+    landmarkId: 'Stone Town',
+    funFacts: ["Zanzibar adalah pulau rempah di lepas pantai Tanzania.", "Stone Town di Zanzibar adalah kota tua berliku dengan pintu ukir khas.", "Pantai pasir putih Zanzibar menghadap air turquoise di Samudra Hindia."],
+    funFactsEn: ["Zanzibar is a spice island off the coast of Tanzania.", "Stone Town in Zanzibar is a maze of alleys and carved doors.", "Zanzibar’s white beaches face turquoise Indian Ocean water."],
+    mapX: 60.36,
+    mapY: 67.01,
+  },
+{
+    id: 'victoria-falls',
+    nameId: 'Victoria Falls',
+    nameEn: 'Victoria Falls',
+    countryId: 'zw',
+    regionId: 'africa',
+    theme: 'victoria-falls',
+    targetScore: 5250,
+    blurbId: 'Air terjun raksasa',
+    landmarkId: 'Air Terjun Victoria',
+    funFacts: ["Air Terjun Victoria adalah salah satu air terjun terbesar di dunia.", "Kabut dari Air Terjun Victoria bisa terlihat dari jarak jauh — disebut ‘asap yang bergemuruh’.", "Jembatan di dekat Air Terjun Victoria menghubungkan dua negara."],
+    funFactsEn: ["Victoria Falls is one of the largest waterfalls on Earth.", "Mist from Victoria Falls can be seen from far away — the ‘smoke that thunders’.", "A bridge near Victoria Falls links two countries."],
+    mapX: 56.59,
+    mapY: 74.03,
+  },
+{
+    id: 'antananarivo',
+    nameId: 'Antananarivo',
+    nameEn: 'Antananarivo',
+    countryId: 'mg',
+    regionId: 'africa',
+    theme: 'antananarivo',
+    targetScore: 5300,
+    blurbId: 'Ibukota Madagaskar',
+    landmarkId: 'Istana Ratu (Rova)',
+    funFacts: ["Antananarivo adalah ibu kota Madagaskar di atas bukit-bukit.", "Lemur — hewan khas Madagaskar — tidak hidup liar di benua lain.", "Madagaskar terpisah dari Afrika begitu lama sehingga hewannya unik di dunia."],
+    funFactsEn: ["Antananarivo is Madagascar’s capital built across hills.", "Lemurs — Madagascar’s famous animals — do not live wild on other continents.", "Madagascar was isolated so long that its wildlife is unique on Earth."],
+    mapX: 62.74,
+    mapY: 74.67,
+  },
+{
+    id: 'cape-town',
+    nameId: 'Cape Town',
+    nameEn: 'Cape Town',
+    countryId: 'za',
+    regionId: 'africa',
+    theme: 'cape-town',
+    targetScore: 5050,
+    blurbId: 'Kota ujung selatan',
+    landmarkId: 'Table Mountain',
+    funFacts: ["Cape Town punya Table Mountain — gunung berkepala datar di belakang kota.", "Di ujung dekat Cape Town, Samudra Atlantik dan Hindia bertemu.", "Penguin Afrika bisa dilihat di pantai dekat Cape Town."],
+    funFactsEn: ["Cape Town’s Table Mountain is a flat-topped peak behind the city.", "Near Cape Town, the Atlantic and Indian Oceans meet.", "African penguins live on beaches near Cape Town."],
+    mapX: 54.44,
+    mapY: 83.33,
+  },
+{
+    id: 'dakar',
+    nameId: 'Dakar',
+    nameEn: 'Dakar',
+    countryId: 'sn',
+    regionId: 'africa',
+    theme: 'dakar',
+    targetScore: 5100,
+    blurbId: 'Ibukota Senegal',
+    landmarkId: 'Monument de la Renaissance Africaine',
+    funFacts: ["Dakar adalah ibu kota Senegal di ujung paling barat benua Afrika.", "Monumen Renaissance Africaine di Dakar adalah salah satu patung tertinggi di Afrika.", "Gelombang di pantai Dakar menarik peselancar dari banyak negara."],
+    funFactsEn: ["Dakar is Senegal’s capital on Africa’s westernmost tip.", "The African Renaissance Monument in Dakar is one of Africa’s tallest statues.", "Dakar’s surf breaks attract wave riders from many countries."],
+    mapX: 44.16,
+    mapY: 55.3,
+  },
+{
+    id: 'praia',
+    nameId: 'Praia',
+    nameEn: 'Praia',
+    countryId: 'cv',
+    regionId: 'africa',
+    theme: 'praia',
+    targetScore: 5150,
+    blurbId: 'Ibukota Tanjung Verde',
+    landmarkId: 'Plateau & pantai Atlantik',
+    funFacts: ["Praia adalah ibu kota Tanjung Verde di sebuah pulau di Samudra Atlantik.", "Tanjung Verde — dengan Praia di dalamnya — terkenal dengan musik morna.", "Dari Praia, bukit dan laut Atlantik terlihat berdampingan."],
+    funFactsEn: ["Praia is the capital of Cape Verde on an Atlantic island.", "Cape Verde — including Praia — is famous for morna music.", "From Praia you can see hills and the Atlantic side by side."],
+    mapX: 42.43,
+    mapY: 55.2,
+  },
+{
+    id: 'casablanca',
+    nameId: 'Casablanca',
+    nameEn: 'Casablanca',
+    countryId: 'ma',
+    regionId: 'africa',
+    theme: 'casablanca',
+    targetScore: 4850,
+    blurbId: 'Kota Atlantik',
+    landmarkId: 'Hassan II Mosque',
+    funFacts: ["Casablanca adalah kota terbesar di Maroko di tepi Samudra Atlantik.", "Masjid Hassan II di Casablanca punya menara yang sangat tinggi di atas laut.", "Nama Casablanca berarti ‘rumah putih’."],
+    funFactsEn: ["Casablanca is Morocco’s largest city on the Atlantic Ocean.", "Hassan II Mosque in Casablanca has a soaring minaret above the sea.", "Casablanca means ‘white house’."],
+    mapX: 47.1,
+    mapY: 43.94,
+  },
+{
+    id: 'marrakech',
+    nameId: 'Marrakech',
+    nameEn: 'Marrakech',
+    countryId: 'ma',
+    regionId: 'africa',
+    theme: 'marrakech',
+    targetScore: 4800,
+    blurbId: 'Kota merah',
+    landmarkId: 'Jemaa el-Fnaa',
+    funFacts: ["Marrakech dijuluki ‘kota merah’ karena tembok dan bangunannya berwarna tanah liat.", "Lapangan Jemaa el-Fnaa di Marrakech ramai pesulap, musik, dan makanan malam hari.", "Taman Majorelle di Marrakech terkenal dengan biru yang sangat kuat."],
+    funFactsEn: ["Marrakech is the Red City for its clay-colored walls and buildings.", "Jemaa el-Fnaa square in Marrakech fills with performers and food at night.", "Majorelle Garden in Marrakech is famous for its intense blue."],
+    mapX: 45.54,
+    mapY: 43.68,
+  },
+{
     id: 'athens',
     nameId: 'Athena',
     nameEn: 'Athens',
@@ -1433,7 +1599,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 55.45,
     mapY: 40.42,
   },
-  {
+{
     id: 'santorini',
     nameId: 'Santorini',
     nameEn: 'Santorini',
@@ -1448,7 +1614,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 55.95,
     mapY: 41.41,
   },
-  {
+{
     id: 'kyiv',
     nameId: 'Kyiv',
     nameEn: 'Kyiv',
@@ -1463,7 +1629,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 57.74,
     mapY: 32.58,
   },
-  {
+{
     id: 'krakow',
     nameId: 'Krakow',
     nameEn: 'Kraków',
@@ -1478,7 +1644,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 54.49,
     mapY: 33.15,
   },
-  {
+{
     id: 'warsaw',
     nameId: 'Warsawa',
     nameEn: 'Warsaw',
@@ -1493,7 +1659,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 54.76,
     mapY: 31.91,
   },
-  {
+{
     id: 'prague',
     nameId: 'Praha',
     nameEn: 'Prague',
@@ -1508,7 +1674,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 52.88,
     mapY: 33.22,
   },
-  {
+{
     id: 'budapest',
     nameId: 'Budapest',
     nameEn: 'Budapest',
@@ -1523,7 +1689,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 54.14,
     mapY: 34.69,
   },
-  {
+{
     id: 'brasov',
     nameId: 'Brasov',
     nameEn: 'Brașov',
@@ -1538,7 +1704,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 56.03,
     mapY: 35.79,
   },
-  {
+{
     id: 'moscow',
     nameId: 'Moskwa',
     nameEn: 'Moscow',
@@ -1553,7 +1719,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 59.76,
     mapY: 29.07,
   },
-  {
+{
     id: 'saint-petersburg',
     nameId: 'Sankt Petersburg',
     nameEn: 'Saint Petersburg',
@@ -1568,7 +1734,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 57.73,
     mapY: 25.81,
   },
-  {
+{
     id: 'tallinn',
     nameId: 'Tallinn',
     nameEn: 'Tallinn',
@@ -1583,7 +1749,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 56.15,
     mapY: 25.99,
   },
-  {
+{
     id: 'riga',
     nameId: 'Riga',
     nameEn: 'Riga',
@@ -1598,7 +1764,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 55.96,
     mapY: 27.81,
   },
-  {
+{
     id: 'vilnius',
     nameId: 'Vilnius',
     nameEn: 'Vilnius',
@@ -1613,7 +1779,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 56.28,
     mapY: 29.48,
   },
-  {
+{
     id: 'minsk',
     nameId: 'Minsk',
     nameEn: 'Minsk',
@@ -1628,7 +1794,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 56.92,
     mapY: 30.08,
   },
-  {
+{
     id: 'tbilisi',
     nameId: 'Tbilisi',
     nameEn: 'Tbilisi',
@@ -1643,7 +1809,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 61.77,
     mapY: 38.84,
   },
-  {
+{
     id: 'yerevan',
     nameId: 'Yerevan',
     nameEn: 'Yerevan',
@@ -1658,7 +1824,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 61.68,
     mapY: 39.81,
   },
-  {
+{
     id: 'reykjavik',
     nameId: 'Reykjavik',
     nameEn: 'Reykjavík',
@@ -1673,7 +1839,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 41.6,
     mapY: 25.43,
   },
-  {
+{
     id: 'bergen',
     nameId: 'Bergen',
     nameEn: 'Bergen',
@@ -1688,7 +1854,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 50.69,
     mapY: 24.81,
   },
-  {
+{
     id: 'oslo',
     nameId: 'Oslo',
     nameEn: 'Oslo',
@@ -1703,7 +1869,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 52.23,
     mapY: 25.13,
   },
-  {
+{
     id: 'stockholm',
     nameId: 'Stockholm',
     nameEn: 'Stockholm',
@@ -1718,7 +1884,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 54.4,
     mapY: 25.32,
   },
-  {
+{
     id: 'copenhagen',
     nameId: 'Kopenhagen',
     nameEn: 'Copenhagen',
@@ -1733,7 +1899,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 52.71,
     mapY: 28.62,
   },
-  {
+{
     id: 'helsinki',
     nameId: 'Helsinki',
     nameEn: 'Helsinki',
@@ -1748,7 +1914,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 56.43,
     mapY: 25.68,
   },
-  {
+{
     id: 'dublin',
     nameId: 'Dublin',
     nameEn: 'Dublin',
@@ -1763,7 +1929,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 47.19,
     mapY: 30.73,
   },
-  {
+{
     id: 'edinburgh',
     nameId: 'Edinburgh',
     nameEn: 'Edinburgh',
@@ -1778,7 +1944,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 48.11,
     mapY: 29.28,
   },
-  {
+{
     id: 'manchester',
     nameId: 'Manchester',
     nameEn: 'Manchester',
@@ -1801,7 +1967,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 48.55,
     mapY: 30.40,
   },
-  {
+{
     id: 'london',
     nameId: 'London',
     nameEn: 'London',
@@ -1816,7 +1982,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 49.07,
     mapY: 31.77,
   },
-  {
+{
     id: 'munich',
     nameId: 'Munchen',
     nameEn: 'Munich',
@@ -1831,7 +1997,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 51.84,
     mapY: 34.05,
   },
-  {
+{
     id: 'berlin',
     nameId: 'Berlin',
     nameEn: 'Berlin',
@@ -1846,7 +2012,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 52.39,
     mapY: 31.43,
   },
-  {
+{
     id: 'vienna',
     nameId: 'Wina',
     nameEn: 'Vienna',
@@ -1861,7 +2027,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 53.25,
     mapY: 34.01,
   },
-  {
+{
     id: 'zurich',
     nameId: 'Zurich',
     nameEn: 'Zurich',
@@ -1876,7 +2042,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 50.98,
     mapY: 34.48,
   },
-  {
+{
     id: 'amsterdam',
     nameId: 'Amsterdam',
     nameEn: 'Amsterdam',
@@ -1891,7 +2057,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 49.49,
     mapY: 31.57,
   },
-  {
+{
     id: 'brussels',
     nameId: 'Brussel',
     nameEn: 'Brussels',
@@ -1906,7 +2072,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 49.33,
     mapY: 32.42,
   },
-  {
+{
     id: 'paris',
     nameId: 'Paris',
     nameEn: 'Paris',
@@ -1921,7 +2087,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 48.74,
     mapY: 33.56,
   },
-  {
+{
     id: 'lisbon',
     nameId: 'Lisbon',
     nameEn: 'Lisbon',
@@ -1936,7 +2102,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 46.65,
     mapY: 40.85,
   },
-  {
+{
     id: 'barcelona',
     nameId: 'Barcelona',
     nameEn: 'Barcelona',
@@ -1951,7 +2117,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 49.7,
     mapY: 37.52,
   },
-  {
+{
     id: 'madrid',
     nameId: 'Madrid',
     nameEn: 'Madrid',
@@ -1966,7 +2132,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 47.96,
     mapY: 38.16,
   },
-  {
+{
     id: 'venice',
     nameId: 'Venesia',
     nameEn: 'Venice',
@@ -1981,7 +2147,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 51.58,
     mapY: 35.08,
   },
-  {
+{
     id: 'rome',
     nameId: 'Roma',
     nameEn: 'Rome',
@@ -1996,7 +2162,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 52.64,
     mapY: 37.19,
   },
-  {
+{
     id: 'vatican',
     nameId: 'Vatikan',
     nameEn: 'Vatican',
@@ -2011,172 +2177,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 52.67,
     mapY: 38.41,
   },
-  {
-    id: 'marrakech',
-    nameId: 'Marrakech',
-    nameEn: 'Marrakech',
-    countryId: 'ma',
-    regionId: 'africa',
-    theme: 'marrakech',
-    targetScore: 4800,
-    blurbId: 'Kota merah',
-    landmarkId: 'Jemaa el-Fnaa',
-    funFacts: ["Marrakech dijuluki ‘kota merah’ karena tembok dan bangunannya berwarna tanah liat.", "Lapangan Jemaa el-Fnaa di Marrakech ramai pesulap, musik, dan makanan malam hari.", "Taman Majorelle di Marrakech terkenal dengan biru yang sangat kuat."],
-    funFactsEn: ["Marrakech is the Red City for its clay-colored walls and buildings.", "Jemaa el-Fnaa square in Marrakech fills with performers and food at night.", "Majorelle Garden in Marrakech is famous for its intense blue."],
-    mapX: 45.54,
-    mapY: 43.68,
-  },
-  {
-    id: 'casablanca',
-    nameId: 'Casablanca',
-    nameEn: 'Casablanca',
-    countryId: 'ma',
-    regionId: 'africa',
-    theme: 'casablanca',
-    targetScore: 4850,
-    blurbId: 'Kota Atlantik',
-    landmarkId: 'Hassan II Mosque',
-    funFacts: ["Casablanca adalah kota terbesar di Maroko di tepi Samudra Atlantik.", "Masjid Hassan II di Casablanca punya menara yang sangat tinggi di atas laut.", "Nama Casablanca berarti ‘rumah putih’."],
-    funFactsEn: ["Casablanca is Morocco’s largest city on the Atlantic Ocean.", "Hassan II Mosque in Casablanca has a soaring minaret above the sea.", "Casablanca means ‘white house’."],
-    mapX: 47.1,
-    mapY: 43.94,
-  },
-  {
-    id: 'luxor',
-    nameId: 'Luxor',
-    nameEn: 'Luxor',
-    countryId: 'eg',
-    regionId: 'africa',
-    theme: 'luxor',
-    targetScore: 4900,
-    blurbId: 'Mesir kuno',
-    landmarkId: 'Lembah Para Raja',
-    funFacts: ["Luxor disebut ‘museum terbuka terbesar di dunia’ karena pura dan makamnya.", "Lembah Para Raja dekat Luxor adalah tempat banyak firaun dikuburkan.", "Kuil Karnak di Luxor punya lorong pilar yang raksasa."],
-    funFactsEn: ["Luxor is called the world’s greatest open-air museum for its temples and tombs.", "The Valley of the Kings near Luxor is where many pharaohs were buried.", "Karnak Temple in Luxor has a forest of giant columns."],
-    mapX: 58.11,
-    mapY: 47.94,
-  },
-  {
-    id: 'nairobi',
-    nameId: 'Nairobi',
-    nameEn: 'Nairobi',
-    countryId: 'ke',
-    regionId: 'africa',
-    theme: 'nairobi',
-    targetScore: 4950,
-    blurbId: 'Ibukota Kenya',
-    landmarkId: 'Taman Nasional',
-    funFacts: ["Nairobi adalah ibu kota Kenya yang unik karena taman nasional ada di dalam kota.", "Di Taman Nasional Nairobi kamu bisa melihat jerapah dengan latar gedung pencakar langit.", "Nama Nairobi berasal dari bahasa Maasai yang berarti ‘air dingin’."],
-    funFactsEn: ["Nairobi is Kenya’s capital and has a national park inside the city.", "In Nairobi National Park you can see giraffes with skyscrapers behind them.", "Nairobi’s name comes from a Maasai phrase meaning ‘cool water’."],
-    mapX: 59.67,
-    mapY: 64.34,
-  },
-  {
-    id: 'zanzibar',
-    nameId: 'Zanzibar',
-    nameEn: 'Zanzibar',
-    countryId: 'tz',
-    regionId: 'africa',
-    theme: 'zanzibar',
-    targetScore: 5000,
-    blurbId: 'Pulau rempah',
-    landmarkId: 'Stone Town',
-    funFacts: ["Zanzibar adalah pulau rempah di lepas pantai Tanzania.", "Stone Town di Zanzibar adalah kota tua berliku dengan pintu ukir khas.", "Pantai pasir putih Zanzibar menghadap air turquoise di Samudra Hindia."],
-    funFactsEn: ["Zanzibar is a spice island off the coast of Tanzania.", "Stone Town in Zanzibar is a maze of alleys and carved doors.", "Zanzibar’s white beaches face turquoise Indian Ocean water."],
-    mapX: 60.36,
-    mapY: 67.01,
-  },
-  {
-    id: 'cape-town',
-    nameId: 'Cape Town',
-    nameEn: 'Cape Town',
-    countryId: 'za',
-    regionId: 'africa',
-    theme: 'cape-town',
-    targetScore: 5050,
-    blurbId: 'Kota ujung selatan',
-    landmarkId: 'Table Mountain',
-    funFacts: ["Cape Town punya Table Mountain — gunung berkepala datar di belakang kota.", "Di ujung dekat Cape Town, Samudra Atlantik dan Hindia bertemu.", "Penguin Afrika bisa dilihat di pantai dekat Cape Town."],
-    funFactsEn: ["Cape Town’s Table Mountain is a flat-topped peak behind the city.", "Near Cape Town, the Atlantic and Indian Oceans meet.", "African penguins live on beaches near Cape Town."],
-    mapX: 54.44,
-    mapY: 83.33,
-  },
-  {
-    id: 'dakar',
-    nameId: 'Dakar',
-    nameEn: 'Dakar',
-    countryId: 'sn',
-    regionId: 'africa',
-    theme: 'dakar',
-    targetScore: 5100,
-    blurbId: 'Ibukota Senegal',
-    landmarkId: 'Monument de la Renaissance Africaine',
-    funFacts: ["Dakar adalah ibu kota Senegal di ujung paling barat benua Afrika.", "Monumen Renaissance Africaine di Dakar adalah salah satu patung tertinggi di Afrika.", "Gelombang di pantai Dakar menarik peselancar dari banyak negara."],
-    funFactsEn: ["Dakar is Senegal’s capital on Africa’s westernmost tip.", "The African Renaissance Monument in Dakar is one of Africa’s tallest statues.", "Dakar’s surf breaks attract wave riders from many countries."],
-    mapX: 44.16,
-    mapY: 55.3,
-  },
-  {
-    id: 'praia',
-    nameId: 'Praia',
-    nameEn: 'Praia',
-    countryId: 'cv',
-    regionId: 'africa',
-    theme: 'praia',
-    targetScore: 5150,
-    blurbId: 'Ibukota Tanjung Verde',
-    landmarkId: 'Plateau & pantai Atlantik',
-    funFacts: ["Praia adalah ibu kota Tanjung Verde di sebuah pulau di Samudra Atlantik.", "Tanjung Verde — dengan Praia di dalamnya — terkenal dengan musik morna.", "Dari Praia, bukit dan laut Atlantik terlihat berdampingan."],
-    funFactsEn: ["Praia is the capital of Cape Verde on an Atlantic island.", "Cape Verde — including Praia — is famous for morna music.", "From Praia you can see hills and the Atlantic side by side."],
-    mapX: 42.43,
-    mapY: 55.2,
-  },
-  {
-    id: 'addis-ababa',
-    nameId: 'Addis Ababa',
-    nameEn: 'Addis Ababa',
-    countryId: 'et',
-    regionId: 'africa',
-    theme: 'addis-ababa',
-    targetScore: 5200,
-    blurbId: 'Ibukota Etiopia',
-    landmarkId: 'Museum Nasional',
-    funFacts: ["Addis Ababa adalah ibu kota Etiopia di dataran tinggi yang sejuk.", "Etiopia punya kalender dan sistem tulisan sendiri yang masih dipakai di Addis Ababa.", "Banyak kantor Uni Afrika berada di Addis Ababa."],
-    funFactsEn: ["Addis Ababa is Ethiopia’s capital on a cool high plateau.", "Ethiopia has its own calendar and writing system still used in Addis Ababa.", "Many African Union offices are based in Addis Ababa."],
-    mapX: 60.19,
-    mapY: 58.17,
-  },
-  {
-    id: 'victoria-falls',
-    nameId: 'Victoria Falls',
-    nameEn: 'Victoria Falls',
-    countryId: 'zw',
-    regionId: 'africa',
-    theme: 'victoria-falls',
-    targetScore: 5250,
-    blurbId: 'Air terjun raksasa',
-    landmarkId: 'Air Terjun Victoria',
-    funFacts: ["Air Terjun Victoria adalah salah satu air terjun terbesar di dunia.", "Kabut dari Air Terjun Victoria bisa terlihat dari jarak jauh — disebut ‘asap yang bergemuruh’.", "Jembatan di dekat Air Terjun Victoria menghubungkan dua negara."],
-    funFactsEn: ["Victoria Falls is one of the largest waterfalls on Earth.", "Mist from Victoria Falls can be seen from far away — the ‘smoke that thunders’.", "A bridge near Victoria Falls links two countries."],
-    mapX: 56.59,
-    mapY: 74.03,
-  },
-  {
-    id: 'antananarivo',
-    nameId: 'Antananarivo',
-    nameEn: 'Antananarivo',
-    countryId: 'mg',
-    regionId: 'africa',
-    theme: 'antananarivo',
-    targetScore: 5300,
-    blurbId: 'Ibukota Madagaskar',
-    landmarkId: 'Istana Ratu (Rova)',
-    funFacts: ["Antananarivo adalah ibu kota Madagaskar di atas bukit-bukit.", "Lemur — hewan khas Madagaskar — tidak hidup liar di benua lain.", "Madagaskar terpisah dari Afrika begitu lama sehingga hewannya unik di dunia."],
-    funFactsEn: ["Antananarivo is Madagascar’s capital built across hills.", "Lemurs — Madagascar’s famous animals — do not live wild on other continents.", "Madagascar was isolated so long that its wildlife is unique on Earth."],
-    mapX: 62.74,
-    mapY: 74.67,
-  },
-  {
+{
     id: 'rio',
     nameId: 'Rio de Janeiro',
     nameEn: 'Rio de Janeiro',
@@ -2191,7 +2192,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 36.61,
     mapY: 76.88,
   },
-  {
+{
     id: 'manaus',
     nameId: 'Manaus',
     nameEn: 'Manaus',
@@ -2206,7 +2207,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 31.06,
     mapY: 65.34,
   },
-  {
+{
     id: 'buenos-aires',
     nameId: 'Buenos Aires',
     nameEn: 'Buenos Aires',
@@ -2221,7 +2222,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 32.94,
     mapY: 83.49,
   },
-  {
+{
     id: 'cusco',
     nameId: 'Cusco',
     nameEn: 'Cusco',
@@ -2236,7 +2237,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 27.56,
     mapY: 70.82,
   },
-  {
+{
     id: 'machu-picchu',
     nameId: 'Machu Picchu',
     nameEn: 'Machu Picchu',
@@ -2251,7 +2252,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 27.39,
     mapY: 70.64,
   },
-  {
+{
     id: 'uyuni',
     nameId: 'Uyuni',
     nameEn: 'Uyuni',
@@ -2266,7 +2267,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 29.05,
     mapY: 74.22,
   },
-  {
+{
     id: 'santiago',
     nameId: 'Santiago',
     nameEn: 'Santiago',
@@ -2281,7 +2282,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 28.93,
     mapY: 80.95,
   },
-  {
+{
     id: 'galapagos',
     nameId: 'Galápagos',
     nameEn: 'Galápagos',
@@ -2296,7 +2297,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 23.99,
     mapY: 63.74,
   },
-  {
+{
     id: 'panama',
     nameId: 'Panama',
     nameEn: 'Panama',
@@ -2311,7 +2312,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 27.15,
     mapY: 58.64,
   },
-  {
+{
     id: 'san-jose',
     nameId: 'San José',
     nameEn: 'San José',
@@ -2326,7 +2327,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 25.83,
     mapY: 58.11,
   },
-  {
+{
     id: 'cancun',
     nameId: 'Cancún',
     nameEn: 'Cancún',
@@ -2341,7 +2342,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 25.02,
     mapY: 51.5,
   },
-  {
+{
     id: 'mexico-city',
     nameId: 'Mexico City',
     nameEn: 'Mexico City',
@@ -2356,7 +2357,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 21.48,
     mapY: 52.48,
   },
-  {
+{
     id: 'havana',
     nameId: 'Havana',
     nameEn: 'Havana',
@@ -2371,7 +2372,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 26.32,
     mapY: 50.32,
   },
-  {
+{
     id: 'vancouver',
     nameId: 'Vancouver',
     nameEn: 'Vancouver',
@@ -2386,7 +2387,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 15.13,
     mapY: 33.36,
   },
-  {
+{
     id: 'calgary',
     nameId: 'Calgary',
     nameEn: 'Calgary',
@@ -2401,7 +2402,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 17.71,
     mapY: 32.38,
   },
-  {
+{
     id: 'toronto',
     nameId: 'Toronto',
     nameEn: 'Toronto',
@@ -2416,7 +2417,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 27.18,
     mapY: 38.45,
   },
-  {
+{
     id: 'ottawa',
     nameId: 'Ottawa',
     nameEn: 'Ottawa',
@@ -2431,7 +2432,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 28.24,
     mapY: 37.27,
   },
-  {
+{
     id: 'quebec',
     nameId: 'Quebec',
     nameEn: 'Quebec',
@@ -2446,7 +2447,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 29.54,
     mapY: 36.34,
   },
-  {
+{
     id: 'ilulissat',
     nameId: 'Ilulissat',
     nameEn: 'Ilulissat',
@@ -2461,7 +2462,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 35.04,
     mapY: 21.49,
   },
-  {
+{
     id: 'honolulu',
     nameId: 'Honolulu',
     nameEn: 'Honolulu',
@@ -2476,7 +2477,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 3.84,
     mapY: 51.42,
   },
-  {
+{
     id: 'seattle',
     nameId: 'Seattle',
     nameEn: 'Seattle',
@@ -2491,7 +2492,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 15.35,
     mapY: 34.3,
   },
-  {
+{
     id: 'san-francisco',
     nameId: 'San Francisco',
     nameEn: 'San Francisco',
@@ -2506,7 +2507,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 15.32,
     mapY: 39.88,
   },
-  {
+{
     id: 'los-angeles',
     nameId: 'Los Angeles',
     nameEn: 'Los Angeles',
@@ -2521,7 +2522,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 16.53,
     mapY: 43.76,
   },
-  {
+{
     id: 'las-vegas',
     nameId: 'Las Vegas',
     nameEn: 'Las Vegas',
@@ -2536,7 +2537,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 17.42,
     mapY: 42.51,
   },
-  {
+{
     id: 'chicago',
     nameId: 'Chicago',
     nameEn: 'Chicago',
@@ -2551,7 +2552,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 24.79,
     mapY: 39.65,
   },
-  {
+{
     id: 'miami',
     nameId: 'Miami',
     nameEn: 'Miami',
@@ -2566,7 +2567,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 26.94,
     mapY: 48.74,
   },
-  {
+{
     id: 'washington',
     nameId: 'Washington, D.C.',
     nameEn: 'Washington, D.C.',
@@ -2581,7 +2582,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 27.86,
     mapY: 40.18,
   },
-  {
+{
     id: 'boston',
     nameId: 'Boston',
     nameEn: 'Boston',
@@ -2596,7 +2597,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 29.57,
     mapY: 38.72,
   },
-  {
+{
     id: 'new-york',
     nameId: 'New York',
     nameEn: 'New York',
@@ -2611,7 +2612,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 28.66,
     mapY: 39.31,
   },
-  {
+{
     id: 'north-pole',
     nameId: 'Kutub Utara',
     nameEn: 'North Pole',
@@ -2634,7 +2635,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     mapX: 50.0,
     mapY: 6.5,
   },
-  {
+{
     id: 'south-pole',
     nameId: 'Kutub Selatan',
     nameEn: 'South Pole',
@@ -2656,7 +2657,7 @@ export const ADVENTURE_CITIES: AdventureCity[] = [
     ],
     mapX: 50.0,
     mapY: 94.5,
-  },
+  }
 ];
 
 /** Kota terakhir region Indonesia — lolos = buka Asia Tenggara */

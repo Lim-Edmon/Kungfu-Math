@@ -282,6 +282,34 @@ export function normalizeProgress(raw: unknown): PlayerProgress {
     next.adventureScoreRecords = asr;
   }
 
+  /**
+   * Jalur kota diubah (Asia → Afrika → Eropa). Progress lama bisa loncat gap.
+   * Bangun ulang unlocked berurutan dari Jakarta: kota ikut jika dulu terbuka
+   * ATAU sudah lolos target; berhenti di gap pertama (bukan secret).
+   */
+  {
+    const oldSet = new Set(next.adventureUnlocked || ['jakarta']);
+    const hs = next.adventureHighScores || {};
+    const contiguous: string[] = [];
+    for (const c of ADVENTURE_CITIES) {
+      if (isSecretCityId(c.id)) continue;
+      const cleared = (hs[c.id] ?? 0) >= c.targetScore;
+      const wasOpen = oldSet.has(c.id);
+      if (c.id === 'jakarta' || cleared || wasOpen) {
+        contiguous.push(c.id);
+        continue;
+      }
+      break;
+    }
+    if (!contiguous.includes('jakarta')) contiguous.unshift('jakarta');
+    next.adventureUnlocked = withSecretCitiesIfEligible(contiguous, hs);
+    // Fokus kota: clamp ke kota terjauh yang masih di unlocked
+    if (!next.adventureUnlocked.includes(next.adventureCityId)) {
+      const nonSecret = next.adventureUnlocked.filter((id) => !isSecretCityId(id));
+      next.adventureCityId = nonSecret[nonSecret.length - 1] || 'jakarta';
+    }
+  }
+
   // isSubscribed: fase test — terima boolean, JANGAN dipakai sebagai kontrol bayar
   if (typeof p.isSubscribed === 'boolean') next.isSubscribed = p.isSubscribed;
 
