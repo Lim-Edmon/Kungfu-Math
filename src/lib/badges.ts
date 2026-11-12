@@ -218,6 +218,15 @@ export const BADGE_DEFS: BadgeDef[] = [
     descEn: 'Clear the Americas path (through New York)',
     group: 'petualangan',
   },
+  {
+    id: 'polar_greatest_explorer',
+    emoji: '❄️',
+    titleId: 'Greatest Explorer All Time',
+    titleEn: 'Greatest Explorer All Time',
+    descId: 'Taklukkan Kutub Utara dan Kutub Selatan',
+    descEn: 'Conquer both the North Pole and the South Pole',
+    group: 'petualangan',
+  },
 ];
 
 export function getBadgeDef(id: string): BadgeDef | undefined {
@@ -302,9 +311,14 @@ export function evaluateNewBadges(input: BadgeEvalInput): BadgeId[] {
   // Per benua (setelah Nusantara) — tanpa lencana SEA terpisah
   tryAdd('continent_oceania', input.clearedCityIds.includes('port-moresby'));
   tryAdd('continent_asia', input.clearedCityIds.includes('cairo'));
-  tryAdd('continent_africa', input.clearedCityIds.includes('antananarivo'));
+  tryAdd('continent_africa', input.clearedCityIds.includes('marrakech'));
   tryAdd('continent_europe', input.clearedCityIds.includes('vatican'));
   tryAdd('continent_america', input.clearedCityIds.includes('new-york'));
+  // Medali rahasia: baru muncul di Dojo setelah region kutub terbuka; award jika kedua kutub lolos
+  tryAdd(
+    'polar_greatest_explorer',
+    input.clearedCityIds.includes('north-pole') && input.clearedCityIds.includes('south-pole')
+  );
   // Sprint: punya rekor di 5, 10, dan 20 soal
   {
     const sm = input.sprintBestMs || {};
