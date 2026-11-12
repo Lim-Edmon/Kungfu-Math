@@ -5340,3 +5340,35 @@ html[data-theme='malam'] .onboard-banner {
 .hud-avatar-wrap.pose-attack {
   transform: none;
 }
+
+/* —— Salju arena kutub (pointer-events: none → bola tetap bisa di-slice/tap) —— */
+.polar-snow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  overflow: hidden;
+}
+.polar-snowflake {
+  position: absolute;
+  top: -12px;
+  color: #e8f4ff;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  animation-name: km-polar-snow-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+  user-select: none;
+}
+@keyframes km-polar-snow-fall {
+  0% {
+    transform: translate3d(0, -10%, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate3d(8px, 110vh, 0) rotate(360deg);
+  }
+}
+/* Bola tetap di atas salju untuk ketebalan visual, input tetap tembus karena snow pointer-events:none */
+.game-arena .floating-number {
+  position: absolute;
+}
