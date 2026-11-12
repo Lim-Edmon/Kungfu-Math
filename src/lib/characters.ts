@@ -127,8 +127,15 @@ export function characterRoleLabel(char: Character, lang: 'id' | 'en'): string {
   return lang === 'en' ? row.en : row.id;
 }
 
-/** Char yang sudah punya GIF serangan di HUD */
-const ATTACK_ANIM_CHARS = ['yu-jin', 'yo-rin', 'hong-yi', 'an-ning'] as const;
+/** Char yang sudah punya GIF serangan di HUD (semua 6 karakter) */
+const ATTACK_ANIM_CHARS = [
+  'yu-jin',
+  'hong-yi',
+  'ming-zhe',
+  'yo-rin',
+  'an-ning',
+  'zhi-xing',
+] as const;
 
 /**
  * GIF animasi di kotak foto HUD (opsional).

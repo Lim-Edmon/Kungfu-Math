@@ -2666,11 +2666,11 @@ export const MVP_REGION_UNLOCK_MSG =
   'Selamat, Pendekar! Indonesia tertaklukkan. Asia Tenggara terbuka — kembali ke peta dan lanjutkan legenda!';
 
 /**
- * Ujung konten terbuka untuk pemain (Indo → SEA → Oceania → Asia Timur → Asia Tengah & Selatan → Timur Tengah).
- * Lolos Cairo → popup ujung perjalanan; region berikutnya tetap terkunci.
+ * Ujung konten terbuka = kota terakhir yang punya BG+musik khusus berurutan tanpa gap.
+ * Saat ini: Paris (Eropa Tengah & Barat). Kota setelahnya tetap di data, belum playable normal.
  * Map debug / cheat tetap bisa melihat semua kota di data.
  */
-export const CONTENT_PATH_LAST_CITY_ID = 'new-york';
+export const CONTENT_PATH_LAST_CITY_ID = 'paris';
 
 /** Ujung data penuh (USA) — dipakai nanti saat seluruh jalur dibuka */
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
