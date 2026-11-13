@@ -188,7 +188,9 @@ Jendela Imlek/Lebaran hardcode ~2025–2050; Natal otomatis 25 Nov–6 Jan tiap 
 
 ### Kode buka-semua (uji)
 
-**Tidak dipublikasikan di README.** Hanya catatan internal / Codespace. Jangan bagikan ke pemain.
+**Tidak ditulis di README / repo publik.**  
+Kode uji (jika ada) hanya untuk developer di mesin lokal — jangan commit ke GitHub, jangan sebar ke pemain.  
+Query debug peta (`?mapdebug=1`) boleh dipakai developer; itu **bukan** cheat skor/progress.
 
 ---
 
