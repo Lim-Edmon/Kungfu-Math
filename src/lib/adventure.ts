@@ -2667,17 +2667,17 @@ export const MVP_REGION_UNLOCK_MSG =
   'Selamat, Pendekar! Indonesia tertaklukkan. Asia Tenggara terbuka — kembali ke peta dan lanjutkan legenda!';
 
 /**
- * Ujung konten terbuka = kota terakhir yang punya BG+musik khusus berurutan tanpa gap.
- * Saat ini: Paris (Eropa Tengah & Barat). Kota setelahnya tetap di data, belum playable normal.
- * Map debug / cheat tetap bisa melihat semua kota di data.
+ * Ujung konten playable = kota terakhir berurutan yang punya BG+musik lengkap (tanpa gap).
+ * Saat ini: New York (ujung jalur utama). Setelah lolos → Jalur Misteri kutub bisa terbuka.
+ * Map debug (?mapdebug=1) tetap bisa melihat semua kota di data.
  */
 export const CONTENT_PATH_LAST_CITY_ID = 'new-york';
 
-/** Ujung data penuh (USA) — dipakai nanti saat seluruh jalur dibuka */
+/** Ujung data jalur utama (sama dengan content path saat penuh). */
 export const MVP_PATH_LAST_CITY_ID = 'new-york';
 
 export const MVP_PATH_COMPLETE_MSG =
-  'Luar biasa, Pendekar! Kau mencapai ujung perjalanan saat ini. Istirahat sejenak — petualangan baru akan menanti.';
+  'Luar biasa, Pendekar! Kau mencapai ujung perjalanan dunia. Istirahat sejenak — jalur misteri menanti di kutub!';
 
 
 /** Kota terbuka terjauh di jalur (index terbesar di ADVENTURE_CITIES). */
