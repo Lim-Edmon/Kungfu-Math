@@ -79,7 +79,7 @@ Berlaku bersama level, arena, Slice/Tap, dan submode soal.
 
 - Rute dunia ber-region, urutan:
   **Indonesia → SEA → Oseania → Asia Timur → Asia Selatan/Tengah → Timur Tengah → Afrika → Eropa Timur → Eropa Utara → Eropa Tengah/Barat → Eropa Selatan → Amerika Selatan → Amerika Tengah → Kanada/Utara → Amerika Serikat → (Jalur Misteri Kutub)**
-- Ujung jalur yang **bisa dimainkan** mengikuti gate aset di kode (`CONTENT_PATH_LAST_CITY_ID`). Saat ini: **`galapagos`** (hanya kota berurutan yang punya BG + musik lengkap).
+- Ujung jalur yang **bisa dimainkan** mengikuti gate aset di kode (`CONTENT_PATH_LAST_CITY_ID`). Saat ini: **`havana`** (hanya kota berurutan yang punya BG + musik lengkap).
 - Ujung data jalur penuh (tanpa misteri): **New York** (target 6150).
 - Target skor: **+50** per kota dalam region; **−100** di kota pertama region baru.
 - Peta + pin, animasi pesawat pindah kota, fun fact (ID/EN) saat lolos.
