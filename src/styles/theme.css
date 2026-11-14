@@ -8,6 +8,7 @@
   --color-bg-secondary: #fff8e7;
   --color-text: #1a1a1a;
   --color-text-muted: #5c5c5c;
+  --color-muted: var(--color-text-muted);
   --color-primary: #c41e3a; /* merah China */
   --color-primary-hover: #a01830;
   --color-accent: #d4a017; /* emas */
@@ -30,6 +31,7 @@
   --color-bg-secondary: #241c2c;
   --color-text: #faf6ef;
   --color-text-muted: #d2c8b0;
+  --color-muted: var(--color-text-muted);
   --color-primary: #ff7a88;
   --color-primary-hover: #e85f6e;
   --color-accent: #f0d060;
@@ -50,6 +52,7 @@
   --color-bg-secondary: #3a2e22;
   --color-text: #faf0dc;
   --color-text-muted: #d4c4a0;
+  --color-muted: var(--color-text-muted);
   --color-primary: #e88860;
   --color-primary-hover: #d07048;
   --color-accent: #efc070;
