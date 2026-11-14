@@ -2939,13 +2939,14 @@ a.btn-link-trakteer {
   border-radius: 12px;
   border: 1.5px solid var(--color-border, #e0d5c0);
   background: var(--color-card, #fff);
+  color: var(--color-text);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 }
 .dojo-tab.active {
   border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 14%, var(--color-card));
   color: var(--color-primary, #c41e3a);
 }
 .dojo-tips-toggle {
@@ -3660,12 +3661,27 @@ h1.home-title {
   padding: 0;
   text-align: left;
   cursor: pointer;
+  color: var(--color-text);
+  font: inherit;
+}
+.dojo-collapse-btn .dojo-section-title,
+.dojo-stats-card .dojo-section-title {
+  color: var(--color-text);
+}
+.dojo-stats-card,
+.dojo-stats-card li,
+.dojo-record-list,
+.dojo-streak-line {
+  color: var(--color-text);
+}
+.dojo-collapse-hint {
+  color: var(--color-text-muted) !important;
 }
 .dojo-collapse-hint {
   margin-left: 8px;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--color-muted, #888);
+  color: var(--color-text-muted, #888);
 }
 
 .dojo-collapse-row {
@@ -3680,7 +3696,7 @@ h1.home-title {
   margin-left: auto;
   font-size: 0.8rem;
   font-weight: 500;
-  color: var(--color-muted, #888);
+  color: var(--color-text-muted, #888);
   white-space: nowrap;
 }
 .app-version-line {
@@ -4838,6 +4854,107 @@ a.is-offline-locked {
 [data-theme='nyaman'] .ops-mode-block {
   background: var(--color-card);
   border-color: var(--color-border);
+}
+
+
+/* ===== Dojo Progres + umum: kontras Malam / Nyaman Mata ===== */
+[data-theme='malam'] .dojo-stats-card,
+[data-theme='nyaman'] .dojo-stats-card,
+[data-theme='malam'] .dojo-card,
+[data-theme='nyaman'] .dojo-card {
+  background: var(--color-card);
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .dojo-collapse-btn,
+[data-theme='nyaman'] .dojo-collapse-btn,
+[data-theme='malam'] .dojo-collapse-btn .dojo-section-title,
+[data-theme='nyaman'] .dojo-collapse-btn .dojo-section-title,
+[data-theme='malam'] .dojo-section-title,
+[data-theme='nyaman'] .dojo-section-title,
+[data-theme='malam'] .dojo-stats-heading,
+[data-theme='nyaman'] .dojo-stats-heading {
+  color: var(--color-text) !important;
+}
+
+[data-theme='malam'] .dojo-collapse-hint,
+[data-theme='nyaman'] .dojo-collapse-hint {
+  color: var(--color-text-muted) !important;
+  opacity: 1;
+}
+
+[data-theme='malam'] .dojo-record-list,
+[data-theme='nyaman'] .dojo-record-list,
+[data-theme='malam'] .dojo-record-list li,
+[data-theme='nyaman'] .dojo-record-list li,
+[data-theme='malam'] .dojo-streak-line,
+[data-theme='nyaman'] .dojo-streak-line,
+[data-theme='malam'] .settings-note,
+[data-theme='nyaman'] .settings-note {
+  color: var(--color-text) !important;
+}
+
+[data-theme='malam'] .dojo-tab,
+[data-theme='nyaman'] .dojo-tab {
+  background: var(--color-btn-idle-bg, var(--color-card));
+  border-color: var(--color-btn-idle-border, var(--color-border));
+  color: var(--color-text) !important;
+}
+
+[data-theme='malam'] .dojo-tab.active,
+[data-theme='nyaman'] .dojo-tab.active {
+  background: var(--color-btn-active-bg, color-mix(in srgb, var(--color-primary) 18%, var(--color-card)));
+  border-color: var(--color-primary);
+  color: var(--color-primary) !important;
+  font-weight: 800;
+}
+
+[data-theme='malam'] .dojo-tips-toggle,
+[data-theme='nyaman'] .dojo-tips-toggle {
+  background: var(--color-card);
+  border-color: var(--color-border);
+  color: var(--color-text) !important;
+}
+
+[data-theme='malam'] .badge-item,
+[data-theme='nyaman'] .badge-item {
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-card));
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .badge-item.locked,
+[data-theme='nyaman'] .badge-item.locked {
+  color: var(--color-text-muted);
+  opacity: 0.75;
+}
+
+/* Tombol generik di dark: jangan ikut default browser (hitam) */
+[data-theme='malam'] button:not(.btn-primary):not(.btn-kofi):not(.km-update-btn),
+[data-theme='nyaman'] button:not(.btn-primary):not(.btn-kofi):not(.km-update-btn) {
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .support-modal,
+[data-theme='nyaman'] .support-modal {
+  background: var(--color-card);
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .dojo-hero,
+[data-theme='nyaman'] .dojo-hero,
+[data-theme='malam'] .dojo-hero-meta,
+[data-theme='nyaman'] .dojo-hero-meta,
+[data-theme='malam'] .dojo-page,
+[data-theme='nyaman'] .dojo-page {
+  color: var(--color-text);
+}
+
+[data-theme='malam'] .dojo-region,
+[data-theme='nyaman'] .dojo-region {
+  color: var(--color-text);
+  border-color: var(--color-border);
+  background: var(--color-card);
 }
 
 /* —— Popup pembaruan PWA (tengah + tombol muat ulang) —— */
