@@ -175,16 +175,26 @@ Referensi jalur kota (koordinat, target, prompt aset): spreadsheet di repo / art
 
 ### Tema musiman (paksa, tanpa tunggu tanggal)
 
+**URL query** (satu sesi tab):
+
 | Query | Efek |
-|-------|------|
+|---|---|
 | `?season=natal` | Pola Natal |
 | `?season=imlek` | Pola Imlek |
 | `?season=lebaran` | Pola Lebaran |
-| `?season=natal-lebaran` | Irisan Natal+Lebaran |
-| `?season=imlek-lebaran` | Irisan Imlek+Lebaran |
-| `?season=off` | Paksa netral |
+| `?season=natal-lebaran` | Irisan (urutan bebas) |
+| `?season=imlek-lebaran` | Irisan |
+| `?season=off` | Paksa netral (tanpa pola) |
 
-Jendela Imlek/Lebaran hardcode ~2025–2050; Natal otomatis 25 Nov–6 Jan tiap tahun. Di luar jendela = netral.
+**Cheat di Pengaturan → Masukkan kode** (tersimpan sampai di-reset; boleh offline):
+
+| Kode | Efek |
+|---|---|
+| `natal` / `imlek` / `lebaran` | Paksa musim itu |
+| `natal lebaran`, `imlek lebaran`, … (urutan bebas) | Irisan |
+| `season off` / `season normal` / `musim normal` / `season auto` | Kembali otomatis (ikuti tanggal) |
+
+Kode unlock progress (`unlockall`, dll.) **tidak** ditulis di README.
 
 ### Kode buka-semua (uji)
 
