@@ -8,8 +8,10 @@ import {
   importProgress,
   isDevUnlockCode,
   isDevLockCode,
+  isSeasonCheatCode,
   clearAllGameData,
 } from '../lib/storage';
+import { applySeasonCheatText } from '../lib/season';
 import { TRAKTEER_URL, KOFI_URL, buildInviteText } from '../lib/constants';
 import { t, getLang, setLang, type Lang } from '../lib/i18n';
 
@@ -133,22 +135,31 @@ export default function Settings({
       setMessage(t('msgNeedCode'));
       return;
     }
+    const isSeason = isSeasonCheatCode(importCode);
     const isUnlock = isDevUnlockCode(importCode);
     const isLock = isDevLockCode(importCode);
     // Cheat unlock/lock wajib online (penghalang kasual; string tetap di client)
+    // Cheat musim boleh offline — hanya overlay UI
     if ((isUnlock || isLock) && offline) {
       setMessage(t('msgCheatNeedOnline'));
       return;
     }
     const ok = importProgress(importCode);
     if (ok) {
-      const msg = isUnlock
-        ? t('msgDevUnlockOk')
-        : isLock
-          ? t('msgDevLockOk')
-          : t('msgImportOk');
+      let msg = t('msgImportOk');
+      if (isSeason) {
+        const label = applySeasonCheatText(importCode);
+        msg =
+          label === 'auto'
+            ? t('msgSeasonCheatAuto')
+            : t('msgSeasonCheatOk').replace('{season}', label || '');
+      } else if (isUnlock) {
+        msg = t('msgDevUnlockOk');
+      } else if (isLock) {
+        msg = t('msgDevLockOk');
+      }
       setMessage(msg);
-      if (isUnlock || isLock) {
+      if (isUnlock || isLock || isSeason) {
         setUnlockPopup(msg);
       }
       setImportCode('');
