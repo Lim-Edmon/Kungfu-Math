@@ -2663,7 +2663,7 @@ a.btn-link-trakteer {
 }
 .display-chip.active {
   border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, white);
+  background: color-mix(in srgb, var(--color-primary, #c41e3a) 12%, var(--color-card));
 }
 .wizard-progress {
   display: flex;
@@ -3299,15 +3299,12 @@ a.btn-link-trakteer:hover,
   resize: vertical;
 }
 
-/* Bahasa: fill saat aktif (mirip tab Progress) */
+/* Bahasa: fill saat aktif (senada semua tema) */
 .settings-lang-actions .settings-toggle.active {
-  border-color: var(--color-primary, #c41e3a);
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 14%, white);
-  color: var(--color-primary, #c41e3a);
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--color-card));
+  color: var(--color-primary);
   font-weight: 700;
-}
-[data-theme='malam'] .settings-lang-actions .settings-toggle.active {
-  background: color-mix(in srgb, var(--color-primary, #c41e3a) 28%, #1a1a1a);
 }
 
 /* Trakteer full lebar section — override max-width 42% */
@@ -4856,6 +4853,98 @@ a.is-offline-locked {
   border-color: var(--color-border);
 }
 
+
+
+/* ===== Input / textarea / support brand — senada tema ===== */
+.export-code,
+textarea.export-code,
+.code-area,
+input[type='text'],
+input[type='search'],
+textarea {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.export-code::placeholder,
+textarea::placeholder,
+input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.85;
+}
+
+.settings-toggle.active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-card));
+  color: var(--color-text);
+}
+
+.display-chip.active {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-card));
+  color: var(--color-text);
+}
+
+/* Trakteer / Ko-fi: brand tetap dikenali, soft di dark */
+[data-theme='malam'] a.btn-link-trakteer,
+[data-theme='malam'] .btn-trakteer,
+[data-theme='nyaman'] a.btn-link-trakteer,
+[data-theme='nyaman'] .btn-trakteer,
+[data-theme='malam'] .settings-support-actions .btn-trakteer.settings-support-btn,
+[data-theme='malam'] .settings-support-actions a.btn-trakteer,
+[data-theme='nyaman'] .settings-support-actions .btn-trakteer.settings-support-btn,
+[data-theme='nyaman'] .settings-support-actions a.btn-trakteer {
+  background: color-mix(in srgb, #5dade2 28%, var(--color-card)) !important;
+  color: #d6eaf8 !important;
+  border-color: color-mix(in srgb, #5dade2 55%, var(--color-border)) !important;
+}
+
+[data-theme='malam'] .settings-support-actions .btn-kofi.settings-support-btn,
+[data-theme='malam'] .settings-support-actions a.btn-kofi,
+[data-theme='nyaman'] .settings-support-actions .btn-kofi.settings-support-btn,
+[data-theme='nyaman'] .settings-support-actions a.btn-kofi {
+  background: color-mix(in srgb, #4caf50 26%, var(--color-card)) !important;
+  color: #d8f0dc !important;
+  border-color: color-mix(in srgb, #4caf50 50%, var(--color-border)) !important;
+}
+
+/* Map debug panel (developer) */
+[data-theme='malam'] .map-debug-panel,
+[data-theme='nyaman'] .map-debug-panel {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+[data-theme='malam'] .map-debug-exit-confirm,
+[data-theme='nyaman'] .map-debug-exit-confirm {
+  background: color-mix(in srgb, var(--color-accent) 18%, var(--color-card));
+  border-color: var(--color-accent);
+}
+[data-theme='malam'] .map-debug-exit-confirm p,
+[data-theme='nyaman'] .map-debug-exit-confirm p {
+  color: var(--color-text);
+}
+[data-theme='malam'] .map-debug-ok,
+[data-theme='nyaman'] .map-debug-ok {
+  color: var(--color-success);
+}
+[data-theme='malam'] .map-debug-miss,
+[data-theme='nyaman'] .map-debug-miss {
+  color: var(--color-danger);
+}
+
+/* Result / journey modals */
+[data-theme='malam'] .result-funfact-modal,
+[data-theme='nyaman'] .result-funfact-modal,
+[data-theme='malam'] .result-celebrate-box,
+[data-theme='nyaman'] .result-celebrate-box,
+[data-theme='malam'] .support-modal,
+[data-theme='nyaman'] .support-modal {
+  background: var(--color-card);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
 
 /* ===== Dojo Progres + umum: kontras Malam / Nyaman Mata ===== */
 [data-theme='malam'] .dojo-stats-card,
