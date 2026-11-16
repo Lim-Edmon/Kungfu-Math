@@ -5578,3 +5578,81 @@ html[data-theme='malam'] .onboard-banner {
 .game-arena .floating-number {
   position: absolute;
 }
+
+/* ===== Milestone spotlight + callout (region / NY / explorer) ===== */
+.milestone-spotlight-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.milestone-spotlight-gif {
+  width: min(72vw, 280px);
+  height: auto;
+  max-height: 55vh;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.45));
+  animation: milestone-pop 0.45s ease-out;
+}
+@keyframes milestone-pop {
+  0% { transform: scale(0.55); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.milestone-callout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 85;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
+}
+.milestone-callout-card {
+  width: min(22rem, 100%);
+  background: var(--color-card, #fff);
+  color: var(--color-text, #1a1a1a);
+  border: 2px solid var(--color-border, #e0d5c0);
+  border-radius: 18px;
+  padding: 1rem 1rem 1.1rem;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+  text-align: center;
+  position: relative;
+  padding-top: 3.2rem;
+}
+.milestone-callout-portrait {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -55%);
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-primary, #c41e3a);
+  background: var(--color-bg-secondary, #fff8e7);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.milestone-callout-title {
+  margin: 0 0 0.35rem;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--color-primary, #c41e3a);
+}
+.milestone-callout-quote {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--color-text);
+}
+.milestone-callout-btn {
+  width: 100%;
+}

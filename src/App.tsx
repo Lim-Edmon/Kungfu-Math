@@ -29,6 +29,13 @@ import BottomNav, { type NavTab } from './components/BottomNav';
 import AdventureMap from './components/AdventureMap';
 import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
 import { applySeasonToDocument, getActiveSeasonAttr, seasonHas } from './lib/season';
+import {
+  detectMilestone,
+  milestoneQuote,
+  milestoneTitle,
+  type MilestoneInfo,
+} from './lib/celebration';
+import { getCharacterById, getAttackAnimSrc } from './lib/characters';
 import type { ArenaStyle, CharacterId, InputMode, PracticeSessionKind, SprintLength} from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
@@ -37,7 +44,7 @@ import {
   recordGameResult,
   recordAdventureScore,
   updateProgress,
-} from './lib/storage'
+} from './lib/storage';
 import {
   getOnboardingPhase,
   advanceOnboardingAfterRun,
@@ -246,6 +253,9 @@ function App() {
   const [homePlayKind, setHomePlayKind] = useState<PlayKind | undefined>(undefined);
   const [homeKey, setHomeKey] = useState(0);
   const [celebrateOpen, setCelebrateOpen] = useState(false);
+  const [milestoneInfo, setMilestoneInfo] = useState<MilestoneInfo | null>(null);
+  /** null | spotlight (GIF) | callout (foto + omongan) */
+  const [milestonePhase, setMilestonePhase] = useState<'spotlight' | 'callout' | null>(null);
   const [secretDiscoverOpen, setSecretDiscoverOpen] = useState(false);
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [newBadges, setNewBadges] = useState<string[]>([]);
@@ -331,12 +341,19 @@ function App() {
     };
   }, [screen]);
 
-  // Ucapan selamat: auto-close singkat (~1,4 dtk); ketuk juga bisa tutup
+  // Ucapan selamat: auto-close singkat; ketuk juga bisa tutup
   useEffect(() => {
     if (!celebrateOpen) return;
     const t = setTimeout(() => setCelebrateOpen(false), 3000);
     return () => clearTimeout(t);
   }, [celebrateOpen]);
+
+  // Milestone: spotlight anim → callout box
+  useEffect(() => {
+    if (milestonePhase !== 'spotlight') return;
+    const t = window.setTimeout(() => setMilestonePhase('callout'), 2200);
+    return () => window.clearTimeout(t);
+  }, [milestonePhase]);
 
     const handleStartGame = (
     mode: InputMode,
@@ -581,6 +598,8 @@ function App() {
     setFunFactOpen(false);
     setJourneyEndOpen(false);
     setNewBadges([]);
+    setMilestoneInfo(null);
+    setMilestonePhase(null);
 
     const perfect = !!runMeta?.perfect;
     let passed = false;
@@ -722,6 +741,18 @@ function App() {
       grade === 'A' ||
       newly.length > 0;
     setCelebrateOpen(willCelebrate);
+
+    // Milestone spotlight: region / New York / kedua kutub
+    if (playKind === 'petualangan' && passed) {
+      const hsAll = loadProgress().adventureHighScores || {};
+      // Pastikan skor kota ini terhitung untuk deteksi kutub
+      hsAll[cityId] = Math.max(hsAll[cityId] ?? 0, score);
+      const ms = detectMilestone(cityId, passed, nextId, hsAll);
+      if (ms) {
+        setMilestoneInfo(ms);
+        setMilestonePhase('spotlight');
+      }
+    }
 
     // Cerita first-time: mode / arena / sesi / kota pertama per region
     try {
@@ -1062,6 +1093,78 @@ function App() {
               )}
 
               {/* Ujung jalur petualangan: popup khusus, tutup manual */}
+              {milestoneInfo && milestonePhase === 'spotlight' && (
+                <button
+                  type="button"
+                  className="milestone-spotlight-overlay"
+                  onClick={() => setMilestonePhase('callout')}
+                  aria-label="Lanjut"
+                >
+                  <img
+                    className="milestone-spotlight-gif"
+                    src={
+                      getAttackAnimSrc(
+                        selectedCharacterId ||
+                          loadProgress().preferredCharacter ||
+                          'yu-jin'
+                      ) ||
+                      getCharacterById(
+                        selectedCharacterId ||
+                          loadProgress().preferredCharacter ||
+                          'yu-jin'
+                      )?.imageSrc ||
+                      ''
+                    }
+                    alt=""
+                  />
+                </button>
+              )}
+              {milestoneInfo && milestonePhase === 'callout' && (
+                <div
+                  className="milestone-callout-overlay"
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <div className="milestone-callout-card">
+                    <img
+                      className="milestone-callout-portrait"
+                      src={
+                        getCharacterById(
+                          selectedCharacterId ||
+                            loadProgress().preferredCharacter ||
+                            'yu-jin'
+                        )?.imageCloseSrc ||
+                        getCharacterById('yu-jin')?.imageCloseSrc ||
+                        ''
+                      }
+                      alt=""
+                    />
+                    <p className="milestone-callout-title">
+                      {milestoneTitle(
+                        milestoneInfo,
+                        getLang() === 'en' ? 'en' : 'id'
+                      )}
+                    </p>
+                    <p className="milestone-callout-quote">
+                      {milestoneQuote(
+                        milestoneInfo,
+                        getLang() === 'en' ? 'en' : 'id'
+                      )}
+                    </p>
+                    <button
+                      type="button"
+                      className="btn-primary milestone-callout-btn"
+                      onClick={() => {
+                        setMilestonePhase(null);
+                        setMilestoneInfo(null);
+                      }}
+                    >
+                      {getLang() === 'en' ? 'Continue' : 'Lanjut'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {journeyComplete && journeyEndOpen && (
                 <div
                   className="result-funfact-overlay result-journey-end-overlay"
