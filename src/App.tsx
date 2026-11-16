@@ -1119,51 +1119,61 @@ function App() {
                   />
                 </button>
               )}
-              {milestoneInfo && milestonePhase === 'callout' && (
-                <div
-                  className="milestone-callout-overlay"
-                  role="dialog"
-                  aria-modal="true"
-                >
-                  <div className="milestone-callout-card">
-                    <img
-                      className="milestone-callout-portrait"
-                      src={
-                        getCharacterById(
-                          selectedCharacterId ||
-                            loadProgress().preferredCharacter ||
-                            'yu-jin'
-                        )?.imageCloseSrc ||
-                        getCharacterById('yu-jin')?.imageCloseSrc ||
-                        ''
-                      }
-                      alt=""
-                    />
-                    <p className="milestone-callout-title">
-                      {milestoneTitle(
-                        milestoneInfo,
-                        getLang() === 'en' ? 'en' : 'id'
-                      )}
-                    </p>
-                    <p className="milestone-callout-quote">
-                      {milestoneQuote(
-                        milestoneInfo,
-                        getLang() === 'en' ? 'en' : 'id'
-                      )}
-                    </p>
-                    <button
-                      type="button"
-                      className="btn-primary milestone-callout-btn"
-                      onClick={() => {
-                        setMilestonePhase(null);
-                        setMilestoneInfo(null);
-                      }}
-                    >
-                      {getLang() === 'en' ? 'Continue' : 'Lanjut'}
-                    </button>
+              {milestoneInfo && milestonePhase === 'callout' && (() => {
+                const cid =
+                  selectedCharacterId ||
+                  loadProgress().preferredCharacter ||
+                  'yu-jin';
+                const ch = getCharacterById(cid) || getCharacterById('yu-jin');
+                const lang = getLang() === 'en' ? 'en' : 'id';
+                return (
+                  <div
+                    className="milestone-callout-overlay"
+                    role="dialog"
+                    aria-modal="true"
+                  >
+                    <div className="milestone-dialogue">
+                      <div className="milestone-dialogue-side">
+                        <div
+                          className="milestone-dialogue-avatar-wrap"
+                          style={{
+                            background: ch
+                              ? `color-mix(in srgb, ${ch.color} 22%, var(--color-card))`
+                              : undefined,
+                          }}
+                        >
+                          <img
+                            className="milestone-dialogue-avatar"
+                            src={ch?.imageCloseSrc || ch?.imageSrc || ''}
+                            alt=""
+                          />
+                        </div>
+                        <p className="milestone-dialogue-name">
+                          {ch?.name || 'Pendekar'}
+                        </p>
+                      </div>
+                      <div className="milestone-dialogue-bubble">
+                        <p className="milestone-dialogue-kicker">
+                          {milestoneTitle(milestoneInfo, lang)}
+                        </p>
+                        <p className="milestone-dialogue-text">
+                          {milestoneQuote(milestoneInfo, lang)}
+                        </p>
+                        <button
+                          type="button"
+                          className="btn-primary milestone-dialogue-btn"
+                          onClick={() => {
+                            setMilestonePhase(null);
+                            setMilestoneInfo(null);
+                          }}
+                        >
+                          {lang === 'en' ? 'Continue' : 'Lanjut'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {journeyComplete && journeyEndOpen && (
                 <div
