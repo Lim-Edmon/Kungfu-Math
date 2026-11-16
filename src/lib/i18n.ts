@@ -401,6 +401,8 @@ const STRINGS = {
       'Invalid or corrupted code. Copy the full code from the other phone (starts with KM1., do not edit it).',
     msgDevUnlockOk: 'Test access open: all cities & badges. Records unchanged.',
     msgDevLockOk: 'Test access closed. Cities & badges restored to real progress.',
+    msgSeasonCheatOk: 'Season mode: {season}. Check header & ornaments.',
+    msgSeasonCheatAuto: 'Season mode: automatic (follows the calendar).',
     msgCheatNeedOnline: 'Test access codes only work while online.',
     msgInviteCopied: 'Invite message copied — paste in WhatsApp or any chat',
     msgShareOk: 'Ready to share!',

@@ -102,31 +102,113 @@ export function getActiveSeasonTags(now = new Date()): SeasonTag[] {
   return TAG_ORDER.filter((t) => hit.has(t));
 }
 
+const SEASON_FORCE_KEY = 'kungfu-math-season-force';
+
+/** Parse "natal", "natal lebaran", "imlek-lebaran", etc. → tags or 'none'. */
+export function parseSeasonForceText(raw: string): SeasonTag[] | 'none' | null {
+  const q = (raw || '').toLowerCase().trim();
+  if (!q) return null;
+  const compact = q.replace(/[^a-z]/g, '');
+  // Reset → ikut tanggal nyata
+  if (
+    compact === 'off' ||
+    compact === 'none' ||
+    compact === 'seasonoff' ||
+    compact === 'seasonnone' ||
+    compact === 'seasonnormal' ||
+    compact === 'seasonauto' ||
+    compact === 'musimoff' ||
+    compact === 'musimnormal' ||
+    compact === 'musimauto' ||
+    compact === 'normalsseason' ||
+    compact === 'autoseason'
+  ) {
+    return 'none';
+  }
+  if (compact === 'christmas' || compact === 'xmas') return ['natal'];
+  if (compact === 'eid' || compact === 'eidulfitri') return ['lebaran'];
+  if (compact === 'cny' || compact === 'chinese' || compact === 'chinesenewyear')
+    return ['imlek'];
+  // Urutan bebas: natal+lebaran, imlek+lebaran, dll.
+  const hit = new Set<SeasonTag>();
+  for (const t of TAG_ORDER) {
+    if (compact.includes(t)) hit.add(t);
+  }
+  // "natallebaran" etc. already covered by includes
+  if (!hit.size) return null;
+  return TAG_ORDER.filter((t) => hit.has(t));
+}
+
 export function getSeasonOverrideFromUrl(): SeasonTag[] | 'none' | null {
   try {
     const q = (new URLSearchParams(window.location.search).get('season') || '')
       .toLowerCase()
       .trim();
     if (!q) return null;
-    if (q === 'off' || q === 'none') return 'none';
-    if (q === 'christmas') return ['natal'];
-    if (q === 'eid') return ['lebaran'];
-    if (q === 'cny' || q === 'chinese') return ['imlek'];
-    const parts = q.split(/[-+,]/).map((s) => s.trim()).filter(Boolean);
-    const tags = parts.filter((p): p is SeasonTag =>
-      TAG_ORDER.includes(p as SeasonTag)
-    );
-    return tags.length ? tags : null;
+    return parseSeasonForceText(q);
   } catch {
     return null;
   }
 }
 
+export function getSeasonForceFromStorage(): SeasonTag[] | 'none' | null {
+  try {
+    const raw = localStorage.getItem(SEASON_FORCE_KEY);
+    if (raw === null || raw === '') return null;
+    if (raw === 'none' || raw === 'off') return 'none';
+    return parseSeasonForceText(raw);
+  } catch {
+    return null;
+  }
+}
+
+/** Simpan paksa musim (cheat / URL). null = hapus paksa, ikut kalender. */
+export function setSeasonForce(tags: SeasonTag[] | 'none' | null): void {
+  try {
+    if (tags === null) {
+      localStorage.removeItem(SEASON_FORCE_KEY);
+    } else if (tags === 'none') {
+      localStorage.setItem(SEASON_FORCE_KEY, 'none');
+    } else {
+      localStorage.setItem(SEASON_FORCE_KEY, tags.join('-'));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Prioritas: ?season= URL → localStorage force (cheat) → kalender.
+ * 'none' = matikan overlay (bukan "tidak ada override").
+ */
 export function getActiveSeasonAttr(now = new Date()): string {
-  const over = typeof window !== 'undefined' ? getSeasonOverrideFromUrl() : null;
-  if (over === 'none') return '';
-  const tags = over ?? getActiveSeasonTags(now);
-  return tags.join('-');
+  if (typeof window !== 'undefined') {
+    const url = getSeasonOverrideFromUrl();
+    if (url === 'none') return '';
+    if (url) return url.join('-');
+    const stored = getSeasonForceFromStorage();
+    if (stored === 'none') return '';
+    if (stored) return stored.join('-');
+  }
+  return getActiveSeasonTags(now).join('-');
+}
+
+/**
+ * Terapkan teks cheat musim.
+ * return: 'auto' = ikut kalender; 'natal' | 'natal-lebaran' | … = paksa; null = bukan cheat musim.
+ */
+export function applySeasonCheatText(raw: string): string | null {
+  const parsed = parseSeasonForceText(raw);
+  if (parsed === null) return null;
+  if (parsed === 'none') {
+    // "season off / normal / auto" → hapus paksa, ikuti tanggal
+    setSeasonForce(null);
+    applySeasonToDocument(getActiveSeasonAttr());
+    return 'auto';
+  }
+  setSeasonForce(parsed);
+  applySeasonToDocument(parsed.join('-'));
+  return parsed.join('-');
 }
 
 export function getActiveSeason(now = new Date()): string {

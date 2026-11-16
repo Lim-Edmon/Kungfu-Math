@@ -15,6 +15,7 @@ import {
   isSecretCityId,
   withSecretCitiesIfEligible,
 } from './adventure';
+import { applySeasonCheatText, parseSeasonForceText } from './season';
 import { BADGE_DEFS } from './badges';
 import { getIsOnline } from './offline';
 
@@ -575,6 +576,10 @@ function computeUnlockedFromScores(prog: PlayerProgress): string[] {
   );
 }
 
+export function isSeasonCheatCode(encoded: string): boolean {
+  return parseSeasonForceText(encoded || '') !== null;
+}
+
 export function isDevUnlockCode(encoded: string): boolean {
   return DEV_UNLOCK_KEYS.has(normalizeCheatKey(encoded || ''));
 }
@@ -655,6 +660,12 @@ export function applyDevLockAccess(): void {
 export function importProgress(encoded: string): boolean {
   const trimmed = (encoded || '').trim();
   if (!trimmed) return false;
+
+  // Cheat musim dulu (boleh offline — hanya overlay UI)
+  if (parseSeasonForceText(trimmed) !== null) {
+    applySeasonCheatText(trimmed);
+    return true;
+  }
 
   // Cheat dulu (teks pendek), baru payload KM1 dari pesan panjang
   const key = normalizeCheatKey(trimmed);
