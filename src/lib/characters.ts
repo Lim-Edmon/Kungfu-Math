@@ -149,6 +149,11 @@ export function getAttackAnimSrc(characterId: string): string | null {
   return null;
 }
 
+/** Pose conqueror untuk milestone spotlight (region / NY / kutub). */
+export function getConquerorAnimSrc(characterId: string): string {
+  return `/characters/anim/${characterId}/conqueror.gif`;
+}
+
 /** Frame diam (frame-0 GIF) — tampil saat idle / miss. */
 export function getAttackIdleSrc(characterId: string): string | null {
   if ((ATTACK_ANIM_CHARS as readonly string[]).includes(characterId)) {

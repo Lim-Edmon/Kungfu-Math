@@ -2718,11 +2718,11 @@ export function resolveFocusCityId(
   highScores?: Record<string, number>
 ): string {
   const list = unlocked?.length ? unlocked : ['jakarta'];
-  if (isContentPathFullyCleared(highScores) && lastClickedId) {
-    if (lastClickedId === 'jakarta' || list.includes(lastClickedId)) {
-      return lastClickedId;
-    }
+  // Default fokus: kota terakhir dimainkan / diklik jika masih terbuka
+  if (lastClickedId && (lastClickedId === 'jakarta' || list.includes(lastClickedId))) {
+    return lastClickedId;
   }
+  // Buka app pertama / belum ada fokus → kota terbuka terjauh
   return furthestUnlockedCityId(list);
 }
 

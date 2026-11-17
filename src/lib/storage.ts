@@ -619,6 +619,10 @@ export function applyDevUnlockAccess(): void {
  * Jika tidak ada snapshot → hitung ulang dari skor lolos.
  * Rekor / skor tidak disentuh.
  */
+export function isDevUnlockActive(): boolean {
+  return readDevSnap() != null;
+}
+
 export function applyDevLockAccess(): void {
   try {
     sessionStorage.removeItem('kungfu-math-playdebug');

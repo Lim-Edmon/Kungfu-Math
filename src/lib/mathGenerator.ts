@@ -191,11 +191,13 @@ export function generateQuestion(
 
   switch (level) {
     case 'pemula': {
-      // Hanya penjumlahan, hasil kecil (≤12), setara TK–SD1
+      // Hanya penjumlahan, hasil kecil (≤12); hindari 1+1 / pasangan sepele
       maxVal = 12;
-      a = randomInt(1, 6);
-      b = randomInt(1, 6);
-      target = a + b;
+      do {
+        a = randomInt(2, 7);
+        b = randomInt(2, 7);
+        target = a + b;
+      } while (target > 12 || (a === 1 && b === 1));
       correctNumbers = [a, b];
       display = `? + ? = ${target}`;
       break;
@@ -216,6 +218,7 @@ export function generateQuestion(
         correctNumbers = [a, b];
         display = `? + ? = ${target}`;
       }
+      // sub: jangan b=0 (sudah); add sudah ≥2
       break;
     }
     case 'menengah': {
@@ -348,11 +351,11 @@ export function generateQuestion(
           alt.push(b);
         }
       } else {
-        // mul: faktor target
+        // mul: faktor target — tolak ×1
         const a = randomInt(2, Math.max(2, Math.min(maxVal, Math.floor(Math.sqrt(target)) + 8)));
-        if (a === 0 || target % a !== 0) continue;
+        if (a <= 1 || target % a !== 0) continue;
         const b = target / a;
-        if (!Number.isInteger(b) || b < 1 || b > maxVal) continue;
+        if (!Number.isInteger(b) || b <= 1 || b > maxVal) continue;
         if (!used.has(a)) {
           used.add(a);
           alt.push(a);
@@ -386,6 +389,23 @@ export function generateQuestion(
   // Pastikan minimal semua correct muat
   if (allNumbers.length < correctNumbers.length) {
     allNumbers = [...correctNumbers];
+  }
+  // Tidak ada 0; decoy ≠ target (angka di sisi kanan soal) kecuali target memang operand benar
+  {
+    const correctSet = new Set(correctNumbers);
+    const ban = new Set<number>([0]);
+    if (!correctSet.has(target)) ban.add(target);
+    allNumbers = allNumbers.filter((n) => !ban.has(n) || correctSet.has(n));
+    // Isi ulang jika kurang
+    let guard = 0;
+    while (allNumbers.length < totalBalls && guard++ < 40) {
+      const pool = buildDecoyPool(correctNumbers, operation, target, maxVal).filter(
+        (n) => n >= 1 && !ban.has(n) && !allNumbers.includes(n)
+      );
+      if (!pool.length) break;
+      allNumbers.push(pool[randomInt(0, pool.length - 1)]);
+    }
+    allNumbers = shuffle(allNumbers).slice(0, Math.max(totalBalls, correctNumbers.length));
   }
   // + / ×: decoy tidak boleh jauh di atas target (hindari 2 digit aneh di soal kecil)
   if (operation === 'add' || operation === 'mul') {
