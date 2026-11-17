@@ -31,6 +31,7 @@ import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/so
 import { applySeasonToDocument, getActiveSeasonAttr, seasonHas, setSeasonForce } from './lib/season';
 import {
   detectMilestone,
+  isRegionLastCity,
   milestoneQuote,
   milestoneTitle,
   type MilestoneInfo,
@@ -69,6 +70,7 @@ import {
   MVP_REGION_LAST_CITY_ID,
   MVP_REGION_UNLOCK_MSG,
   isRegionCrossing,
+  clearMapSession,
   buildRegionUnlockMessage,
   getRegionLabel,
 } from './lib/adventure';
@@ -349,6 +351,7 @@ function App() {
       try {
         setSeasonForce(null);
         sessionStorage.removeItem('kungfu-math-playdebug');
+        clearMapSession();
         if (isDevUnlockActive()) applyDevLockAccess();
       } catch {
         /* ignore */
@@ -663,17 +666,34 @@ function App() {
         }
       }
       // Batas region: narasi pendekar + wajib kembali ke peta
-      if (passed && nextId && isRegionCrossing(cityId, nextId)) {
-        const fromR = getCityById(cityId).regionId;
-        const toR = getCityById(nextId).regionId;
-        setRegionCrossing(true);
-        setRegionUnlockMsg(
-          buildRegionUnlockMessage(fromR, toR, getLang() === 'en' ? 'en' : 'id')
-        );
-      } else {
-        setRegionCrossing(false);
-        setRegionUnlockMsg('');
+      {
+        const lastOfReg = isRegionLastCity(cityId);
+        const cross =
+          !!(passed && nextId && isRegionCrossing(cityId, nextId)) ||
+          (passed && lastOfReg);
+        if (cross) {
+          const fromR = getCityById(cityId).regionId;
+          const toR = nextId
+            ? getCityById(nextId).regionId
+            : fromR;
+          setRegionCrossing(true);
+          setRegionUnlockMsg(
+            nextId && fromR !== toR
+              ? buildRegionUnlockMessage(
+                  fromR,
+                  toR,
+                  getLang() === 'en' ? 'en' : 'id'
+                )
+              : getLang() === 'en'
+                ? `You have conquered this region. Return to the map.`
+                : `Region ini sudah ditaklukkan. Kembalilah ke peta.`
+          );
+        } else {
+          setRegionCrossing(false);
+          setRegionUnlockMsg('');
+        }
       }
+
       // Jika kota berikutnya beda region → simpan fokus ke kota itu (peta buka region baru)
       const progressPatch: {
         adventureUnlocked: string[];
@@ -1124,6 +1144,17 @@ function App() {
                         'yu-jin'
                     )}
                     alt=""
+                    onError={(e) => {
+                      const cid =
+                        selectedCharacterId ||
+                        loadProgress().preferredCharacter ||
+                        'yu-jin';
+                      const ch = getCharacterById(cid);
+                      const el = e.currentTarget;
+                      if (ch?.imageSrc && el.src !== ch.imageSrc) {
+                        el.src = ch.imageSrc;
+                      }
+                    }}
                   />
                 </button>
               )}
