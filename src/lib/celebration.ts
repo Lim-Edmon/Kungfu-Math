@@ -1,9 +1,10 @@
 /** Kungfu Math — milestone spotlight copy (pendekar tone). */
 
 import {
+  ADVENTURE_CITIES,
   ADVENTURE_REGIONS,
   getCityById,
-  type AdventureCity,
+  isSecretCityId,
 } from './adventure';
 import { getLang } from './i18n';
 
@@ -11,7 +12,6 @@ export type MilestoneKind = 'region' | 'world' | 'explorer';
 
 export type MilestoneInfo = {
   kind: MilestoneKind;
-  /** Region that was just cleared (for kind=region) */
   regionId?: string;
   regionLabel?: string;
 };
@@ -20,6 +20,19 @@ export function getRegionLabel(regionId: string, lang: 'id' | 'en' = 'id'): stri
   const r = ADVENTURE_REGIONS.find((x) => x.id === regionId);
   if (!r) return regionId;
   return lang === 'en' ? r.labelEn : r.labelId;
+}
+
+/** Kota terakhir di region (urutan jalur), abaikan secret-polar. */
+export function isRegionLastCity(cityId: string): boolean {
+  const city = getCityById(cityId);
+  if (!city || city.regionId === 'secret-polar' || isSecretCityId(cityId)) {
+    return false;
+  }
+  const inReg = ADVENTURE_CITIES.filter(
+    (c) => c.regionId === city.regionId && !isSecretCityId(c.id)
+  );
+  if (!inReg.length) return false;
+  return inReg[inReg.length - 1].id === cityId;
 }
 
 /** Deteksi momen besar setelah lolos kota petualangan. */
@@ -33,8 +46,10 @@ export function detectMilestone(
   const city = getCityById(cityId);
   if (!city) return null;
 
-  const northOk = (highScores['north-pole'] ?? 0) >= (getCityById('north-pole')?.targetScore ?? 7500);
-  const southOk = (highScores['south-pole'] ?? 0) >= (getCityById('south-pole')?.targetScore ?? 7500);
+  const northT = getCityById('north-pole')?.targetScore ?? 7500;
+  const southT = getCityById('south-pole')?.targetScore ?? 7500;
+  const northOk = (highScores['north-pole'] ?? 0) >= northT;
+  const southOk = (highScores['south-pole'] ?? 0) >= southT;
   if (
     (cityId === 'north-pole' || cityId === 'south-pole') &&
     northOk &&
@@ -47,17 +62,25 @@ export function detectMilestone(
     return { kind: 'world' };
   }
 
-  // Lolos kota terakhir region: kota berikutnya beda region (atau ujung non-NY sudah ditangani)
-  if (nextCityId) {
+  // Region selesai: kota terakhir region ATAU next beda region
+  let regionClear = isRegionLastCity(cityId);
+  if (!regionClear && nextCityId) {
     const next = getCityById(nextCityId);
-    if (next && next.regionId !== city.regionId && city.regionId !== 'secret-polar') {
-      const lang = getLang() === 'en' ? 'en' : 'id';
-      return {
-        kind: 'region',
-        regionId: city.regionId,
-        regionLabel: getRegionLabel(city.regionId, lang),
-      };
+    if (
+      next &&
+      next.regionId !== city.regionId &&
+      city.regionId !== 'secret-polar'
+    ) {
+      regionClear = true;
     }
+  }
+  if (regionClear) {
+    const lang = getLang() === 'en' ? 'en' : 'id';
+    return {
+      kind: 'region',
+      regionId: city.regionId,
+      regionLabel: getRegionLabel(city.regionId, lang),
+    };
   }
 
   return null;
@@ -74,7 +97,6 @@ export function milestoneQuote(m: MilestoneInfo, lang: 'id' | 'en'): string {
       ? 'Edge of the world reached. A secret path in the poles awaits.'
       : 'Ujung dunia tercapai. Jalur misteri di kutub… menunggu.';
   }
-  // region
   const name = m.regionLabel || m.regionId || '';
   return lang === 'en'
     ? `${name} is conquered. Ready for the next path.`
@@ -82,11 +104,9 @@ export function milestoneQuote(m: MilestoneInfo, lang: 'id' | 'en'): string {
 }
 
 export function milestoneTitle(m: MilestoneInfo, lang: 'id' | 'en'): string {
-  if (m.kind === 'explorer') {
-    return lang === 'en' ? 'Greatest Explorer' : 'Greatest Explorer';
-  }
+  if (m.kind === 'explorer') return 'Greatest Explorer';
   if (m.kind === 'world') {
-    return lang === 'en' ? 'World’s Edge' : 'Ujung Dunia';
+    return lang === 'en' ? "World's Edge" : 'Ujung Dunia';
   }
   return lang === 'en' ? 'Region Clear' : 'Region Takluk';
 }

@@ -2712,17 +2712,53 @@ export function isContentPathFullyCleared(
  * Kota fokus UI: default = terjauh yang terbuka.
  * Setelah menamatkan seluruh jalur konten → pakai kota terakhir diklik (jika masih valid).
  */
+const MAP_SESS_KEY = 'kungfu-math-map-sess';
+
+/** Cold start tab/browser: true sekali di awal sesi. */
+export function isMapColdStart(): boolean {
+  try {
+    return sessionStorage.getItem(MAP_SESS_KEY) !== '1';
+  } catch {
+    return true;
+  }
+}
+
+export function markMapSessionAlive(): void {
+  try {
+    sessionStorage.setItem(MAP_SESS_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearMapSession(): void {
+  try {
+    sessionStorage.removeItem(MAP_SESS_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Fokus peta:
+ * - Sesi aktif (sudah main / pilih kota): kota terakhir dimainkan
+ * - Buka app/browser baru (cold): kota terbuka terjauh
+ */
 export function resolveFocusCityId(
   unlocked: string[],
   lastClickedId: string | undefined,
   highScores?: Record<string, number>
 ): string {
   const list = unlocked?.length ? unlocked : ['jakarta'];
-  // Default fokus: kota terakhir dimainkan / diklik jika masih terbuka
+  const cold = isMapColdStart();
+  // Tandai sesi hidup setelah cold di-handle (panggilan berikutnya = last played)
+  if (cold) {
+    markMapSessionAlive();
+    return furthestUnlockedCityId(list);
+  }
   if (lastClickedId && (lastClickedId === 'jakarta' || list.includes(lastClickedId))) {
     return lastClickedId;
   }
-  // Buka app pertama / belum ada fokus → kota terbuka terjauh
   return furthestUnlockedCityId(list);
 }
 
