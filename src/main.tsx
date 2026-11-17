@@ -74,15 +74,13 @@ function showUpdateBanner() {
   if (btnEl) {
     btnEl.textContent = btnLabel;
     btnEl.addEventListener('click', () => {
-      // Aktifkan SW menunggu (jika ada), lalu reload
-      if (navigator.serviceWorker?.controller) {
-        navigator.serviceWorker.ready
-          .then((reg) => {
-            reg.waiting?.postMessage({ type: 'SKIP_WAITING' });
-          })
-          .catch(() => {});
-      }
-      window.setTimeout(() => window.location.reload(), 80);
+      // Aktifkan SW menunggu, lalu reload agar bundle baru terpasang
+      navigator.serviceWorker?.getRegistration?.().then((reg) => {
+        if (reg?.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }).catch(() => {});
+      window.setTimeout(() => window.location.reload(), 120);
     });
   }
   document.body.appendChild(wrap);
@@ -125,7 +123,11 @@ if ('serviceWorker' in navigator) {
           const nw = reg.installing;
           if (!nw) return;
           nw.addEventListener('statechange', () => {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            // SW baru terpasang & ada controller lama → minta user reload
+            if (
+              nw.state === 'installed' &&
+              (navigator.serviceWorker.controller || reg.waiting)
+            ) {
               showUpdateBanner();
             }
           });

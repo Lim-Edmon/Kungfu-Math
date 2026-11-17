@@ -260,6 +260,7 @@ function App() {
   const [milestoneInfo, setMilestoneInfo] = useState<MilestoneInfo | null>(null);
   /** null | spotlight (GIF) | callout (foto + omongan) */
   const [milestonePhase, setMilestonePhase] = useState<'spotlight' | 'callout' | null>(null);
+  const [spotlightReady, setSpotlightReady] = useState(false);
   const [secretDiscoverOpen, setSecretDiscoverOpen] = useState(false);
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [newBadges, setNewBadges] = useState<string[]>([]);
@@ -368,10 +369,19 @@ function App() {
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
-  // Milestone: spotlight anim → callout box
+  // Milestone: GIF conqueror ~3.4s — tunggu selesai baru callout / boleh lanjut
   useEffect(() => {
-    if (milestonePhase !== 'spotlight') return;
-    const t = window.setTimeout(() => setMilestonePhase('callout'), 2200);
+    if (milestonePhase !== 'spotlight') {
+      setSpotlightReady(false);
+      return;
+    }
+    setSpotlightReady(false);
+    // Durasi file conqueror ≈ 3.4s; buffer kecil agar frame terakhir terbaca
+    const ms = 3600;
+    const t = window.setTimeout(() => {
+      setSpotlightReady(true);
+      setMilestonePhase('callout');
+    }, ms);
     return () => window.clearTimeout(t);
   }, [milestonePhase]);
 
@@ -1133,8 +1143,11 @@ function App() {
                 <button
                   type="button"
                   className="milestone-spotlight-overlay"
-                  onClick={() => setMilestonePhase('callout')}
-                  aria-label="Lanjut"
+                  onClick={() => {
+                    /* Hanya boleh skip setelah animasi selesai */
+                    if (spotlightReady) setMilestonePhase('callout');
+                  }}
+                  aria-label="Animasi kemenangan"
                 >
                   <img
                     className="milestone-spotlight-gif"

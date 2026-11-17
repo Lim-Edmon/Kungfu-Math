@@ -5607,10 +5607,11 @@ html[data-theme='malam'] .onboard-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
+  /* Samakan abu netral GIF conqueror (bukan hitam) */
+  background: #e8e8ea;
   border: none;
   padding: 0;
-  cursor: pointer;
+  cursor: default;
   overflow: hidden;
 }
 .milestone-spotlight-gif {
