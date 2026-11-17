@@ -28,14 +28,14 @@ import Footer from './components/Footer';
 import BottomNav, { type NavTab } from './components/BottomNav';
 import AdventureMap from './components/AdventureMap';
 import { playMenuBgm, stopAllMusic, installMusicBackgroundGuard } from './lib/sound';
-import { applySeasonToDocument, getActiveSeasonAttr, seasonHas } from './lib/season';
+import { applySeasonToDocument, getActiveSeasonAttr, seasonHas, setSeasonForce } from './lib/season';
 import {
   detectMilestone,
   milestoneQuote,
   milestoneTitle,
   type MilestoneInfo,
 } from './lib/celebration';
-import { getCharacterById, getAttackAnimSrc } from './lib/characters';
+import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc } from './lib/characters';
 import type { ArenaStyle, CharacterId, InputMode, PracticeSessionKind, SprintLength} from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
@@ -44,6 +44,8 @@ import {
   recordGameResult,
   recordAdventureScore,
   updateProgress,
+  applyDevLockAccess,
+  isDevUnlockActive,
 } from './lib/storage';
 import {
   getOnboardingPhase,
@@ -341,6 +343,21 @@ function App() {
     };
   }, [screen]);
 
+  // Semua cheat hilang saat user tutup tab / keluar PWA
+  useEffect(() => {
+    const clearCheats = () => {
+      try {
+        setSeasonForce(null);
+        sessionStorage.removeItem('kungfu-math-playdebug');
+        if (isDevUnlockActive()) applyDevLockAccess();
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('pagehide', clearCheats);
+    return () => window.removeEventListener('pagehide', clearCheats);
+  }, []);
+
   // Ucapan selamat: auto-close singkat; ketuk juga bisa tutup
   useEffect(() => {
     if (!celebrateOpen) return;
@@ -440,10 +457,9 @@ function App() {
   };
 
   const handleBackToAdventureMap = () => {
-    // Kota baru terbuka → peta fokus ke situ (region baru otomatis terbuka)
-    if (passedCity && nextCityId) {
-      updateProgress({ adventureCityId: nextCityId });
-    }
+    // Fokus peta = kota yang BARU dimainkan (bukan otomatis kota berikutnya / terjauh)
+    const played = lastCityId || loadProgress().adventureCityId || 'jakarta';
+    updateProgress({ adventureCityId: played });
     setRegionCrossing(false);
     setRegionUnlockMsg('');
     setStoryHypePrimary('');
@@ -888,7 +904,7 @@ function App() {
       return false;
     }
   })();
-  const showChrome = screen !== 'game' && !mapDebugMode;
+  const showChrome = screen !== 'game' && screen !== 'result' && !mapDebugMode;
 
   // Safety: jika animasi tidak selesai, tetap masuk game
   useEffect(() => {
@@ -1102,19 +1118,11 @@ function App() {
                 >
                   <img
                     className="milestone-spotlight-gif"
-                    src={
-                      getAttackAnimSrc(
-                        selectedCharacterId ||
-                          loadProgress().preferredCharacter ||
-                          'yu-jin'
-                      ) ||
-                      getCharacterById(
-                        selectedCharacterId ||
-                          loadProgress().preferredCharacter ||
-                          'yu-jin'
-                      )?.imageSrc ||
-                      ''
-                    }
+                    src={getConquerorAnimSrc(
+                      selectedCharacterId ||
+                        loadProgress().preferredCharacter ||
+                        'yu-jin'
+                    )}
                     alt=""
                   />
                 </button>
@@ -1419,6 +1427,8 @@ function App() {
                   )}
                 </button>
                 {playKind === 'petualangan' ? (
+                  // Selesai region: cukup "Kembali ke peta" (primary di atas) — jangan dobel "pilih kota lain"
+                  !regionCrossing ? (
                   <button
                     type="button"
                     className="btn-ghost"
@@ -1428,6 +1438,7 @@ function App() {
                       ? t('chooseOtherCity')
                       : t('backToMap')}
                   </button>
+                  ) : null
                 ) : (
                   <button
                     type="button"
