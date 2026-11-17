@@ -37,6 +37,15 @@ import {
   type MilestoneInfo,
 } from './lib/celebration';
 import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc } from './lib/characters';
+/** BG letterbox ≈ sampel border GIF conqueror per karakter */
+const CONQUEROR_BG: Record<string, string> = {
+  'yu-jin': '#eaeaea',
+  'hong-yi': '#ededed',
+  'ming-zhe': '#eceeec',
+  'yo-rin': '#ededec',
+  'an-ning': '#eeefed',
+  'zhi-xing': '#f4f4f3',
+};
 import type { ArenaStyle, CharacterId, InputMode, PracticeSessionKind, SprintLength} from './lib/types';
 import type { DifficultyLevel } from './lib/levels';
 import { getLevelById } from './lib/levels';
@@ -1143,6 +1152,14 @@ function App() {
                 <button
                   type="button"
                   className="milestone-spotlight-overlay"
+                  style={{
+                    background:
+                      CONQUEROR_BG[
+                        selectedCharacterId ||
+                          loadProgress().preferredCharacter ||
+                          'yu-jin'
+                      ] || '#ececeb',
+                  }}
                   onClick={() => {
                     /* Hanya boleh skip setelah animasi selesai */
                     if (spotlightReady) setMilestonePhase('callout');
