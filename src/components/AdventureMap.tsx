@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ADVENTURE_CITIES } from '../lib/adventure';
-import { t as i18n } from '../lib/i18n';
+import { t as i18n, getLang } from '../lib/i18n';
 
 /**
  * Dev peta — buka di browser (dev / production):
@@ -1218,7 +1218,25 @@ export default function AdventureMap({
       )}
 
       <p className="adventure-map-legend">
-        {mapDebug.on ? i18n('mapDebugLegend') : i18n('mapLegend')}
+        {mapDebug.on ? (
+          i18n('mapDebugLegend')
+        ) : getLang() === 'en' ? (
+          <>
+            Tap pin · <span className="leg-active">● green active</span>
+            {' · '}
+            <span className="leg-won">◆ blue cleared</span>
+            {' · '}
+            <span className="leg-locked">▲ gray locked</span>
+          </>
+        ) : (
+          <>
+            Ketuk pin · <span className="leg-active">● hijau aktif</span>
+            {' · '}
+            <span className="leg-won">◆ biru menang</span>
+            {' · '}
+            <span className="leg-locked">▲ abu terkunci</span>
+          </>
+        )}
       </p>
     </div>
   );
