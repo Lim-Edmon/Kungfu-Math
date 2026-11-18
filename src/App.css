@@ -5624,7 +5624,8 @@ html[data-theme='malam'] .onboard-banner {
 .milestone-top-slot {
   flex: 0 0 auto;
   width: min(100% - 1.5rem, 26rem);
-  min-height: 4.75rem;
+  /* Tanpa min-height saat play — slot kosong jangan kelihatan seperti box */
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5662,11 +5663,14 @@ html[data-theme='malam'] .onboard-banner {
   font-size: 0.92rem;
 }
 .milestone-gap {
-  /* Jarak kecil tapi jelas di HP (~14–16px) */
-  flex: 0 0 1rem;
-  height: 1rem;
+  /* Hanya jarak kosong agar tidak nempel — tanpa warna/garis */
+  flex: 0 0 0.75rem;
+  height: 0.75rem;
   width: 100%;
-  min-height: 1rem;
+  min-height: 0.75rem;
+  background: transparent;
+  border: none;
+  pointer-events: none;
 }
 .milestone-gif-wrap {
   flex: 0 0 auto;

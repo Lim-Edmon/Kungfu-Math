@@ -378,13 +378,27 @@ function App() {
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
-  // Milestone phase play → banner setelah GIF ~3.4s
+  // Banner hanya setelah GIF selesai (~3.4s). Timer mulai saat img onLoad.
+  const conquerorLoadAt = useRef<number | null>(null);
   useEffect(() => {
-    if (milestonePhase !== 'play') return;
-    const ms = 3500; /* GIF play-once ~3.39s, hold last frame */
-    const id = window.setTimeout(() => setMilestonePhase('banner'), ms);
-    return () => window.clearTimeout(id);
+    if (milestonePhase !== 'play') {
+      conquerorLoadAt.current = null;
+      return;
+    }
+    // Fallback: kalau onLoad telat/miss, tetap buka banner di detik ke-4
+    const fallback = window.setTimeout(() => setMilestonePhase('banner'), 4000);
+    return () => window.clearTimeout(fallback);
   }, [milestonePhase]);
+
+  const scheduleBannerAfterGif = () => {
+    if (milestonePhase !== 'play') return;
+    if (conquerorLoadAt.current != null) return; // sudah dijadwalkan
+    conquerorLoadAt.current = Date.now();
+    // GIF ~3.39s — buffer kecil agar frame terakhir sempat hold
+    window.setTimeout(() => {
+      setMilestonePhase((p) => (p === 'play' ? 'banner' : p));
+    }, 3600);
+  };
 
   // Typewriter teks banner Region Takluk
   useEffect(() => {
@@ -1209,12 +1223,13 @@ function App() {
                           </div>
                         )}
                       </div>
-                      <div className="milestone-gap" aria-hidden />
+                      {holding ? <div className="milestone-gap" aria-hidden /> : null}
                       <div className="milestone-gif-wrap">
                         <img
                           className="milestone-spotlight-gif"
                           src={getConquerorAnimSrc(cid)}
                           alt=""
+                          onLoad={() => scheduleBannerAfterGif()}
                           onError={(e) => {
                             const ch = getCharacterById(cid);
                             const el = e.currentTarget;
