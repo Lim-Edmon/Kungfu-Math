@@ -36,7 +36,7 @@ import {
   milestoneTitle,
   type MilestoneInfo,
 } from './lib/celebration';
-import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc, getConquerorStillSrc } from './lib/characters';
+import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc } from './lib/characters';
 /** BG letterbox ≈ sampel border GIF conqueror per karakter */
 const CONQUEROR_BG: Record<string, string> = {
   'yu-jin': '#eaeaea',
@@ -381,7 +381,7 @@ function App() {
   // Milestone phase play → banner setelah GIF ~3.4s
   useEffect(() => {
     if (milestonePhase !== 'play') return;
-    const ms = 3600;
+    const ms = 3500; /* GIF play-once ~3.39s, hold last frame */
     const id = window.setTimeout(() => setMilestonePhase('banner'), ms);
     return () => window.clearTimeout(id);
   }, [milestonePhase]);
@@ -393,10 +393,7 @@ function App() {
       return;
     }
     const lang = getLang() === 'en' ? 'en' : 'id';
-    const full =
-      milestoneTitle(milestoneInfo, lang) +
-      ' — ' +
-      milestoneQuote(milestoneInfo, lang);
+    const full = milestoneQuote(milestoneInfo, lang);
     setBannerTyped('');
     let i = 0;
     const id = window.setInterval(() => {
@@ -1178,6 +1175,7 @@ function App() {
                 const lang = getLang() === 'en' ? 'en' : 'id';
                 const bg = CONQUEROR_BG[cid] || '#ececeb';
                 const holding = milestonePhase === 'banner';
+                const fullQuote = milestoneQuote(milestoneInfo, lang);
                 return (
                   <div
                     className="milestone-stage"
@@ -1185,57 +1183,47 @@ function App() {
                     role="dialog"
                     aria-modal="true"
                   >
-                    {/* Slot atas: kosong saat play; banner Region Takluk saat hold */}
-                    <div className="milestone-top-slot">
-                      {holding && (
-                        <div className="milestone-region-banner">
-                          <p className="milestone-region-type">
-                            {bannerTyped}
-                            <span className="milestone-caret" aria-hidden>
-                              {bannerTyped.length <
-                              (
-                                milestoneTitle(milestoneInfo, lang) +
-                                ' — ' +
-                                milestoneQuote(milestoneInfo, lang)
-                              ).length
-                                ? '|'
-                                : ''}
-                            </span>
-                          </p>
-                          <button
-                            type="button"
-                            className="btn-primary milestone-region-btn"
-                            onClick={() => {
-                              setMilestonePhase(null);
-                              setMilestoneInfo(null);
-                              // Baru tampilkan fun fact setelah banner ditutup
-                              if (funFact && !journeyComplete) {
-                                setFunFactOpen(true);
-                              }
-                            }}
-                          >
-                            {lang === 'en' ? 'Continue' : 'Lanjut'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    <div className="milestone-gif-wrap">
-                      <img
-                        className="milestone-spotlight-gif"
-                        src={
-                          holding
-                            ? getConquerorStillSrc(cid)
-                            : getConquerorAnimSrc(cid)
-                        }
-                        alt=""
-                        onError={(e) => {
-                          const ch = getCharacterById(cid);
-                          const el = e.currentTarget;
-                          if (ch?.imageSrc && el.src !== ch.imageSrc) {
-                            el.src = ch.imageSrc;
-                          }
-                        }}
-                      />
+                    <div className="milestone-main">
+                      <div className="milestone-top-slot">
+                        {holding && (
+                          <div className="milestone-region-banner">
+                            <p className="milestone-region-type">
+                              {bannerTyped}
+                              <span className="milestone-caret" aria-hidden>
+                                {bannerTyped.length < fullQuote.length ? '|' : ''}
+                              </span>
+                            </p>
+                            <button
+                              type="button"
+                              className="btn-primary milestone-region-btn"
+                              onClick={() => {
+                                setMilestonePhase(null);
+                                setMilestoneInfo(null);
+                                if (funFact && !journeyComplete) {
+                                  setFunFactOpen(true);
+                                }
+                              }}
+                            >
+                              {lang === 'en' ? 'Continue' : 'Lanjut'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="milestone-gap" aria-hidden />
+                      <div className="milestone-gif-wrap">
+                        <img
+                          className="milestone-spotlight-gif"
+                          src={getConquerorAnimSrc(cid)}
+                          alt=""
+                          onError={(e) => {
+                            const ch = getCharacterById(cid);
+                            const el = e.currentTarget;
+                            if (ch?.imageSrc && el.src !== ch.imageSrc) {
+                              el.src = ch.imageSrc;
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 );

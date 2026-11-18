@@ -5599,7 +5599,7 @@ html[data-theme='malam'] .onboard-banner {
   position: absolute;
 }
 
-/* ===== Milestone stage: slot atas + GIF (play → banner hold) ===== */
+/* ===== Milestone stage: group center (banner + gap + GIF) ===== */
 .milestone-stage {
   position: fixed;
   inset: 0;
@@ -5608,37 +5608,44 @@ html[data-theme='malam'] .onboard-banner {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 0.75rem 0;
   overflow: hidden;
   box-sizing: border-box;
 }
+.milestone-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  flex: 0 0 auto;
+}
 .milestone-top-slot {
   flex: 0 0 auto;
-  width: min(100%, 28rem);
-  min-height: 5.5rem;
-  max-height: 7.5rem;
+  width: min(100% - 1.5rem, 26rem);
+  min-height: 4.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.75rem 0.35rem;
   box-sizing: border-box;
 }
 .milestone-region-banner {
   width: 100%;
-  background: color-mix(in srgb, var(--color-card, #fff) 92%, transparent);
+  background: color-mix(in srgb, var(--color-card, #fff) 94%, transparent);
   border: 2px solid color-mix(in srgb, var(--color-primary, #c41e3a) 40%, var(--color-border, #ccc));
   border-radius: 14px;
-  padding: 0.65rem 0.75rem 0.7rem;
+  padding: 0.6rem 0.75rem 0.65rem;
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
   text-align: center;
 }
 .milestone-region-type {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.5rem;
   font-size: 0.9rem;
   line-height: 1.4;
   font-weight: 700;
   color: var(--color-text, #1a1a1a);
-  min-height: 2.6em;
+  min-height: 2.5em;
   text-align: left;
 }
 .milestone-caret {
@@ -5654,6 +5661,10 @@ html[data-theme='malam'] .onboard-banner {
   padding: 0.55rem 1rem;
   font-size: 0.92rem;
 }
+.milestone-gap {
+  flex: 0 0 0.55rem;
+  width: 100%;
+}
 .milestone-gif-wrap {
   flex: 0 0 auto;
   width: 100%;
@@ -5663,18 +5674,19 @@ html[data-theme='malam'] .onboard-banner {
   overflow: hidden;
 }
 .milestone-spotlight-gif {
-  height: min(58vh, 360px);
+  height: min(52vh, 340px);
   width: 145vw;
   max-width: none;
   object-fit: cover;
   object-position: center center;
   filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.15));
-  animation: milestone-pop 0.45s ease-out;
   background: transparent;
   flex-shrink: 0;
 }
 @keyframes milestone-pop {
   0% { transform: scale(0.92); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
   100% { transform: scale(1); opacity: 1; }
 }
 @keyframes milestone-pop {
