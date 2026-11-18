@@ -36,7 +36,7 @@ import {
   milestoneTitle,
   type MilestoneInfo,
 } from './lib/celebration';
-import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc } from './lib/characters';
+import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc, getConquerorStillSrc } from './lib/characters';
 /** BG letterbox ≈ sampel border GIF conqueror per karakter */
 const CONQUEROR_BG: Record<string, string> = {
   'yu-jin': '#eaeaea',
@@ -268,8 +268,8 @@ function App() {
   const [celebrateOpen, setCelebrateOpen] = useState(false);
   const [milestoneInfo, setMilestoneInfo] = useState<MilestoneInfo | null>(null);
   /** null | spotlight (GIF) | callout (foto + omongan) */
-  const [milestonePhase, setMilestonePhase] = useState<'spotlight' | 'callout' | null>(null);
-  const [spotlightReady, setSpotlightReady] = useState(false);
+  const [milestonePhase, setMilestonePhase] = useState<'play' | 'banner' | null>(null);
+  const [bannerTyped, setBannerTyped] = useState('');
   const [secretDiscoverOpen, setSecretDiscoverOpen] = useState(false);
   const [journeyEndOpen, setJourneyEndOpen] = useState(false);
   const [newBadges, setNewBadges] = useState<string[]>([]);
@@ -378,21 +378,34 @@ function App() {
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
-  // Milestone: GIF conqueror ~3.4s — tunggu selesai baru callout / boleh lanjut
+  // Milestone phase play → banner setelah GIF ~3.4s
   useEffect(() => {
-    if (milestonePhase !== 'spotlight') {
-      setSpotlightReady(false);
+    if (milestonePhase !== 'play') return;
+    const ms = 3600;
+    const id = window.setTimeout(() => setMilestonePhase('banner'), ms);
+    return () => window.clearTimeout(id);
+  }, [milestonePhase]);
+
+  // Typewriter teks banner Region Takluk
+  useEffect(() => {
+    if (milestonePhase !== 'banner' || !milestoneInfo) {
+      setBannerTyped('');
       return;
     }
-    setSpotlightReady(false);
-    // Durasi file conqueror ≈ 3.4s; buffer kecil agar frame terakhir terbaca
-    const ms = 3600;
-    const t = window.setTimeout(() => {
-      setSpotlightReady(true);
-      setMilestonePhase('callout');
-    }, ms);
-    return () => window.clearTimeout(t);
-  }, [milestonePhase]);
+    const lang = getLang() === 'en' ? 'en' : 'id';
+    const full =
+      milestoneTitle(milestoneInfo, lang) +
+      ' — ' +
+      milestoneQuote(milestoneInfo, lang);
+    setBannerTyped('');
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setBannerTyped(full.slice(0, i));
+      if (i >= full.length) window.clearInterval(id);
+    }, 28);
+    return () => window.clearInterval(id);
+  }, [milestonePhase, milestoneInfo]);
 
     const handleStartGame = (
     mode: InputMode,
@@ -642,6 +655,8 @@ function App() {
     const perfect = !!runMeta?.perfect;
     let passed = false;
     let nextId: string | null = null;
+    let pendingFunFact = false;
+    let pendingAtEnd = false;
     let cityId = prog0.adventureCityId || 'jakarta';
     let prevCityHs = 0;
 
@@ -737,7 +752,9 @@ function App() {
       setFunFact(fact);
       // Normal: ujung = Port Moresby. Playdebug: ujung = New York (data penuh).
       const atEnd = passed && !nextId;
-      setFunFactOpen(!!fact && !atEnd);
+      pendingFunFact = !!fact && !atEnd;
+      pendingAtEnd = atEnd;
+      setFunFactOpen(false); // ditunda jika ada milestone banner
       setJourneyEndOpen(atEnd);
     }
 
@@ -805,8 +822,13 @@ function App() {
       const ms = detectMilestone(cityId, passed, nextId, hsAll);
       if (ms) {
         setMilestoneInfo(ms);
-        setMilestonePhase('spotlight');
+        setMilestonePhase('play');
+        setFunFactOpen(false);
+      } else if (pendingFunFact) {
+        setFunFactOpen(true);
       }
+    } else if (pendingFunFact) {
+      setFunFactOpen(true);
     }
 
     // Cerita first-time: mode / arena / sesi / kota pertama per region
@@ -1148,101 +1170,77 @@ function App() {
               )}
 
               {/* Ujung jalur petualangan: popup khusus, tutup manual */}
-              {milestoneInfo && milestonePhase === 'spotlight' && (
-                <button
-                  type="button"
-                  className="milestone-spotlight-overlay"
-                  style={{
-                    background:
-                      CONQUEROR_BG[
-                        selectedCharacterId ||
-                          loadProgress().preferredCharacter ||
-                          'yu-jin'
-                      ] || '#ececeb',
-                  }}
-                  onClick={() => {
-                    /* Hanya boleh skip setelah animasi selesai */
-                    if (spotlightReady) setMilestonePhase('callout');
-                  }}
-                  aria-label="Animasi kemenangan"
-                >
-                  <img
-                    className="milestone-spotlight-gif"
-                    src={getConquerorAnimSrc(
-                      selectedCharacterId ||
-                        loadProgress().preferredCharacter ||
-                        'yu-jin'
-                    )}
-                    alt=""
-                    onError={(e) => {
-                      const cid =
-                        selectedCharacterId ||
-                        loadProgress().preferredCharacter ||
-                        'yu-jin';
-                      const ch = getCharacterById(cid);
-                      const el = e.currentTarget;
-                      if (ch?.imageSrc && el.src !== ch.imageSrc) {
-                        el.src = ch.imageSrc;
-                      }
-                    }}
-                  />
-                </button>
-              )}
-              {milestoneInfo && milestonePhase === 'callout' && (() => {
+              {milestoneInfo && (milestonePhase === 'play' || milestonePhase === 'banner') && (() => {
                 const cid =
                   selectedCharacterId ||
                   loadProgress().preferredCharacter ||
                   'yu-jin';
-                const ch = getCharacterById(cid) || getCharacterById('yu-jin');
                 const lang = getLang() === 'en' ? 'en' : 'id';
+                const bg = CONQUEROR_BG[cid] || '#ececeb';
+                const holding = milestonePhase === 'banner';
                 return (
                   <div
-                    className="milestone-callout-overlay"
+                    className="milestone-stage"
+                    style={{ background: bg }}
                     role="dialog"
                     aria-modal="true"
                   >
-                    <div className="milestone-dialogue">
-                      <div className="milestone-dialogue-side">
-                        <div
-                          className="milestone-dialogue-avatar-wrap"
-                          style={{
-                            background: ch
-                              ? `color-mix(in srgb, ${ch.color} 22%, var(--color-card))`
-                              : undefined,
-                          }}
-                        >
-                          <img
-                            className="milestone-dialogue-avatar"
-                            src={ch?.imageCloseSrc || ch?.imageSrc || ''}
-                            alt=""
-                          />
+                    {/* Slot atas: kosong saat play; banner Region Takluk saat hold */}
+                    <div className="milestone-top-slot">
+                      {holding && (
+                        <div className="milestone-region-banner">
+                          <p className="milestone-region-type">
+                            {bannerTyped}
+                            <span className="milestone-caret" aria-hidden>
+                              {bannerTyped.length <
+                              (
+                                milestoneTitle(milestoneInfo, lang) +
+                                ' — ' +
+                                milestoneQuote(milestoneInfo, lang)
+                              ).length
+                                ? '|'
+                                : ''}
+                            </span>
+                          </p>
+                          <button
+                            type="button"
+                            className="btn-primary milestone-region-btn"
+                            onClick={() => {
+                              setMilestonePhase(null);
+                              setMilestoneInfo(null);
+                              // Baru tampilkan fun fact setelah banner ditutup
+                              if (funFact && !journeyComplete) {
+                                setFunFactOpen(true);
+                              }
+                            }}
+                          >
+                            {lang === 'en' ? 'Continue' : 'Lanjut'}
+                          </button>
                         </div>
-                        <p className="milestone-dialogue-name">
-                          {ch?.name || 'Pendekar'}
-                        </p>
-                      </div>
-                      <div className="milestone-dialogue-bubble">
-                        <p className="milestone-dialogue-kicker">
-                          {milestoneTitle(milestoneInfo, lang)}
-                        </p>
-                        <p className="milestone-dialogue-text">
-                          {milestoneQuote(milestoneInfo, lang)}
-                        </p>
-                        <button
-                          type="button"
-                          className="btn-primary milestone-dialogue-btn"
-                          onClick={() => {
-                            setMilestonePhase(null);
-                            setMilestoneInfo(null);
-                          }}
-                        >
-                          {lang === 'en' ? 'Continue' : 'Lanjut'}
-                        </button>
-                      </div>
+                      )}
+                    </div>
+                    <div className="milestone-gif-wrap">
+                      <img
+                        className="milestone-spotlight-gif"
+                        src={
+                          holding
+                            ? getConquerorStillSrc(cid)
+                            : getConquerorAnimSrc(cid)
+                        }
+                        alt=""
+                        onError={(e) => {
+                          const ch = getCharacterById(cid);
+                          const el = e.currentTarget;
+                          if (ch?.imageSrc && el.src !== ch.imageSrc) {
+                            el.src = ch.imageSrc;
+                          }
+                        }}
+                      />
                     </div>
                   </div>
                 );
               })()}
+
 
               {journeyComplete && journeyEndOpen && (
                 <div
