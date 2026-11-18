@@ -36,7 +36,7 @@ import {
   milestoneTitle,
   type MilestoneInfo,
 } from './lib/celebration';
-import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc } from './lib/characters';
+import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc, getConquerorStillSrc } from './lib/characters';
 /** BG letterbox ≈ sampel border GIF conqueror per karakter */
 const CONQUEROR_BG: Record<string, string> = {
   'yu-jin': '#eaeaea',
@@ -378,26 +378,37 @@ function App() {
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
-  // Banner hanya setelah GIF selesai (~3.4s). Timer mulai saat img onLoad.
-  const conquerorLoadAt = useRef<number | null>(null);
+  // GIF play 1× (~3390ms) lalu freeze still + banner. Jangan biarkan GIF loop.
+  const conquerorTimerRef = useRef<number | null>(null);
+  const conquerorScheduledRef = useRef(false);
   useEffect(() => {
     if (milestonePhase !== 'play') {
-      conquerorLoadAt.current = null;
+      conquerorScheduledRef.current = false;
+      if (conquerorTimerRef.current != null) {
+        window.clearTimeout(conquerorTimerRef.current);
+        conquerorTimerRef.current = null;
+      }
       return;
     }
-    // Fallback: kalau onLoad telat/miss, tetap buka banner di detik ke-4
-    const fallback = window.setTimeout(() => setMilestonePhase('banner'), 4000);
+    // Fallback jika onLoad tidak jalan
+    const fallback = window.setTimeout(() => {
+      setMilestonePhase((p) => (p === 'play' ? 'banner' : p));
+    }, 4500);
     return () => window.clearTimeout(fallback);
   }, [milestonePhase]);
 
   const scheduleBannerAfterGif = () => {
     if (milestonePhase !== 'play') return;
-    if (conquerorLoadAt.current != null) return; // sudah dijadwalkan
-    conquerorLoadAt.current = Date.now();
-    // GIF ~3.39s — buffer kecil agar frame terakhir sempat hold
-    window.setTimeout(() => {
+    if (conquerorScheduledRef.current) return;
+    conquerorScheduledRef.current = true;
+    if (conquerorTimerRef.current != null) {
+      window.clearTimeout(conquerorTimerRef.current);
+    }
+    // Durasi file 3390ms; sedikit buffer, ganti ke still SEBELUM browser sempat loop
+    conquerorTimerRef.current = window.setTimeout(() => {
       setMilestonePhase((p) => (p === 'play' ? 'banner' : p));
-    }, 3600);
+      conquerorTimerRef.current = null;
+    }, 3350);
   };
 
   // Typewriter teks banner Region Takluk
@@ -1225,19 +1236,30 @@ function App() {
                       </div>
                       {holding ? <div className="milestone-gap" aria-hidden /> : null}
                       <div className="milestone-gif-wrap">
-                        <img
-                          className="milestone-spotlight-gif"
-                          src={getConquerorAnimSrc(cid)}
-                          alt=""
-                          onLoad={() => scheduleBannerAfterGif()}
-                          onError={(e) => {
-                            const ch = getCharacterById(cid);
-                            const el = e.currentTarget;
-                            if (ch?.imageSrc && el.src !== ch.imageSrc) {
-                              el.src = ch.imageSrc;
-                            }
-                          }}
-                        />
+                        {/* play: GIF 1× · banner: still frame (hindari putar ulang) */}
+                        {holding ? (
+                          <img
+                            className="milestone-spotlight-gif"
+                            src={getConquerorStillSrc(cid)}
+                            alt=""
+                            draggable={false}
+                          />
+                        ) : (
+                          <img
+                            className="milestone-spotlight-gif"
+                            src={getConquerorAnimSrc(cid)}
+                            alt=""
+                            draggable={false}
+                            onLoad={() => scheduleBannerAfterGif()}
+                            onError={(e) => {
+                              const ch = getCharacterById(cid);
+                              const el = e.currentTarget;
+                              if (ch?.imageSrc && el.src !== ch.imageSrc) {
+                                el.src = ch.imageSrc;
+                              }
+                            }}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
