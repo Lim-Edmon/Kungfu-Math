@@ -154,6 +154,11 @@ export function getConquerorAnimSrc(characterId: string): string {
   return `/characters/anim/${characterId}/conqueror.gif`;
 }
 
+/** Frame terakhir GIF conqueror — hold saat banner Region Takluk. */
+export function getConquerorStillSrc(characterId: string): string {
+  return `/characters/anim/${characterId}/conqueror-still.png`;
+}
+
 /** Frame diam (frame-0 GIF) — tampil saat idle / miss. */
 export function getAttackIdleSrc(characterId: string): string | null {
   if ((ATTACK_ANIM_CHARS as readonly string[]).includes(characterId)) {
