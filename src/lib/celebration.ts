@@ -97,7 +97,8 @@ export function milestoneQuote(m: MilestoneInfo, lang: 'id' | 'en'): string {
       ? 'Edge of the world reached. A secret path in the poles awaits.'
       : 'Ujung dunia tercapai. Jalur misteri di kutub… menunggu.';
   }
-  const name = m.regionLabel || m.regionId || '';
+  const name = (m.regionLabel || m.regionId || '').trim();
+  // Hanya kalimat utama — tanpa "Jalur selesai" / judul terpisah
   return lang === 'en'
     ? `${name} is ours. Ready for the next path.`
     : `${name} sudah kita taklukkan. Siap ke jalur berikutnya.`;
@@ -108,5 +109,5 @@ export function milestoneTitle(m: MilestoneInfo, lang: 'id' | 'en'): string {
   if (m.kind === 'world') {
     return lang === 'en' ? "World's Edge" : 'Ujung Dunia';
   }
-  return lang === 'en' ? 'Region Clear' : 'Region Takluk';
+  return lang === 'en' ? 'Path clear' : 'Jalur selesai';
 }
