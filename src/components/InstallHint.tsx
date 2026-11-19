@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { t } from '../lib/i18n';
 
-const HIDE_KEY = 'km_install_hint_hide';
+const HIDE_KEY = 'km_install_hint_hide_v2';
 
 function isStandaloneDisplay(): boolean {
   try {
@@ -19,10 +19,11 @@ function isStandaloneDisplay(): boolean {
 }
 
 /**
- * Hanya tampil jika browser benar-benar menawarkan install (beforeinstallprompt).
- * - Sudah PWA / standalone → sembunyi
- * - User pilih Nanti / sudah install → sembunyi (localStorage)
- * - Tanpa event install (iOS, dll.) → tidak spam “cara pasang”
+ * Banner install:
+ * - Sudah PWA/standalone → sembunyi
+ * - User "Nanti" → sembunyi (localStorage)
+ * - Ada beforeinstallprompt → tombol Pasang native
+ * - Tidak ada event (iOS dll.) → tetap tampil + tombol "Cara pasang"
  */
 export default function InstallHint() {
   const [deferred, setDeferred] = useState<{
@@ -67,7 +68,6 @@ export default function InstallHint() {
     };
 
     window.addEventListener('beforeinstallprompt', handler);
-
     window.addEventListener('appinstalled', () => {
       setHidden(true);
       setDeferred(null);
@@ -84,7 +84,7 @@ export default function InstallHint() {
     };
   }, []);
 
-  if (hidden || standalone || !deferred) return null;
+  if (hidden || standalone) return null;
 
   const dismiss = () => {
     setHidden(true);
@@ -95,16 +95,21 @@ export default function InstallHint() {
     }
   };
 
+  const onPrimary = () => {
+    if (deferred) {
+      void deferred.prompt();
+      return;
+    }
+    window.alert(t('installAlert'));
+  };
+
   return (
     <div className="install-hint">
       <p>{t('installTitle')}</p>
+      <p className="install-hint-body">{t('installBody')}</p>
       <div className="install-hint-actions">
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={() => deferred.prompt()}
-        >
-          {t('installBtn')}
+        <button type="button" className="btn-primary" onClick={onPrimary}>
+          {deferred ? t('installBtn') : t('installHow')}
         </button>
         <button type="button" className="btn-ghost" onClick={dismiss}>
           {t('installLater')}
