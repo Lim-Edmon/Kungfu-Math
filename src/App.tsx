@@ -380,22 +380,38 @@ function App() {
     return () => clearTimeout(t);
   }, [celebrateOpen]);
 
-  // GIF play 1× (~3390ms) lalu freeze still + banner. Jangan biarkan GIF loop.
+  /**
+   * Conqueror: file asli loop infinite di browser.
+   * Solusi: still selalu di bawah; GIF di atas; di 3200ms (sebelum loop 3390ms)
+   * sembunyikan GIF → still hold + banner. Tidak ada putar ulang.
+   */
   const conquerorTimerRef = useRef<number | null>(null);
   const conquerorScheduledRef = useRef(false);
+  const [conquerorGifOn, setConquerorGifOn] = useState(true);
+
   useEffect(() => {
-    if (milestonePhase !== 'play') {
+    if (milestonePhase === 'play') {
+      setConquerorGifOn(true);
       conquerorScheduledRef.current = false;
-      if (conquerorTimerRef.current != null) {
-        window.clearTimeout(conquerorTimerRef.current);
-        conquerorTimerRef.current = null;
-      }
       return;
     }
-    // Fallback jika onLoad tidak jalan
+    if (milestonePhase === null) {
+      setConquerorGifOn(true);
+      conquerorScheduledRef.current = false;
+    }
+    if (conquerorTimerRef.current != null) {
+      window.clearTimeout(conquerorTimerRef.current);
+      conquerorTimerRef.current = null;
+    }
+  }, [milestonePhase]);
+
+  // Fallback: kalau onLoad gagal, freeze di 3.2s dari mulai play
+  useEffect(() => {
+    if (milestonePhase !== 'play') return;
     const fallback = window.setTimeout(() => {
+      setConquerorGifOn(false);
       setMilestonePhase((p) => (p === 'play' ? 'banner' : p));
-    }, 4500);
+    }, 4000);
     return () => window.clearTimeout(fallback);
   }, [milestonePhase]);
 
@@ -406,11 +422,12 @@ function App() {
     if (conquerorTimerRef.current != null) {
       window.clearTimeout(conquerorTimerRef.current);
     }
-    // Durasi file 3390ms; sedikit buffer, ganti ke still SEBELUM browser sempat loop
+    // 3200ms < 3390ms total → stop SEBELUM frame 1 loop lagi
     conquerorTimerRef.current = window.setTimeout(() => {
+      setConquerorGifOn(false);
       setMilestonePhase((p) => (p === 'play' ? 'banner' : p));
       conquerorTimerRef.current = null;
-    }, 3350);
+    }, 3200);
   };
 
   // Typewriter teks banner Region Takluk
@@ -1256,28 +1273,20 @@ function App() {
                       </div>
                       {holding ? <div className="milestone-gap" aria-hidden /> : null}
                       <div className="milestone-gif-wrap">
-                        {/* play: GIF 1× · banner: still frame (hindari putar ulang) */}
-                        {holding ? (
+                        {/* Still selalu di bawah; GIF di atas lalu di-hide sebelum loop */}
+                        <img
+                          className="milestone-spotlight-gif milestone-still"
+                          src={getConquerorStillSrc(cid)}
+                          alt=""
+                          draggable={false}
+                        />
+                        {conquerorGifOn && (
                           <img
-                            className="milestone-spotlight-gif"
-                            src={getConquerorStillSrc(cid)}
-                            alt=""
-                            draggable={false}
-                          />
-                        ) : (
-                          <img
-                            className="milestone-spotlight-gif"
+                            className="milestone-spotlight-gif milestone-gif-anim"
                             src={getConquerorAnimSrc(cid)}
                             alt=""
                             draggable={false}
                             onLoad={() => scheduleBannerAfterGif()}
-                            onError={(e) => {
-                              const ch = getCharacterById(cid);
-                              const el = e.currentTarget;
-                              if (ch?.imageSrc && el.src !== ch.imageSrc) {
-                                el.src = ch.imageSrc;
-                              }
-                            }}
                           />
                         )}
                       </div>
@@ -1473,7 +1482,8 @@ function App() {
                 {playKind === 'petualangan' &&
                   passedCity &&
                   regionCrossing &&
-                  regionUnlockMsg && (
+                  regionUnlockMsg &&
+                  !milestoneInfo && (
                   <div className="result-region-story" role="status">
                     <p className="result-region-story-emoji" aria-hidden>
                       🗺️
