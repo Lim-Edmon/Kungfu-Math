@@ -37,6 +37,7 @@ import {
   type MilestoneInfo,
 } from './lib/celebration';
 import { getCharacterById, getAttackAnimSrc, getConquerorAnimSrc, getConquerorStillSrc } from './lib/characters';
+import { preloadConqueror, clearConquerorCache } from './lib/conquerorCache';
 /** BG letterbox ≈ sampel border GIF conqueror per karakter */
 const CONQUEROR_BG: Record<string, string> = {
   'yu-jin': '#eaeaea',
@@ -362,6 +363,7 @@ function App() {
         setSeasonForce(null);
         sessionStorage.removeItem('kungfu-math-playdebug');
         clearMapSession();
+        void clearConquerorCache();
         if (isDevUnlockActive()) applyDevLockAccess();
       } catch {
         /* ignore */
@@ -469,11 +471,20 @@ function App() {
       ...(cityForRun ? { adventureCityId: cityForRun } : {}),
     });
     setOfflineSession(!getIsOnline());
+    // Preload conqueror hanya jika kota ini berpotensi milestone (hemat)
+    if (kind === 'petualangan' && cityForRun) {
+      const nearMilestone =
+        isRegionLastCity(cityForRun) ||
+        cityForRun === 'new-york' ||
+        cityForRun === 'north-pole' ||
+        cityForRun === 'south-pole';
+      if (nearMilestone) void preloadConqueror(characterId);
+    }
     setScreen('game');
   };
 
   const handleExitGame = () => {
-    // Keluar di tengah game → selalu ke menu paling awal (langkah 1)
+    void clearConquerorCache();
     setHomePlayKind(undefined);
     setHomeKey((k) => k + 1);
     setScreen('home');
@@ -495,6 +506,14 @@ function App() {
     setFunFact(null);
     setFunFactOpen(false);
     // Game kota tujuan mount di belakang peta (holdStart) — BG/HUD ready
+    if (
+      isRegionLastCity(toId) ||
+      toId === 'new-york' ||
+      toId === 'north-pole' ||
+      toId === 'south-pole'
+    ) {
+      void preloadConqueror(selectedCharacterId);
+    }
     setScreen('game');
     setTravelOverlay({ fromId, toId, phase: 'in' });
   };
@@ -514,6 +533,7 @@ function App() {
   };
 
   const handleBackToAdventureMap = () => {
+    void clearConquerorCache();
     // Fokus peta = kota yang BARU dimainkan (bukan otomatis kota berikutnya / terjauh)
     const played = lastCityId || loadProgress().adventureCityId || 'jakarta';
     updateProgress({ adventureCityId: played });
