@@ -99,8 +99,8 @@ export function milestoneQuote(m: MilestoneInfo, lang: 'id' | 'en'): string {
   }
   const name = m.regionLabel || m.regionId || '';
   return lang === 'en'
-    ? `${name} is conquered. Ready for the next path.`
-    : `Region ${name} sudah kita taklukkan. Siap ke jalur berikutnya.`;
+    ? `${name} is ours. Ready for the next path.`
+    : `${name} sudah kita taklukkan. Siap ke jalur berikutnya.`;
 }
 
 export function milestoneTitle(m: MilestoneInfo, lang: 'id' | 'en'): string {
