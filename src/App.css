@@ -1380,8 +1380,16 @@
 
 .install-hint p {
   font-size: 0.9rem;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   color: var(--color-text);
+  font-weight: 700;
+}
+.install-hint-body {
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  line-height: 1.35;
+  margin-bottom: 10px !important;
+  color: var(--color-text-muted, #555) !important;
 }
 
 .install-hint-actions {
@@ -2624,9 +2632,9 @@ a.btn-link-trakteer {
 }
 .city-region-label {
   margin: 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--color-text-muted, #888);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-text, #333);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -3179,7 +3187,7 @@ a.btn-link-trakteer:hover,
   border: none;
   background: transparent;
   color: var(--color-text);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.95rem;
   cursor: pointer;
   text-align: left;
@@ -3922,9 +3930,10 @@ h1.home-title {
 .city-region-block.is-group-bar .city-region-locked-summary {
   padding: 0.4rem 0.7rem !important;
   font-size: 0.88rem !important;
+  font-weight: 800 !important;
 }
 .city-region-block.is-current-region .dojo-region-head {
-  font-weight: 700;
+  font-weight: 900;
 }
 .city-region-sub {
   border-top: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
@@ -3939,9 +3948,10 @@ h1.home-title {
   color: inherit;
   font: inherit;
   font-size: 0.84rem;
+  font-weight: 800;
   padding: 0.28rem 0.5rem;
   cursor: pointer;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 .city-region-sub-head:hover {
   opacity: 1;
@@ -5678,7 +5688,7 @@ html[data-theme='malam'] .onboard-banner {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: hidden; /* potong garis tepi GIF tanpa re-encode */
   position: relative;
   margin-top: 0;
 }
@@ -5688,6 +5698,9 @@ html[data-theme='malam'] .onboard-banner {
   max-width: none;
   object-fit: cover;
   object-position: center center;
+  /* zoom tipis → border atas/bawah/samping terpotong oleh overflow */
+  transform: scale(1.045);
+  transform-origin: center center;
   filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.15));
   background: transparent;
   flex-shrink: 0;
@@ -5699,7 +5712,8 @@ html[data-theme='malam'] .onboard-banner {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.045);
+  transform-origin: center center;
 }
 @keyframes milestone-pop {
   0% { transform: scale(0.92); opacity: 0.6; }
