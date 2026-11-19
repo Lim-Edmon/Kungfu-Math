@@ -194,10 +194,12 @@ const STRINGS = {
     seeProgress: 'Lihat Progres',
     score: 'Skor',
     highScore: 'Rekor',
-    installTitle: 'Pasang Kungfu Math di HP biar Lebih Mudah Dibuka',
-    installBtn: 'Pasang',
+    installTitle: 'Main lebih mulus — pasang di HP',
+    installBody:
+      'Dapatkan performa lebih baik & buka secepat aplikasi. Bukan app native — hanya memakai ruang sekitar 30–40 MB. Satu ketuk dari layar utama, tanpa lewat browser.',
+    installBtn: 'Pasang sekarang',
     installHow: 'Cara pasang',
-    installLater: 'Nanti',
+    installLater: 'Nanti saja',
     installAlert:
       'Cara pasang:\n\n• Chrome Android: menu ⋮ → “Tambahkan ke layar utama” / “Install app”\n• Safari iPhone: tombol Bagikan → “Ke Layar Utama”\n• Laptop Chrome: ikon install di kanan address bar (jika ada)',
 
@@ -528,10 +530,12 @@ const STRINGS = {
     seeProgress: 'See Progress',
     score: 'Score',
     highScore: 'Best',
-    installTitle: 'Install Kungfu Math on your phone for quick access',
-    installBtn: 'Install',
+    installTitle: 'Smoother play — install on your phone',
+    installBody:
+      'Get better performance and open like an app. Not a native app — only about 30–40 MB. One tap from your home screen, no browser needed.',
+    installBtn: 'Install now',
     installHow: 'How to install',
-    installLater: 'Later',
+    installLater: 'Not now',
     installAlert:
       'How to install:\n\n• Chrome Android: menu ⋮ → “Add to Home screen” / “Install app”\n• Safari iPhone: Share → “Add to Home Screen”\n• Chrome laptop: install icon in the address bar (if shown)',
 
