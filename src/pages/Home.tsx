@@ -215,17 +215,26 @@ export default function Home({ onStartGame, initialPlayKind, offline = false }: 
    * dan isi ulang slice/tap + pendekar + arena + level + tempo dari pilihan terakhir
    * supaya tidak harus mundur ke langkah 1 lagi.
    */
-  /** Saat masuk Petualangan: fokus ke kota terjauh terbuka (atau terakhir klik jika sudah tamat) */
+  /** Saat masuk Petualangan: fokus kota aktif; setelah takluk region → kota region baru */
   useEffect(() => {
     if (playKind !== 'petualangan' || mapDebug) return;
     const p = loadProgress();
+    let preferId: string | undefined = p.adventureCityId;
+    try {
+      const just = sessionStorage.getItem('km-region-just-unlocked');
+      if (just && (p.adventureUnlocked || []).includes(just)) {
+        preferId = just;
+        sessionStorage.removeItem('km-region-just-unlocked');
+      }
+    } catch {
+      /* ignore */
+    }
     const focus = resolveFocusCityId(
       p.adventureUnlocked?.length ? p.adventureUnlocked : ['jakarta'],
-      p.adventureCityId,
+      preferId,
       p.adventureHighScores
     );
     setCityId(focus);
-    // Samakan storage dengan UI — hindari game baca kota lama (mis. Manado vs Singapura)
     if (focus && focus !== (loadProgress().adventureCityId || 'jakarta')) {
       updateProgress({ adventureCityId: focus });
     }
