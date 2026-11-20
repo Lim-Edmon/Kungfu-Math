@@ -1271,7 +1271,7 @@ function App() {
                           </div>
                         )}
                       </div>
-                      {holding ? <div className="milestone-gap" aria-hidden /> : null}
+                      <div className="milestone-gap" aria-hidden />
                       <div className="milestone-gif-wrap">
                         {/* Still selalu di bawah; GIF di atas lalu di-hide sebelum loop */}
                         <img

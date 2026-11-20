@@ -5634,8 +5634,8 @@ html[data-theme='malam'] .onboard-banner {
 .milestone-top-slot {
   flex: 0 0 auto;
   width: min(100% - 1.5rem, 26rem);
-  /* Tanpa min-height saat play — slot kosong jangan kelihatan seperti box */
-  min-height: 0;
+  /* Reservasi tinggi banner dari awal — GIF tidak bergeser saat box muncul */
+  min-height: 7.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -5673,7 +5673,7 @@ html[data-theme='malam'] .onboard-banner {
   font-size: 0.92rem;
 }
 .milestone-gap {
-  /* Hanya jarak kosong agar tidak nempel — tanpa warna/garis */
+  /* Jarak kosong tetap dari awal (play & banner) — layout stabil */
   flex: 0 0 0.75rem;
   height: 0.75rem;
   width: 100%;
@@ -5681,6 +5681,10 @@ html[data-theme='malam'] .onboard-banner {
   background: transparent;
   border: none;
   pointer-events: none;
+  visibility: hidden; /* tidak terlihat, tapi tetap memakan ruang */
+}
+.milestone-gap.is-visible {
+  visibility: hidden; /* tetap tak terlihat; hanya spacer */
 }
 .milestone-gif-wrap {
   flex: 0 0 auto;
