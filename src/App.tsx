@@ -551,9 +551,23 @@ function App() {
 
   const handleBackToAdventureMap = () => {
     void clearConquerorCache();
-    // Fokus peta = kota yang BARU dimainkan (bukan otomatis kota berikutnya / terjauh)
     const played = lastCityId || loadProgress().adventureCityId || 'jakarta';
-    updateProgress({ adventureCityId: played });
+    /**
+     * Setelah takluk region: panel pilih kota harus di region BARU (kota pertama
+     * yang baru terbuka), supaya user ngeh jalur lanjut — bukan tetap di region lama.
+     * Tanpa region-crossing: tetap di kota yang baru dimainkan.
+     */
+    const pick =
+      regionCrossing && nextCityId ? nextCityId : played;
+    updateProgress({ adventureCityId: pick });
+    // Tandai sekali: Home buka panel region aktif + scroll chip ke kota baru
+    try {
+      if (regionCrossing && nextCityId) {
+        sessionStorage.setItem('km-region-just-unlocked', nextCityId);
+      }
+    } catch {
+      /* ignore */
+    }
     setRegionCrossing(false);
     setRegionUnlockMsg('');
     setStoryHypePrimary('');
